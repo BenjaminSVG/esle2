@@ -1,0 +1,1302 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Documentación de ESLE2 POO — programación orientada a objetos</title>
+<meta name="description" content="Explicación completa de la programación orientada a objetos en ESLE2 POO: clases, objetos, encapsulamiento, abstracción, herencia y polimorfismo, con ejemplos y diagramas.">
+<link rel="icon" href="img/logo-poo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#3a6b8f" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1a1d22" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ESLE2">
+<link rel="apple-touch-icon" href="img/icono-180.png">
+<link rel="stylesheet" href="css/estilo.css">
+<script src="js/tema.js"></script>
+<script src="js/diseno.js"></script>
+</head>
+<body class="app">
+
+<a class="saltar" href="#docCuerpo">Saltar al contenido</a>
+
+<header class="barra">
+  <a class="marca" href="poo.html">
+    <img class="logo" src="img/logo-poo.svg" alt="" width="30" height="30">
+    <div>
+      <h1>ESLE2<span class="sufijo">POO</span></h1>
+      <p>El mismo lenguaje, ahora con objetos</p>
+    </div>
+  </a>
+  <nav class="pestanas">
+    <a class="pest" href="poo.html">IDE</a>
+    <a class="pest" href="poo.html#curso">Curso</a>
+    <a class="pest activa" href="poo-documentacion.html">Documentación POO</a>
+    <a class="pest tenue" href="index.html">← SLE2 clásico</a>
+    <a class="pest destacada" href="visual.html" title="Ventanas, controles y dibujo">ESLE2 Visual</a>
+    <a class="pest destacada" href="bd.html" title="Bases de datos y SQL">ESLE2 BD</a>
+    <a class="pest" href="bd-documentacion.html">Docs BD</a>
+    <a class="pest" href="diseno.html">Diseño</a>
+  </nav>
+
+  <div class="barra-acciones">
+    <button class="btn-buscar oculto" id="btnInstalar" type="button" data-ic="instalar" aria-label="Instalar ESLE2 como aplicación"
+            title="Instalar ESLE2 como aplicación"><span class="etiqueta">Instalar</span></button>
+    <button class="btn-buscar" id="btnBuscar" type="button" data-ic="buscar" aria-label="Buscar en todo ESLE2"
+            title="Buscar en todo ESLE2 (Ctrl + K)"><span class="etiqueta">Buscar</span><kbd>Ctrl K</kbd></button>
+    <button class="btn-tema" id="btnTema" type="button">☾</button>
+  </div>
+</header>
+
+<div class="doc">
+  <aside class="doc-lateral">
+    <div class="doc-buscador">
+      <span class="lupa">⌕</span>
+      <input type="search" id="docBuscar" placeholder="Buscar en la documentación…"
+             autocomplete="off" spellcheck="false" aria-label="Buscar en la documentación">
+      <button class="limpiar oculto" id="docLimpiar" title="Limpiar búsqueda" aria-label="Limpiar búsqueda">×</button>
+    </div>
+    <p id="docResultados"></p>
+    <ul class="doc-indice" id="docIndice"></ul>
+  </aside>
+
+  <main class="doc-cuerpo" id="docCuerpo" tabindex="-1">
+    <div class="doc-intro">
+      <h1>Programación orientada a objetos en SLE2</h1>
+      <p class="nota">Esta guía explica la POO desde cero, sin dar por sabido nada, usando
+         <strong>ESLE2 POO</strong>: el mismo lenguaje SL de siempre con clases y objetos agregados.
+         Todos los ejemplos se pueden copiar y ejecutar en el <a href="poo.html">IDE</a>.
+         Atajo: pulsá <kbd>/</kbd> para buscar.</p>
+      <figure class="doc-figura ancha">
+        <img src="img/poo/hero.svg" alt="Módulos conectados formando un sistema" loading="lazy">
+        <figcaption><b>La idea en una imagen.</b> En vez de un programa hecho de datos sueltos por un
+          lado y subrutinas por el otro, se arma un sistema de piezas: cada pieza guarda sus propios
+          datos, sabe operar sobre ellos y se conecta con las demás por reglas claras.</figcaption>
+      </figure>
+    </div>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-que-es" data-titulo="Qué es ESLE2 POO">
+      <h2>Qué es ESLE2 POO</h2>
+      <p class="sub">El lenguaje SLE2 de siempre, con clases y objetos.</p>
+
+      <div class="doc-bloque">
+        <h3>Un agregado, no un lenguaje nuevo</h3>
+        <p>SL/SLE2 es un lenguaje <em>procedural</em>: datos por un lado (variables, registros,
+           arreglos) y acciones por el otro (subrutinas). No fue diseñado para objetos, así que la POO
+           no existe en el SLE2 original.</p>
+        <p><strong>ESLE2 POO</strong> es una extensión: mantiene intacto todo lo que ya sabés
+           —<code>numerico</code>, <code>cadena</code>, <code>logico</code>, vectores, matrices,
+           registros, <code>si</code>, <code>mientras</code>, <code>desde</code>, subrutinas,
+           <code>imprimir</code>, <code>leer</code>…— y le suma clases, objetos, herencia y
+           polimorfismo. <strong>Todo programa SLE2 válido sigue funcionando acá sin cambios.</strong></p>
+        <div class="doc-nota">Si venís del SLE2 clásico, no tenés que reaprender nada: lo nuevo se
+          suma, no reemplaza. Podés escribir un programa con clases y seguir usando subrutinas
+          sueltas al lado.</div>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Cómo se usa</h3>
+        <ul>
+          <li>El <a href="poo.html">IDE de ESLE2 POO</a> funciona igual que el clásico: escribís,
+              pulsás <strong>Ejecutar</strong> (<kbd>Ctrl</kbd>+<kbd>Enter</kbd>), ves la salida en la
+              pantalla y los datos de <code>leer()</code> salen del panel de entrada.</li>
+          <li><strong>Revisar</strong> comprueba la sintaxis y agrega recomendaciones propias de
+              objetos: clases que nunca se usan, atributos que nadie toca, métodos que nadie llama.</li>
+          <li>El <strong>explorador de archivos</strong> del menú <em>Ver</em> también está acá,
+              apagado de fábrica, con sus propios archivos <code>.slp</code>.</li>
+          <li>La barra está agrupada en los menús <strong>Archivo</strong>, <strong>Ver</strong> y
+              <strong>Traducir</strong>: a la vista quedan Ejecutar, Revisar y Depurar.</li>
+          <li>El <strong>Curso</strong> tiene 50 ejercicios de objetos con corrección automática.</li>
+          <li>El botón <strong>Depurar</strong> corre el programa paso a paso y muestra, en cada
+              parada, los atributos del objeto y las variables del método en curso.</li>
+          <li><strong>A Python</strong> y <strong>A Java</strong> muestran el mismo programa —clases,
+              herencia y objetos incluidos— escrito en esos lenguajes, listo para correr con
+              <code>python programa.py</code> o <code>javac Programa.java &amp;&amp; java Programa</code>.</li>
+          <li>ESLE2 POO también anda en el <strong>celular</strong> y se instala como aplicación
+              desde el botón <span aria-hidden="true">⤓</span> de la barra de arriba.</li>
+          <li>Los <strong>sonidos</strong> del botón <span aria-hidden="true">🔊</span> también
+              están acá: suenan al revisar o ejecutar sin errores y al resolver un ejercicio de
+              objetos, y se apagan desde el mismo botón.</li>
+          <li>El <strong>⟲ Historial</strong> también está acá, con su propia lista de versiones:
+              guarda solo cada vez que ejecutás y antes de que algo pise el editor, y podés volver a
+              cualquier versión anterior viendo antes qué cambió.</li>
+          <li>El <strong>autocompletado</strong> del editor conoce también los objetos: después de un
+              punto ofrece los atributos y los métodos de tus clases, y después de <code>nuevo</code>,
+              solo clases. <kbd>Ctrl</kbd> + <kbd>Espacio</kbd> lo abre cuando quieras.</li>
+          <li><strong>▤ Memoria</strong> muestra el simulador de memoria paso a paso. En POO tiene
+              una zona más: el <strong>montículo</strong>. La variable no guarda el objeto sino su
+              dirección —se ve la flecha— y ahí se entiende de una por qué dos variables que apuntan
+              al mismo objeto cambian juntas.</li>
+          <li><strong>◇ Diagrama</strong> dibuja el diagrama de flujo del programa, de cada
+              constructor y de cada método, con la explicación en palabras al lado. El dibujo se baja
+              como <code>.svg</code>.</li>
+          <li>Los <strong>paneles se acomodan</strong>: se cambian de tamaño arrastrando las barras
+              que los separan y se mueven de lugar arrastrándolos del título (o con el botón
+              <span aria-hidden="true">⇅</span> del encabezado). <strong>⤢ Paneles</strong> vuelve a
+              la disposición original.</li>
+          <li>Los archivos se guardan con extensión <code>.slp</code> para distinguirlos de los
+              <code>.sl</code> clásicos.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-por-que" data-titulo="Por qué objetos">
+      <h2>Por qué objetos</h2>
+      <p class="sub">Qué problema resuelve la POO, mostrado con el mismo programa escrito de las dos maneras.</p>
+
+      <div class="doc-bloque">
+        <h3>El problema</h3>
+        <p>Imaginá una cuenta bancaria. En SLE2 clásico la escribirías con un registro y unas
+           subrutinas sueltas:</p>
+        <div class="comparacion">
+          <div>
+            <h4>Sin objetos</h4>
+<pre><code>tipos
+   CUENTA : registro
+   {
+      titular : cadena
+      saldo   : numerico
+   }
+var
+   c : CUENTA
+inicio
+   c.titular = "Ana"
+   c.saldo = 1000
+   depositar (c, 500)
+   c.saldo = -99999      // ← nada lo impide
+fin
+
+sub depositar (ref c : CUENTA;
+               monto : numerico)
+inicio
+   si ( monto &gt; 0 )
+   {
+      c.saldo = c.saldo + monto
+   }
+fin</code></pre>
+          </div>
+          <div>
+            <h4>Con objetos</h4>
+<pre><code>clase CUENTA
+{
+   atributos
+      privado
+         titular = ""
+         saldo   = 0
+
+   constructor (n : cadena; ini : numerico)
+   inicio
+      este.titular = n
+      este.saldo = ini
+   fin
+
+   metodo depositar (monto : numerico)
+   inicio
+      si ( monto &gt; 0 )
+      {
+         este.saldo = este.saldo + monto
+      }
+   fin
+}</code></pre>
+          </div>
+        </div>
+        <p>Las dos versiones hacen lo mismo, pero la segunda arregla tres cosas:</p>
+        <ol>
+          <li><strong>Los datos y las operaciones viven juntos.</strong> Para saber todo lo que se
+              puede hacer con una cuenta, mirás la clase; no hay que buscar subrutinas dispersas.</li>
+          <li><strong>Nadie puede romper el estado desde afuera.</strong> Con el registro,
+              <code>c.saldo = -99999</code> es legal. Con la clase, <code>saldo</code> es privado:
+              solo los métodos de la clase lo tocan, y ellos validan.</li>
+          <li><strong>El nombre de la operación va con la cosa.</strong> Se escribe
+              <code>c.depositar (500)</code>, no <code>depositar (c, 500)</code>. Parece un detalle
+              de escritura, pero es lo que después permite que dos clases distintas respondan al
+              mismo mensaje de maneras distintas (eso es el polimorfismo).</li>
+        </ol>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Los cuatro pilares</h3>
+        <p>La POO se apoya en cuatro ideas. Cada una tiene su capítulo más abajo:</p>
+        <div class="doc-pilares">
+          <div class="doc-pilar">
+            <h4>1 · Encapsulamiento</h4>
+            <p>El objeto esconde sus datos y solo deja entrar por la puerta que él define.</p>
+          </div>
+          <div class="doc-pilar">
+            <h4>2 · Abstracción</h4>
+            <p>Se define <em>qué</em> sabe hacer algo, sin decir todavía <em>cómo</em> lo hace.</p>
+          </div>
+          <div class="doc-pilar">
+            <h4>3 · Herencia</h4>
+            <p>Una clase parte de otra y le agrega o le cambia lo que necesita.</p>
+          </div>
+          <div class="doc-pilar">
+            <h4>4 · Polimorfismo</h4>
+            <p>El mismo pedido, hecho a objetos distintos, produce respuestas distintas.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-clase-objeto" data-titulo="Clase y objeto">
+      <h2>Clase y objeto</h2>
+      <p class="sub">La distinción más importante de todas: el molde y las cosas hechas con él.</p>
+
+      <div class="doc-bloque">
+        <h3>El molde y las piezas</h3>
+        <figure class="doc-figura">
+          <img src="img/poo/clase-objeto.svg" alt="Un plano técnico a la izquierda y tres autos construidos a la derecha" loading="lazy">
+          <figcaption><b>La clase es el plano; los objetos son los autos.</b> El plano describe qué
+            datos tiene cada auto y qué se puede hacer con él, pero no anda: no tiene color ni
+            kilómetros. Cada auto construido con ese plano es un objeto, con sus propios valores.
+            Un plano, muchos objetos.</figcaption>
+        </figure>
+        <ul>
+          <li>La <strong>clase</strong> se escribe una vez y describe la forma: qué atributos y qué
+              métodos van a tener sus objetos.</li>
+          <li>El <strong>objeto</strong> (o <em>instancia</em>) se crea con <code>nuevo</code> y tiene
+              sus propios valores. Dos objetos de la misma clase son independientes: cambiarle el
+              saldo a uno no afecta al otro.</li>
+        </ul>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Anatomía de una clase</h3>
+        <figure class="doc-figura ancha">
+          <svg viewBox="0 0 620 300" role="img" aria-label="Partes de una clase">
+            <style>
+              .cj-caja  { fill: var(--panel-2); stroke: var(--linea); stroke-width: 1.5; }
+              .cj-tit   { fill: var(--acento-sua); stroke: var(--acento); stroke-width: 1.5; }
+              .cj-t     { font: 600 13px "IBM Plex Mono", monospace; fill: var(--texto); }
+              .cj-c     { font: 12.5px "IBM Plex Mono", monospace; fill: var(--texto-2); }
+              .cj-n     { font: 12px "Source Sans 3", sans-serif; fill: var(--tenue); }
+              .cj-l     { stroke: var(--tenue); stroke-width: 1; stroke-dasharray: 3 3; fill: none; }
+            </style>
+            <rect class="cj-caja" x="20" y="16" width="330" height="268" rx="6"/>
+            <rect class="cj-tit" x="20" y="16" width="330" height="34" rx="6"/>
+            <text class="cj-t" x="36" y="38">clase CUENTA</text>
+
+            <text class="cj-c" x="36" y="76">atributos</text>
+            <text class="cj-c" x="56" y="96">privado</text>
+            <text class="cj-c" x="76" y="116">titular = ""</text>
+            <text class="cj-c" x="76" y="136">saldo   = 0</text>
+
+            <text class="cj-c" x="36" y="172">constructor (n : cadena)</text>
+            <text class="cj-c" x="56" y="192">este.titular = n</text>
+
+            <text class="cj-c" x="36" y="228">metodo depositar (m : numerico)</text>
+            <text class="cj-c" x="56" y="248">este.saldo = este.saldo + m</text>
+
+            <path class="cj-l" d="M352 96 h50"/><text class="cj-n" x="408" y="92">qué datos guarda</text>
+            <text class="cj-n" x="408" y="108">cada objeto</text>
+            <path class="cj-l" d="M352 176 h50"/><text class="cj-n" x="408" y="172">cómo nace un objeto</text>
+            <text class="cj-n" x="408" y="188">(se ejecuta con nuevo)</text>
+            <path class="cj-l" d="M352 236 h50"/><text class="cj-n" x="408" y="232">qué sabe hacer</text>
+            <text class="cj-n" x="408" y="248">el objeto</text>
+          </svg>
+          <figcaption><b>Las tres partes de una clase.</b> La sección <code>atributos</code> declara el
+            estado; el <code>constructor</code> dice cómo arranca cada objeto; los <code>metodo</code>
+            son las operaciones. La palabra <code>este</code> se refiere, dentro de la clase, al objeto
+            que en ese momento está ejecutando el método.</figcaption>
+        </figure>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Un programa completo, de punta a punta</h3>
+<pre data-corre="1"><code>clase PERSONA
+{
+   atributos
+      privado
+         nombre = ""
+         edad   = 0
+
+   constructor (n : cadena; e : numerico)
+   inicio
+      este.nombre = n
+      este.edad = e
+   fin
+
+   metodo saludar ()
+   inicio
+      imprimir ("Hola, soy ", este.nombre, " y tengo ", este.edad, " anios\n")
+   fin
+
+   metodo cumplir_anios ()
+   inicio
+      este.edad = este.edad + 1
+   fin
+}
+
+var
+   a : PERSONA
+   b : PERSONA
+inicio
+   a = nuevo PERSONA ("Ana", 17)
+   b = nuevo PERSONA ("Beto", 40)
+
+   a.saludar()
+   b.saludar()
+
+   a.cumplir_anios()
+   a.saludar()          // solo cambió Ana
+   b.saludar()
+fin</code></pre>
+        <p>Imprime:</p>
+<pre><code>Hola, soy Ana y tengo 17 anios
+Hola, soy Beto y tengo 40 anios
+Hola, soy Ana y tengo 18 anios
+Hola, soy Beto y tengo 40 anios</code></pre>
+        <p>Fijate en lo esencial: hay <strong>una</strong> clase <code>PERSONA</code> y
+           <strong>dos</strong> objetos, cada uno con su propio <code>nombre</code> y su propia
+           <code>edad</code>. <code>a.cumplir_anios()</code> toca únicamente a <code>a</code>.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Dónde va cada cosa</h3>
+<pre><code>clase NOMBRE [hereda de OTRA]
+{
+   atributos
+      [publico | privado | protegido]
+      [compartido] nombre [: tipo] [= valor inicial]
+
+   constructor (parametros)
+   inicio
+      sentencias...
+   fin
+
+   metodo [publico|privado|protegido] [abstracto] nombre (parametros) [retorna tipo]
+   inicio
+      sentencias...
+   fin
+}</code></pre>
+        <p>Las clases pueden escribirse antes del <code>inicio</code> del programa principal o
+           después del <code>fin</code>, mezcladas con las subrutinas. No importa el orden: una clase
+           puede usar a otra definida más abajo.</p>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-atributos" data-titulo="Atributos: el estado del objeto">
+      <h2>Atributos: el estado del objeto</h2>
+      <p class="sub">Los datos que cada objeto lleva consigo.</p>
+
+      <div class="doc-bloque">
+        <h3>Declaración</h3>
+        <p>Se declaran igual que las variables de SLE2, con las mismas dos formas (tipo explícito o
+           tipo deducido del valor inicial):</p>
+<pre><code>clase EJEMPLO
+{
+   atributos
+      privado
+         nombre = ""                       // cadena, deducido del valor
+         edad   = 0                        // numerico
+         activo = TRUE                     // logico
+         notas : vector [*] numerico       // tipo explícito, arranca sin dimensionar
+         nacimiento : FECHA                // un registro definido en "tipos"
+         jefe : PERSONA                    // otro objeto: arranca en nulo
+}</code></pre>
+        <p>Cada objeto recibe su propia copia de estos atributos cuando se lo crea, con el valor
+           inicial indicado o con el valor por defecto del tipo (<code>0</code>, <code>""</code>,
+           <code>FALSE</code>, <code>nulo</code>).</p>
+        <div class="doc-cuidado">El valor inicial de un atributo se evalúa al crear cada objeto y
+          <strong>no puede usar <code>este</code></strong>: en ese momento el objeto todavía se está
+          armando. Si un atributo depende de otro, calculalo en el constructor.</div>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>este: el objeto actual</h3>
+        <p>Dentro de un método, <code>este</code> es el objeto sobre el que se llamó ese método.
+           Siempre se escribe explícito, para que quede claro qué es un atributo y qué una variable
+           local:</p>
+<pre><code>metodo depositar (monto : numerico)
+var
+   comision = 0            // variable local del método
+inicio
+   comision = monto * 0.01
+   este.saldo = este.saldo + monto - comision
+fin</code></pre>
+        <p><code>este</code> también sirve para llamar a otro método del mismo objeto
+           (<code>este.recalcular()</code>) y para pasarse a sí mismo como parámetro
+           (<code>lista.agregar (este)</code>).</p>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-metodos" data-titulo="Métodos: lo que el objeto sabe hacer">
+      <h2>Métodos: lo que el objeto sabe hacer</h2>
+      <p class="sub">Subrutinas que viven dentro de la clase y trabajan sobre el objeto.</p>
+
+      <div class="doc-bloque">
+        <h3>Definición y llamada</h3>
+        <p>Un método se escribe como una subrutina, pero adentro de la clase y con la palabra
+           <code>metodo</code>. Puede tener parámetros, variables locales, constantes propias y
+           devolver un valor con <code>retorna</code>:</p>
+<pre data-corre="1"><code>clase CALCULADORA
+{
+   atributos
+      privado
+         memoria = 0
+
+   metodo sumar (a, b : numerico) retorna numerico
+   inicio
+      este.memoria = a + b
+      retorna ( este.memoria )
+   fin
+
+   metodo ultimo () retorna numerico
+   inicio
+      retorna ( este.memoria )
+   fin
+
+   metodo reiniciar ()
+   inicio
+      este.memoria = 0
+   fin
+}
+
+var
+   c : CALCULADORA
+inicio
+   c = nuevo CALCULADORA()
+   imprimir (c.sumar (2, 3), " ")
+   imprimir (c.ultimo(), " ")
+   c.reiniciar()
+   imprimir (c.ultimo())
+fin</code></pre>
+        <p>Imprime <code>5 5 0</code>. Los métodos que devuelven algo se usan dentro de una
+           expresión; los que no devuelven nada se usan como una sentencia.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Parámetros por valor y por referencia</h3>
+        <p>Valen las mismas reglas que en las subrutinas de SLE2: por defecto los parámetros van por
+           valor, y con <code>ref</code> van por referencia.</p>
+<pre><code>metodo cargar (ref v : vector [*] numerico)     // lo modifica de verdad
+metodo mostrar (v : vector [*] numerico)        // recibe una copia</code></pre>
+        <div class="doc-nota">Ojo con una diferencia importante: un parámetro que recibe un
+          <strong>objeto</strong> nunca copia el objeto, aunque no lleve <code>ref</code>. Lo que se
+          copia es la referencia. Ver <a href="#s-referencias">Los objetos son referencias</a>.</div>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-constructor" data-titulo="El constructor y el ciclo de vida">
+      <h2>El constructor y el ciclo de vida</h2>
+      <p class="sub">Cómo nace un objeto y qué pasa desde que se crea hasta que se lo suelta.</p>
+
+      <div class="doc-bloque">
+        <h3>nuevo y el constructor</h3>
+        <p>El <code>constructor</code> es un método especial que se ejecuta una sola vez, en el momento
+           de crear el objeto. Su trabajo es dejar el objeto en un estado válido:</p>
+<pre><code>c = nuevo CUENTA ("Ana", 1000)</code></pre>
+        <figure class="doc-figura ancha">
+          <svg viewBox="0 0 640 150" role="img" aria-label="Ciclo de vida de un objeto">
+            <style>
+              .cv-b { fill: var(--panel-2); stroke: var(--linea); stroke-width: 1.5; }
+              .cv-b2{ fill: var(--acento-sua); stroke: var(--acento); stroke-width: 1.5; }
+              .cv-t { font: 600 12.5px "Source Sans 3", sans-serif; fill: var(--texto); }
+              .cv-s { font: 11.5px "IBM Plex Mono", monospace; fill: var(--texto-2); }
+              .cv-f { stroke: var(--tenue); stroke-width: 1.5; fill: none; marker-end: url(#pf); }
+            </style>
+            <defs>
+              <marker id="pf" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+                <path d="M0 0 L8 4 L0 8 z" fill="var(--tenue)"/>
+              </marker>
+            </defs>
+            <rect class="cv-b" x="8"   y="40" width="128" height="56" rx="6"/>
+            <text class="cv-t" x="26"  y="64">1 · se reserva</text>
+            <text class="cv-s" x="26"  y="82">campos por defecto</text>
+
+            <rect class="cv-b2" x="168" y="40" width="128" height="56" rx="6"/>
+            <text class="cv-t" x="186" y="64">2 · constructor</text>
+            <text class="cv-s" x="186" y="82">deja todo válido</text>
+
+            <rect class="cv-b" x="328" y="40" width="128" height="56" rx="6"/>
+            <text class="cv-t" x="346" y="64">3 · se usa</text>
+            <text class="cv-s" x="346" y="82">c.depositar(500)</text>
+
+            <rect class="cv-b" x="488" y="40" width="140" height="56" rx="6"/>
+            <text class="cv-t" x="506" y="64">4 · se suelta</text>
+            <text class="cv-s" x="506" y="82">c = nulo</text>
+
+            <path class="cv-f" d="M140 68 h22"/>
+            <path class="cv-f" d="M300 68 h22"/>
+            <path class="cv-f" d="M460 68 h22"/>
+          </svg>
+          <figcaption><b>Ciclo de vida.</b> Primero se reserva el objeto con los valores por defecto
+            de cada atributo; después corre el constructor; después se lo usa; y cuando ninguna
+            variable lo apunta, deja de ser alcanzable. En ESLE2 POO no hace falta liberarlo a mano.</figcaption>
+        </figure>
+        <ul>
+          <li>Si la clase <strong>no tiene</strong> constructor, se escribe <code>nuevo CLASE()</code>
+              sin parámetros.</li>
+          <li>Una clase puede tener <strong>un solo</strong> constructor.</li>
+          <li>Si una clase hija no define constructor, se usa el de la madre.</li>
+          <li>El constructor no lleva <code>retorna</code>: no devuelve nada.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-encapsulamiento" data-titulo="Pilar 1: Encapsulamiento">
+      <h2>Pilar 1 · Encapsulamiento</h2>
+      <p class="sub">El objeto protege sus datos y decide qué se puede hacer con ellos.</p>
+
+      <div class="doc-bloque">
+        <h3>La idea</h3>
+        <figure class="doc-figura">
+          <img src="img/poo/encapsulamiento.svg" alt="Cápsula con engranajes protegidos adentro y botones simples afuera" loading="lazy">
+          <figcaption><b>Adentro, el mecanismo; afuera, los botones.</b> Quien usa el objeto ve una
+            interfaz simple y estable. Los engranajes de adentro pueden cambiar por completo sin que
+            nadie afuera se entere, mientras los botones sigan siendo los mismos.</figcaption>
+        </figure>
+        <p>Encapsular es <strong>esconder el estado</strong> y ofrecer solo operaciones controladas.
+           Sirve para dos cosas concretas:</p>
+        <ol>
+          <li><strong>Que el objeto nunca quede en un estado imposible.</strong> Si el saldo solo se
+              modifica desde <code>depositar()</code> y <code>extraer()</code>, y esos métodos validan,
+              no hay forma de dejar una cuenta con saldo negativo.</li>
+          <li><strong>Poder cambiar el interior sin romper a nadie.</strong> Si mañana guardás el saldo
+              en centavos en vez de en guaraníes, cambiás los métodos y listo: el resto del programa
+              nunca tocó el atributo.</li>
+        </ol>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Los tres niveles de visibilidad</h3>
+        <table>
+          <tr><th>Nivel</th><th>Quién puede usarlo</th><th>Cuándo se usa</th></tr>
+          <tr><td><code>privado</code></td><td>Solo los métodos de <em>esa misma</em> clase.</td><td>Casi todos los atributos. Es el valor por defecto.</td></tr>
+          <tr><td><code>protegido</code></td><td>Esa clase y todas las que heredan de ella.</td><td>Cuando las hijas necesitan el dato pero el mundo exterior no.</td></tr>
+          <tr><td><code>publico</code></td><td>Cualquiera.</td><td>Los métodos que forman la interfaz. Es el valor por defecto de los métodos.</td></tr>
+        </table>
+        <div class="doc-nota"><b>Regla por defecto de ESLE2 POO:</b> los <strong>atributos son privados</strong>
+          y los <strong>métodos son públicos</strong>. Es lo que casi siempre se quiere, y se puede
+          cambiar escribiendo la palabra correspondiente.</div>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Ejemplo: la cuenta que no se deja romper</h3>
+<pre data-corre="1"><code>clase CUENTA
+{
+   atributos
+      privado
+         saldo = 0
+
+   constructor (inicial : numerico)
+   inicio
+      este.saldo = max (0, inicial)          // ni siquiera nace mal
+   fin
+
+   metodo depositar (monto : numerico) retorna logico
+   inicio
+      si ( monto &lt;= 0 )
+      {
+         retorna ( FALSE )
+      }
+      este.saldo = este.saldo + monto
+      retorna ( TRUE )
+   fin
+
+   metodo extraer (monto : numerico) retorna logico
+   inicio
+      si ( monto &lt;= 0 or monto &gt; este.saldo )
+      {
+         retorna ( FALSE )
+      }
+      este.saldo = este.saldo - monto
+      retorna ( TRUE )
+   fin
+
+   metodo saldo_actual () retorna numerico
+   inicio
+      retorna ( este.saldo )
+   fin
+}
+
+var
+   c : CUENTA
+inicio
+   c = nuevo CUENTA (1000)
+   imprimir (c.extraer (5000), " ", c.saldo_actual(), "\n")
+   imprimir (c.extraer (400),  " ", c.saldo_actual())
+   // c.saldo = -1   ← esto NO compila: saldo es privado
+fin</code></pre>
+        <p>Imprime <code>FALSE 1000</code> y <code>TRUE 600</code>. La línea comentada daría un error
+           claro: <em>el atributo "saldo" es privado de la clase "CUENTA"</em>.</p>
+        <p>Al método que solo devuelve un dato interno (<code>saldo_actual()</code>) se lo suele
+           llamar <em>consultor</em> o <em>getter</em>; al que lo modifica con validación,
+           <em>modificador</em> o <em>setter</em>.</p>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-abstraccion" data-titulo="Pilar 2: Abstracción">
+      <h2>Pilar 2 · Abstracción</h2>
+      <p class="sub">Definir qué sabe hacer algo, antes de saber cómo lo hace.</p>
+
+      <div class="doc-bloque">
+        <h3>La idea</h3>
+        <figure class="doc-figura">
+          <img src="img/poo/abstraccion.svg" alt="Un molde punteado que no se puede construir y dos figuras sólidas hechas con él" loading="lazy">
+          <figcaption><b>Una clase abstracta es un molde incompleto.</b> Dice qué forma van a tener
+            las piezas, pero le falta algo para poder existir por sí misma: no se puede crear un
+            objeto suyo. Las clases que la completan sí.</figcaption>
+        </figure>
+        <p>Una <strong>clase abstracta</strong> se declara con <code>clase abstracta</code>. Puede
+           tener atributos y métodos normales, y además <strong>métodos abstractos</strong>: métodos
+           que solo tienen encabezado, sin cuerpo. Cada clase hija está obligada a escribirlos.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Ejemplo</h3>
+<pre data-corre="1"><code>clase abstracta FIGURA
+{
+   metodo abstracto area () retorna numerico       // sin cuerpo: cada hija lo escribe
+
+   metodo describir () retorna cadena              // método normal, ya resuelto
+   inicio
+      retorna ( clase_de (este) + " de area " + str (este.area(), 0, 2) )
+   fin
+}
+
+clase CUADRADO hereda de FIGURA
+{
+   atributos privado
+      lado = 0
+   constructor (l : numerico)
+   inicio
+      este.lado = l
+   fin
+   metodo area () retorna numerico
+   inicio
+      retorna ( este.lado * este.lado )
+   fin
+}
+
+var
+   f : FIGURA
+inicio
+   f = nuevo CUADRADO (3)
+   imprimir (f.describir())
+   // f = nuevo FIGURA()   ← error: FIGURA es abstracta
+fin</code></pre>
+        <p>Imprime <code>CUADRADO de area 9.00</code>. Mirá lo interesante:
+           <code>describir()</code> llama a <code>este.area()</code> <strong>sin saber</strong> qué
+           figura es. Eso funciona porque la clase abstracta garantiza que toda hija tiene
+           <code>area()</code>.</p>
+        <div class="doc-cuidado">Dos reglas que el compilador hace cumplir: una clase con métodos
+          abstractos tiene que declararse <code>abstracta</code>, y una hija que no implemente todos
+          los métodos abstractos heredados no puede instanciarse (tendría que ser abstracta también).</div>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-herencia" data-titulo="Pilar 3: Herencia">
+      <h2>Pilar 3 · Herencia</h2>
+      <p class="sub">Partir de una clase que ya existe y cambiarle solo lo necesario.</p>
+
+      <div class="doc-bloque">
+        <h3>La idea</h3>
+        <figure class="doc-figura">
+          <img src="img/poo/herencia.svg" alt="Un módulo madre arriba y dos módulos hijos abajo que repiten su forma" loading="lazy">
+          <figcaption><b>Las hijas parten de la forma de la madre.</b> Reciben todos sus atributos y
+            métodos sin copiarlos, y agregan lo suyo (una antena, unas ruedas) o reemplazan alguna
+            parte por una versión propia.</figcaption>
+        </figure>
+        <p>Se escribe <code>clase HIJA hereda de MADRE</code>. La hija:</p>
+        <ul>
+          <li><strong>Recibe</strong> todos los atributos y métodos de la madre (los privados existen,
+              pero solo los ve la madre; para que la hija los use tienen que ser
+              <code>protegido</code>).</li>
+          <li><strong>Agrega</strong> los atributos y métodos que necesite.</li>
+          <li><strong>Sobrescribe</strong> un método escribiendo otro con el mismo nombre.</li>
+          <li>Puede llamar a la versión de la madre con <code>padre.metodo(...)</code>, incluido
+              <code>padre.constructor(...)</code>.</li>
+        </ul>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Ejemplo con tres niveles</h3>
+<pre data-corre="1"><code>clase EMPLEADO
+{
+   atributos
+      protegido
+         nombre = ""
+         sueldo = 0
+
+   constructor (n : cadena; s : numerico)
+   inicio
+      este.nombre = n
+      este.sueldo = s
+   fin
+
+   metodo sueldo_final () retorna numerico
+   inicio
+      retorna ( este.sueldo )
+   fin
+
+   metodo texto () retorna cadena
+   inicio
+      retorna ( este.nombre + " cobra " + str (este.sueldo_final(), 0, 0) )
+   fin
+}
+
+clase VENDEDOR hereda de EMPLEADO
+{
+   atributos protegido
+      comision = 0
+
+   constructor (n : cadena; s, c : numerico)
+   inicio
+      padre.constructor (n, s)        // primero lo que hace la madre
+      este.comision = c
+   fin
+
+   metodo sueldo_final () retorna numerico
+   inicio
+      retorna ( padre.sueldo_final() + este.comision )
+   fin
+}
+
+clase GERENTE hereda de VENDEDOR
+{
+   atributos privado
+      bono = 0
+
+   constructor (n : cadena; s, c, b : numerico)
+   inicio
+      padre.constructor (n, s, c)
+      este.bono = b
+   fin
+
+   metodo sueldo_final () retorna numerico
+   inicio
+      retorna ( padre.sueldo_final() + este.bono )
+   fin
+}
+
+var
+   g : GERENTE
+inicio
+   g = nuevo GERENTE ("Ana", 1000, 200, 500)
+   imprimir (g)
+fin</code></pre>
+        <p>Imprime <code>Ana cobra 1700</code>: cada <code>padre.sueldo_final()</code> sube un escalón
+           en la cadena y va sumando. Y <code>texto()</code>, escrito una sola vez en
+           <code>EMPLEADO</code>, funciona para las tres clases.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Cuándo heredar y cuándo no</h3>
+        <p>La prueba es la frase <strong>«es un»</strong>: un GERENTE <em>es un</em> EMPLEADO, así que
+           heredar tiene sentido. En cambio un AUTO no <em>es un</em> MOTOR: lo <em>tiene</em>. En ese
+           caso no se hereda, se guarda el motor como atributo. A eso se lo llama
+           <strong>composición</strong>, y en la duda suele ser la mejor opción.</p>
+<pre><code>clase AUTO
+{
+   atributos privado
+      motor : MOTOR          // composición: el auto TIENE un motor
+}</code></pre>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-polimorfismo" data-titulo="Pilar 4: Polimorfismo">
+      <h2>Pilar 4 · Polimorfismo</h2>
+      <p class="sub">El mismo pedido, respuestas distintas según quién lo recibe.</p>
+
+      <div class="doc-bloque">
+        <h3>La idea</h3>
+        <figure class="doc-figura">
+          <img src="img/poo/polimorfismo.svg" alt="Una misma señal llega a tres figuras y cada una responde distinto" loading="lazy">
+          <figcaption><b>Un mensaje, tres respuestas.</b> El emisor manda siempre lo mismo y no
+            pregunta con quién está hablando. Cada figura reacciona a su manera. En código: escribís
+            <code>f.area()</code> una sola vez y cada objeto ejecuta su propia versión.</figcaption>
+        </figure>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Cómo elige el lenguaje qué método ejecutar</h3>
+        <figure class="doc-figura ancha">
+          <svg viewBox="0 0 640 230" role="img" aria-label="Búsqueda del método en la cadena de clases">
+            <style>
+              .dp-b { fill: var(--panel-2); stroke: var(--linea); stroke-width: 1.5; }
+              .dp-hit { fill: var(--ok-sua); stroke: var(--ok); stroke-width: 2; }
+              .dp-t { font: 600 12.5px "IBM Plex Mono", monospace; fill: var(--texto); }
+              .dp-s { font: 11.5px "IBM Plex Mono", monospace; fill: var(--texto-2); }
+              .dp-n { font: 12px "Source Sans 3", sans-serif; fill: var(--tenue); }
+              .dp-f { stroke: var(--acento); stroke-width: 1.8; fill: none; marker-end: url(#pf2); }
+            </style>
+            <defs>
+              <marker id="pf2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+                <path d="M0 0 L8 4 L0 8 z" fill="var(--acento)"/>
+              </marker>
+            </defs>
+            <text class="dp-s" x="14" y="26">fs [2].area()</text>
+            <text class="dp-n" x="14" y="46">el objeto es un CUADRADO</text>
+
+            <rect class="dp-b" x="14"  y="150" width="150" height="56" rx="6"/>
+            <text class="dp-t" x="30"  y="174">FIGURA</text>
+            <text class="dp-s" x="30"  y="194">area() abstracto</text>
+
+            <rect class="dp-b" x="204" y="150" width="180" height="56" rx="6"/>
+            <text class="dp-t" x="220" y="174">RECTANGULO</text>
+            <text class="dp-s" x="220" y="194">area() ✓</text>
+
+            <rect class="dp-hit" x="424" y="150" width="200" height="56" rx="6"/>
+            <text class="dp-t" x="440" y="174">CUADRADO</text>
+            <text class="dp-s" x="440" y="194">no define area()</text>
+
+            <path class="dp-f" d="M524 140 V96 H314 V140"/>
+            <text class="dp-n" x="330" y="88">1 · ¿lo tiene la clase del objeto? no</text>
+            <path class="dp-f" d="M294 140 V64 H100 V140"/>
+            <text class="dp-n" x="118" y="56">2 · ¿lo tiene su madre? sí → se ejecuta ese</text>
+          </svg>
+          <figcaption><b>Despacho dinámico.</b> La versión que se ejecuta no la decide el tipo de la
+            variable sino <b>la clase real del objeto</b>, en el momento de la llamada. El lenguaje
+            arranca en esa clase y sube por la cadena de herencia hasta encontrar el método.</figcaption>
+        </figure>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>El patrón completo</h3>
+        <p>El polimorfismo se vuelve útil cuando guardás objetos de clases distintas en un mismo
+           vector declarado <strong>del tipo de la clase madre</strong>:</p>
+<pre data-corre="1"><code>const
+   PI = 3.141592654
+
+clase abstracta FIGURA
+{
+   metodo abstracto area () retorna numerico
+   metodo texto () retorna cadena
+   inicio
+      retorna ( clase_de (este) + " → " + str (este.area(), 0, 2) )
+   fin
+}
+
+clase CIRCULO hereda de FIGURA
+{
+   atributos privado
+      r = 0
+   constructor (radio : numerico) inicio este.r = radio fin
+   metodo area () retorna numerico inicio retorna ( PI * este.r ^ 2 ) fin
+}
+
+clase RECTANGULO hereda de FIGURA
+{
+   atributos privado
+      a = 0
+      b = 0
+   constructor (x, y : numerico) inicio este.a = x  este.b = y fin
+   metodo area () retorna numerico inicio retorna ( este.a * este.b ) fin
+}
+
+clase CUADRADO hereda de RECTANGULO
+{
+   constructor (lado : numerico)
+   inicio
+      padre.constructor (lado, lado)
+   fin
+}
+
+var
+   fs : vector [4] FIGURA        // ¡el vector es de FIGURA, la clase madre!
+   k = 0
+   total = 0
+inicio
+   fs [1] = nuevo CIRCULO (2)
+   fs [2] = nuevo RECTANGULO (3, 4)
+   fs [3] = nuevo CUADRADO (5)
+   fs [4] = nuevo CIRCULO (1)
+
+   desde k=1 hasta alen (fs)
+   {
+      imprimir (fs [k], "\n")         // cada uno se describe a su manera
+      total = total + fs [k].area()
+   }
+   imprimir ("total ", str (total, 0, 2))
+fin</code></pre>
+        <p>El ciclo no tiene ni un <code>si</code> preguntando de qué clase es cada figura. Si mañana
+           agregás un TRIANGULO, <strong>el ciclo no se toca</strong>. Esa es toda la ganancia del
+           polimorfismo: el código que usa los objetos no cambia cuando aparecen clases nuevas.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Preguntar de qué clase es un objeto</h3>
+<pre><code>si ( f es CIRCULO )        { ... }      // ¿es un CIRCULO, o algo que hereda de CIRCULO?
+imprimir (clase_de (f))                // el nombre exacto de su clase, como cadena</code></pre>
+        <p>Un <code>CUADRADO</code> cumple <code>es CUADRADO</code>, <code>es RECTANGULO</code> y
+           <code>es FIGURA</code>: la herencia se lee hacia arriba.</p>
+        <div class="doc-cuidado">Si te encontrás escribiendo una cadena larga de
+          <code>si ( x es A ) … sino si ( x es B ) …</code>, casi siempre es señal de que eso debería
+          ser un método sobrescrito en cada clase. El polimorfismo existe justamente para no escribir
+          esa cadena.</div>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-referencias" data-titulo="Los objetos son referencias">
+      <h2>Los objetos son referencias</h2>
+      <p class="sub">La diferencia más importante entre un objeto y un registro. Leelo dos veces.</p>
+
+      <div class="doc-bloque">
+        <h3>Qué guarda realmente una variable de objeto</h3>
+        <figure class="doc-figura ancha">
+          <svg viewBox="0 0 640 250" role="img" aria-label="Objetos por referencia frente a registros por copia">
+            <style>
+              .rf-v { fill: var(--panel-2); stroke: var(--linea); stroke-width: 1.5; }
+              .rf-o { fill: var(--acento-sua); stroke: var(--acento); stroke-width: 1.8; }
+              .rf-r { fill: var(--aviso-sua); stroke: var(--aviso); stroke-width: 1.8; }
+              .rf-t { font: 600 12.5px "IBM Plex Mono", monospace; fill: var(--texto); }
+              .rf-s { font: 11.5px "IBM Plex Mono", monospace; fill: var(--texto-2); }
+              .rf-n { font: 12px "Source Sans 3", sans-serif; fill: var(--tenue); }
+              .rf-f { stroke: var(--acento); stroke-width: 1.6; fill: none; marker-end: url(#pf3); }
+              .rf-d { stroke: var(--linea); stroke-width: 1.5; stroke-dasharray: 4 4; }
+            </style>
+            <defs>
+              <marker id="pf3" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+                <path d="M0 0 L8 4 L0 8 z" fill="var(--acento)"/>
+              </marker>
+            </defs>
+
+            <text class="rf-n" x="14" y="20">OBJETOS · b = a  no copia nada</text>
+            <rect class="rf-v" x="14" y="34" width="72" height="34" rx="4"/>
+            <text class="rf-t" x="42" y="56">a</text>
+            <rect class="rf-v" x="14" y="80" width="72" height="34" rx="4"/>
+            <text class="rf-t" x="42" y="102">b</text>
+            <rect class="rf-o" x="176" y="46" width="120" height="56" rx="6"/>
+            <text class="rf-s" x="192" y="70">CUENTA</text>
+            <text class="rf-s" x="192" y="90">saldo = 99</text>
+            <path class="rf-f" d="M90 51 H172"/>
+            <path class="rf-f" d="M90 97 H140 V60 H172"/>
+            <text class="rf-n" x="176" y="126">un solo objeto</text>
+
+            <line class="rf-d" x1="320" y1="10" x2="320" y2="240"/>
+
+            <text class="rf-n" x="350" y="20">REGISTROS · s = r  copia todo</text>
+            <rect class="rf-v" x="350" y="34" width="72" height="34" rx="4"/>
+            <text class="rf-t" x="378" y="56">r</text>
+            <rect class="rf-v" x="350" y="80" width="72" height="34" rx="4"/>
+            <text class="rf-t" x="378" y="102">s</text>
+            <rect class="rf-r" x="470" y="30" width="120" height="42" rx="6"/>
+            <text class="rf-s" x="486" y="56">valor = 1</text>
+            <rect class="rf-r" x="470" y="78" width="120" height="42" rx="6"/>
+            <text class="rf-s" x="486" y="104">valor = 99</text>
+            <path class="rf-f" d="M426 51 H466"/>
+            <path class="rf-f" d="M426 97 H466"/>
+            <text class="rf-n" x="470" y="140">dos copias independientes</text>
+
+            <text class="rf-n" x="14" y="176">Por eso:</text>
+            <text class="rf-s" x="14" y="200">a = nuevo CUENTA()   b = a   b.saldo = 99   →  a.saldo tambien vale 99</text>
+            <text class="rf-s" x="14" y="224">r.valor = 1          s = r   s.valor = 99   →  r.valor sigue valiendo 1</text>
+          </svg>
+          <figcaption><b>Una variable de objeto no guarda el objeto: guarda una flecha hacia él.</b>
+            Al asignar, se copia la flecha, no lo apuntado. Los registros y arreglos de SLE2, en
+            cambio, se copian enteros. Es la fuente de confusión número uno al empezar con objetos.</figcaption>
+        </figure>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Compruébalo vos mismo</h3>
+<pre data-corre="1"><code>clase CAJA
+{
+   atributos publico
+      valor = 0
+}
+
+tipos
+   REG : registro { valor : numerico }
+
+var
+   a : CAJA
+   b : CAJA
+   r : REG
+   s : REG
+inicio
+   a = nuevo CAJA()
+   a.valor = 1
+   b = a                       // b y a son el MISMO objeto
+   b.valor = 99
+   imprimir ("objetos:   a=", a.valor, " b=", b.valor, "  mismo objeto: ", a == b, "\n")
+
+   r.valor = 1
+   s = r                       // s es una COPIA de r
+   s.valor = 99
+   imprimir ("registros: r=", r.valor, " s=", s.valor)
+fin</code></pre>
+        <p>Imprime <code>objetos: a=99 b=99 mismo objeto: TRUE</code> y
+           <code>registros: r=1 s=99</code>.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>nulo: la variable que todavía no apunta a nada</h3>
+        <p>Una variable de objeto arranca valiendo <code>nulo</code>, que significa «no apunta a
+           ningún objeto». Usarla antes de crear el objeto es el error más común:</p>
+<pre><code>var
+   c : CUENTA
+inicio
+   c.depositar (100)        // error: no se puede llamar a "depositar()" sobre nulo
+   c = nuevo CUENTA (0)     // ← primero hay que crearlo
+   c.depositar (100)        // ahora sí
+fin</code></pre>
+        <p>Para preguntar se usa <code>c == nulo</code> o la función <code>es_nulo (c)</code>.
+           Asignar <code>c = nulo</code> suelta el objeto.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Comparar objetos: identidad, no contenido</h3>
+        <p>Con objetos, <code>==</code> pregunta <strong>si son el mismo objeto</strong>, no si tienen
+           los mismos datos. Dos cuentas distintas con el mismo saldo no son iguales:</p>
+<pre><code>a = nuevo CUENTA (100)
+b = nuevo CUENTA (100)
+imprimir (a == b)            // FALSE: son dos objetos distintos
+c = a
+imprimir (a == c)            // TRUE: la misma flecha</code></pre>
+        <p>Si querés comparar por contenido, escribí un método propio:
+           <code>metodo igual_a (o : CUENTA) retorna logico</code>. La función <code>id_de (o)</code>
+           devuelve el número único de cada objeto, útil para ver quién es quién.</p>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-texto" data-titulo="El método texto()">
+      <h2>El método texto()</h2>
+      <p class="sub">Cómo lograr que <code>imprimir()</code> muestre un objeto de forma legible.</p>
+      <div class="doc-bloque">
+        <h3>Convención</h3>
+        <p>Si una clase define un método <code>texto ()</code> sin parámetros que devuelve
+           <code>cadena</code>, <code>imprimir()</code> lo usa automáticamente al recibir un objeto de
+           esa clase. Si no lo define, muestra <code>&lt;NOMBRE_DE_LA_CLASE&gt;</code>.</p>
+<pre data-corre="1"><code>clase PUNTO
+{
+   atributos privado
+      x = 0
+      y = 0
+   constructor (a, b : numerico) inicio este.x = a  este.y = b fin
+
+   metodo texto () retorna cadena
+   inicio
+      retorna ( "(" + str (este.x, 0, 0) + "," + str (este.y, 0, 0) + ")" )
+   fin
+}
+
+clase SIN_TEXTO { atributos publico  v = 0 }
+
+var
+   p : PUNTO
+   s : SIN_TEXTO
+inicio
+   p = nuevo PUNTO (3, 4)
+   s = nuevo SIN_TEXTO()
+   imprimir (p, " y ", s)
+fin</code></pre>
+        <p>Imprime <code>(3,4) y &lt;SIN_TEXTO&gt;</code>. Es el equivalente al
+           <code>toString()</code> de otros lenguajes, y hace que depurar sea muchísimo más cómodo.</p>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-compartidos" data-titulo="Atributos compartidos por la clase">
+      <h2>Atributos compartidos por la clase</h2>
+      <p class="sub">Un dato que pertenece a la clase entera y no a cada objeto.</p>
+      <div class="doc-bloque">
+        <h3>compartido</h3>
+        <p>Un atributo normal existe una vez por objeto. Uno declarado <code>compartido</code> existe
+           <strong>una sola vez para toda la clase</strong>: todos los objetos ven y modifican el
+           mismo valor. Se accede con <code>CLASE.atributo</code>.</p>
+<pre data-corre="1"><code>clase ROBOT
+{
+   atributos
+      compartido publico
+         fabricados = 0             // uno solo para toda la clase
+      privado
+         numero = 0                 // uno por cada robot
+
+   constructor ()
+   inicio
+      ROBOT.fabricados = ROBOT.fabricados + 1
+      este.numero = ROBOT.fabricados
+   fin
+
+   metodo texto () retorna cadena
+   inicio
+      retorna ( "robot " + str (este.numero, 0, 0) +
+                " de " + str (ROBOT.fabricados, 0, 0) )
+   fin
+}
+
+var
+   k = 0
+   r : ROBOT
+inicio
+   desde k=1 hasta 3
+   {
+      r = nuevo ROBOT()
+   }
+   imprimir (r, "  ·  total: ", ROBOT.fabricados)
+fin</code></pre>
+        <p>Imprime <code>robot 3 de 3 · total: 3</code>. Sirve para contadores, valores de
+           configuración y constantes de la clase.</p>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-referencia" data-titulo="Referencia del lenguaje">
+      <h2>Referencia del lenguaje</h2>
+      <p class="sub">Todo lo que ESLE2 POO agrega, en tablas.</p>
+
+      <div class="doc-bloque">
+        <h3>Palabras reservadas nuevas</h3>
+        <table>
+          <tr><th>Palabra</th><th>Para qué sirve</th></tr>
+          <tr><td><code>clase</code></td><td>Define una clase.</td></tr>
+          <tr><td><code>hereda</code></td><td><code>clase B hereda de A</code>. El «de» es opcional.</td></tr>
+          <tr><td><code>nuevo</code></td><td>Crea un objeto: <code>nuevo CLASE (args)</code>.</td></tr>
+          <tr><td><code>este</code></td><td>El objeto actual, dentro de un método.</td></tr>
+          <tr><td><code>padre</code></td><td>Llama a la versión de la clase madre: <code>padre.metodo(...)</code>.</td></tr>
+          <tr><td><code>nulo</code></td><td>El valor de una variable de objeto que no apunta a nada.</td></tr>
+          <tr><td><code>es</code></td><td><code>obj es CLASE</code> devuelve verdadero o falso.</td></tr>
+        </table>
+        <p>Estas otras se reconocen por contexto (solo dentro de una clase), así que podés seguir
+           usándolas como nombres de variable: <code>atributos</code>, <code>metodos</code>,
+           <code>metodo</code>, <code>constructor</code>, <code>publico</code>, <code>privado</code>,
+           <code>protegido</code>, <code>abstracta</code>, <code>abstracto</code>,
+           <code>compartido</code>.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Funciones predefinidas nuevas</h3>
+        <table>
+          <tr><th>Función</th><th>Qué devuelve</th></tr>
+          <tr><td><code>clase_de (o)</code></td><td>El nombre de la clase del objeto, como cadena.</td></tr>
+          <tr><td><code>es_nulo (o)</code></td><td>Verdadero si la variable no apunta a ningún objeto.</td></tr>
+          <tr><td><code>id_de (o)</code></td><td>Un número único por objeto. Sirve para distinguir identidades.</td></tr>
+        </table>
+        <p>Todas las predefinidas de SLE2 (<code>imprimir</code>, <code>leer</code>,
+           <code>str</code>, <code>val</code>, <code>max</code>, <code>ifval</code>,
+           <code>dim</code>, <code>alen</code>, archivos, pantalla…) siguen disponibles igual.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Dónde se puede usar una clase</h3>
+        <p>El nombre de una clase es un tipo de dato más, así que vale en todos lados:</p>
+<pre><code>var
+   c : CUENTA                        // una variable
+   v : vector [*] CUENTA             // un vector de objetos
+   m : matriz [3, 3] CUENTA          // una matriz de objetos
+
+tipos
+   PAR : registro { izq : CUENTA  der : CUENTA }    // dentro de un registro
+
+sub procesar (c : CUENTA) retorna CUENTA            // parámetro y retorno
+metodo mejor () retorna ALUMNO                      // retorno de un método</code></pre>
+        <p>Y una clase puede tener como atributo un objeto de otra clase (composición) o incluso un
+           vector de objetos de su propia clase.</p>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-errores" data-titulo="Errores frecuentes con objetos">
+      <h2>Errores frecuentes con objetos</h2>
+      <p class="sub">Los mensajes que vas a ver y qué significan.</p>
+      <div class="doc-bloque">
+        <table>
+          <tr><th>Mensaje</th><th>Causa</th><th>Solución</th></tr>
+          <tr><td>no se puede llamar a "m()" sobre nulo</td><td>La variable todavía no apunta a ningún objeto.</td><td>Creá el objeto antes: <code>c = nuevo CLASE(...)</code>.</td></tr>
+          <tr><td>el atributo "x" es privado de la clase "C"</td><td>Se intentó tocar un atributo desde afuera.</td><td>Agregá un método público que lo consulte o lo modifique.</td></tr>
+          <tr><td>"C" es una clase abstracta: no se pueden crear objetos suyos</td><td><code>nuevo</code> sobre una clase abstracta.</td><td>Instanciá una clase hija que implemente los métodos abstractos.</td></tr>
+          <tr><td>"H" no puede instanciarse: no implementa "a()"</td><td>La hija heredó un método abstracto y no lo escribió.</td><td>Escribí el método en la hija, o declarala abstracta también.</td></tr>
+          <tr><td>la clase "C" no tiene un método llamado "m"</td><td>Nombre mal escrito, o el método está en otra clase.</td><td>El mensaje te sugiere el más parecido y lista los disponibles.</td></tr>
+          <tr><td>un objeto de la clase "A" no se puede guardar en una variable de tipo "B"</td><td>La herencia va en un solo sentido.</td><td>Una variable de la madre acepta hijas, pero no al revés.</td></tr>
+          <tr><td>la clase "C" no hereda de ninguna otra, así que no tiene "padre"</td><td>Se usó <code>padre</code> en una clase sin madre.</td><td>Sacá el <code>padre.</code> o agregá <code>hereda de</code>.</td></tr>
+          <tr><td>la herencia de "A" da una vuelta infinita</td><td>A hereda de B y B de A.</td><td>Rompé el ciclo: la herencia tiene que ser un árbol.</td></tr>
+          <tr><td>"este" solo puede usarse dentro de un método</td><td>Se usó <code>este</code> en el programa principal o en una subrutina suelta.</td><td>Fuera de una clase no hay objeto actual; pasalo como parámetro.</td></tr>
+          <tr><td>la clase "C" tiene métodos abstractos, así que debe declararse abstracta</td><td>Falta la palabra <code>abstracta</code>.</td><td><code>clase abstracta C { ... }</code></td></tr>
+        </table>
+      </div>
+      <div class="doc-bloque">
+        <h3>Errores de diseño (que el compilador no ve)</h3>
+        <ul>
+          <li><strong>Todo público.</strong> Si los atributos son públicos, no hay encapsulamiento:
+              es un registro con métodos al lado.</li>
+          <li><strong>Heredar por reutilizar código.</strong> Si la hija no <em>es un</em> tipo de la
+              madre, usá composición.</li>
+          <li><strong>Cadenas de <code>si … es …</code>.</strong> Casi siempre deberían ser un método
+              sobrescrito.</li>
+          <li><strong>Constructores que no dejan el objeto listo.</strong> Si hace falta llamar a tres
+              métodos después de <code>nuevo</code> para que el objeto sirva, eso va en el constructor.</li>
+          <li><strong>Clases que hacen de todo.</strong> Si el nombre de la clase lleva un «y», probablemente sean dos clases.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-diferencias" data-titulo="Diferencias con SLE2 clásico">
+      <h2>Diferencias con SLE2 clásico</h2>
+      <p class="sub">Qué cambia y qué queda exactamente igual.</p>
+      <div class="doc-bloque">
+        <h3>Queda igual</h3>
+        <p>Absolutamente todo el lenguaje base: tipos, operadores, sentencias, subrutinas,
+           registros, arreglos, archivos, pantalla y las 52 subrutinas predefinidas. Un programa
+           <code>.sl</code> corre sin tocar una coma en el IDE de ESLE2 POO.</p>
+      </div>
+      <div class="doc-bloque">
+        <h3>Cambia</h3>
+        <table>
+          <tr><th>Tema</th><th>SLE2 clásico</th><th>ESLE2 POO</th></tr>
+          <tr><td>Agrupar datos</td><td><code>registro</code>, se copia al asignar</td><td>También <code>clase</code>, que se asigna por referencia</td></tr>
+          <tr><td>Operaciones</td><td><code>subrutina</code> aparte</td><td>Además <code>metodo</code> dentro de la clase</td></tr>
+          <tr><td>Protección de datos</td><td>Ninguna: todo campo es accesible</td><td><code>privado</code> / <code>protegido</code> / <code>publico</code></td></tr>
+          <tr><td>Reutilizar</td><td>Copiar y pegar, o subrutinas generales</td><td><code>hereda de</code></td></tr>
+          <tr><td>Variar el comportamiento</td><td><code>si</code> según un campo «tipo»</td><td>Métodos sobrescritos y despacho dinámico</td></tr>
+          <tr><td>Palabras reservadas</td><td>30</td><td>37 (7 nuevas)</td></tr>
+        </table>
+      </div>
+      <div class="doc-bloque">
+        <h3>Lo que ESLE2 POO no tiene (a propósito)</h3>
+        <ul>
+          <li><strong>Interfaces</strong> separadas: para eso alcanza con una clase abstracta.</li>
+          <li><strong>Herencia múltiple</strong>: cada clase tiene como mucho una madre. Evita
+              ambigüedades difíciles de explicar y de depurar.</li>
+          <li><strong>Sobrecarga</strong> de métodos o constructores: un nombre, una versión.</li>
+          <li><strong>Destructores</strong> y manejo manual de memoria.</li>
+          <li><strong>Genéricos</strong> o plantillas.</li>
+        </ul>
+        <p class="nota">La lista no es una carencia sino una decisión: el objetivo es que se entiendan
+           los cuatro pilares sin que el lenguaje se vuelva un obstáculo.</p>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-enlaces" data-titulo="Enlaces">
+      <h2>Enlaces</h2>
+      <div class="doc-bloque">
+        <ul>
+          <li><a href="poo.html">IDE y curso de ESLE2 POO</a></li>
+          <li><a href="index.html">ESLE2 clásico</a> · <a href="documentacion.html">su documentación</a></li>
+          <li><a href="https://www.cnc.una.py/sl/SL-index.html" target="_blank" rel="noopener">Página oficial de SL — CNC / UNA</a></li>
+        </ul>
+        <p class="nota">ESLE2 POO es una extensión didáctica creada para este sitio: no forma parte del
+           SLE2 original del Centro Nacional de Computación, que es un lenguaje procedural.</p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script src="js/doc.js"></script>
+<script src="js/indice.js"></script>
+<script src="js/buscador.js"></script>
+<script src="js/iconos.js"></script>
+<script src="js/menus.js"></script>
+<script src="js/instalar.js"></script>
+</body>
+</html>

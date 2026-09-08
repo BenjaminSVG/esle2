@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ESLE2 BD — bases de datos y SQL con SLE2</title>
+<meta name="description" content="Entorno para aprender SQL con el lenguaje SLE2: un motor de base de datos que corre en el navegador, sin conexión, y exportación a SQLite, MySQL y PostgreSQL.">
+<link rel="icon" href="img/logo.svg" type="image/svg+xml">
+<link rel="alternate icon" href="img/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="vendor/codemirror/codemirror.min.css">
+<link rel="stylesheet" href="vendor/codemirror/addon/hint/show-hint.min.css">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#3a6b8f" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1a1d22" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ESLE2">
+<link rel="apple-touch-icon" href="img/icono-180.png">
+<link rel="stylesheet" href="css/estilo.css">
+<link rel="stylesheet" href="css/bd.css">
+<script src="js/tema.js"></script>
+<script src="js/diseno.js"></script>
+</head>
+<body class="app">
+
+<a class="saltar" href="#vista-ide">Saltar al contenido</a>
+
+<header class="barra">
+  <a class="marca" href="bd.html">
+    <img class="logo" src="img/logo.svg" alt="" width="30" height="30">
+    <div>
+      <h1>ESLE2<span class="sufijo">BD</span></h1>
+      <p>Bases de datos y SQL</p>
+    </div>
+  </a>
+
+  <nav class="pestanas" id="nav">
+    <button class="pest activa" data-vista="ide" type="button">Consola</button>
+    <a class="pest" href="bd-documentacion.html">Documentación BD</a>
+    <a class="pest tenue" href="index.html" title="Volver al SLE2 clásico">← SLE2 clásico</a>
+    <a class="pest destacada" href="poo.html" title="El mismo lenguaje con clases y objetos">ESLE2 POO</a>
+    <a class="pest destacada" href="visual.html" title="Ventanas, controles y dibujo">ESLE2 Visual</a>
+    <a class="pest" href="diseno.html">Diseño</a>
+  </nav>
+
+  <div class="barra-acciones">
+    <button class="btn-buscar oculto" id="btnInstalar" type="button" data-ic="instalar" aria-label="Instalar ESLE2 como aplicación"
+            title="Instalar ESLE2 como aplicación"><span class="etiqueta">Instalar</span></button>
+    <button class="btn-buscar" id="btnBuscar" type="button" data-ic="buscar" aria-label="Buscar en todo ESLE2"
+            title="Buscar en todo ESLE2 (Ctrl + K)"><span class="etiqueta">Buscar</span><kbd>Ctrl K</kbd></button>
+    <button class="btn-buscar" id="btnProyectar" type="button" data-ic="proyectar" aria-pressed="false"
+            title="Modo presentación para proyectar en clase (Ctrl + Shift + P)">Proyectar</button>
+    <button class="btn-tema" id="btnSonido" type="button" aria-pressed="true">🔊</button>
+    <button class="btn-tema" id="btnTema" type="button">☾</button>
+  </div>
+</header>
+
+<!-- =============================== IDE ================================ -->
+<main class="vista activa" id="vista-ide" tabindex="-1">
+  <div class="herramientas">
+    <button class="btn primario" id="btnEjecutar" data-ic="ejecutar" title="Ejecutar el programa (Ctrl + Enter)">Ejecutar</button>
+    <button class="btn" id="btnCompilar" data-ic="revisar" title="Verificar la sintaxis y revisar recomendaciones">Revisar</button>
+    <button class="btn" id="btnDepurar" data-ic="depurar" title="Ejecutar paso a paso (F9)">Depurar</button>
+    <button class="btn peligro oculto" id="btnDetener" data-ic="detener" title="Cortar el programa (Esc)">Detener</button>
+    <button class="btn oculto" id="btnPaso" data-ic="paso" title="Ejecutar la sentencia marcada (F10)">Paso</button>
+    <button class="btn oculto" id="btnContinuar" data-ic="continuar" title="Seguir sin pausas (F8)">Continuar</button>
+
+    <details class="menu" id="menuArchivo">
+      <summary class="btn" data-ic="guardar" title="Nuevo, abrir, guardar y compartir">Archivo</summary>
+      <div class="menu-caja">
+        <button class="btn menu-item" id="btnNuevo" data-ic="nuevo">Nuevo</button>
+        <button class="btn menu-item" id="btnAbrir" data-ic="abrir">Abrir…</button>
+        <button class="btn menu-item" id="btnGuardar" data-ic="guardar" title="Ctrl + S">Guardar .sldb</button>
+        <button class="btn menu-item" id="btnCompartir" data-ic="compartir" title="Copiar un enlace con este programa adentro">Compartir</button>
+        <label class="menu-campo">Ejemplos
+          <select id="selEjemplos" class="control" title="Cargar un ejemplo" aria-label="Cargar un ejemplo">
+            <option value="">Elegí uno…</option>
+          </select>
+        </label>
+      </div>
+    </details>
+
+    <details class="menu" id="menuBase">
+      <summary class="btn" data-ic="base" title="Vaciar la base y traer datos de ejemplo">Base</summary>
+      <div class="menu-caja">
+        <button class="btn menu-item" id="btnVaciar" data-ic="borrar" title="Borrar todas las tablas y empezar de nuevo">Vaciar la base</button>
+        <button class="btn menu-item" id="btnEjemploBase" data-ic="base" title="Crear unas tablas con datos para practicar">Datos de ejemplo</button>
+        <button class="btn menu-item" id="btnImportarSQL" data-ic="abrir" title="Cargar un archivo .sql">Importar .sql…</button>
+        <button class="btn menu-item" id="btnDiagramaBD" data-ic="diagrama" title="Ver y bajar el diagrama entidad-relación de la base">Diagrama de la base</button>
+        <button class="btn menu-item" id="btnEditorBD" data-ic="editar-diagrama" title="Dibujar el diagrama y que salga el código">Dibujar el diagrama…</button>
+        <input type="file" id="archivoSQL" accept=".sql,text/plain" hidden>
+      </div>
+    </details>
+
+    <details class="menu" id="menuExportar">
+      <summary class="btn" data-ic="traducir" title="Bajar la base como un archivo .sql">Exportar</summary>
+      <div class="menu-caja">
+        <button class="btn menu-item" id="btnSQLite" data-ic="traducir" title="Volcado para SQLite">A SQLite</button>
+        <button class="btn menu-item" id="btnMySQL" data-ic="traducir" title="Volcado para MySQL">A MySQL</button>
+        <button class="btn menu-item" id="btnPostgres" data-ic="traducir" title="Volcado para PostgreSQL">A PostgreSQL</button>
+      </div>
+    </details>
+
+    <details class="menu" id="menuVer">
+      <summary class="btn" data-ic="diagrama" title="Paneles y opciones del editor">Ver</summary>
+      <div class="menu-caja">
+        <button class="btn menu-item" id="btnAjustar" type="button" data-ic="ajustar"
+                aria-pressed="false" title="Cortar las líneas largas al ancho del panel (Alt + Z)"><span class="menu-etiqueta">Ajustar texto</span></button>
+        <button class="btn menu-item" id="btnFlexible" type="button" data-ic="flexible"
+                aria-pressed="false" title="Compilar aunque haya errores y verlos todos de una vez"><span class="menu-etiqueta">Modo flexible</span></button>
+        <button class="btn menu-item" id="btnEsquema" type="button" data-ic="base"
+                aria-pressed="true" title="Mostrar u ocultar el panel con las tablas"><span class="menu-etiqueta">Esquema de la base</span></button>
+        <button class="btn menu-item" id="btnLeerCodigo" type="button" data-ic="sonido"
+                aria-pressed="false" title="Decir en voz alta cada línea al moverte por el programa (Alt + L)"><span class="menu-etiqueta">Leer el código</span></button>
+        <button class="btn menu-item" id="btnLeerTodo" type="button" data-ic="sonido"
+                title="Leer el programa entero en voz alta (Alt + Shift + L)">Leer todo el programa</button>
+        <button class="btn menu-item" id="btnDictar" type="button" data-ic="editar-diagrama"
+                title="Decir o escribir una línea en español y que se escriba en SLE2 (Alt + D)">Dictar código…</button>
+        <button class="btn menu-item" id="btnDisposicion" data-ic="paneles" title="Volver a la disposición original de los paneles">Restablecer los paneles</button>
+      </div>
+    </details>
+
+    <input type="file" id="archivo" accept=".sldb,.sl,.txt" hidden>
+    <span class="estado" id="estado">listo</span>
+  </div>
+
+  <div class="area" data-cols="1.3">
+    <section class="panel editor" data-panel="editor">
+      <div class="panel-cab">
+        <span class="titulo-panel" id="tituloArchivo" data-por-defecto="programa.sldb">programa.sldb</span>
+        <span class="mini" id="posCursor">1 : 1</span>
+      </div>
+      <textarea id="codigo"></textarea>
+    </section>
+
+    <div class="columna">
+      <section class="panel esquema" data-panel="esquema" data-alto="1" id="panelEsquema">
+        <div class="panel-cab">
+          <span class="titulo-panel">La base</span>
+          <span class="mini" id="esquemaMini">sin tablas</span>
+        </div>
+        <div class="esquema-cuerpo" id="esquemaCuerpo" tabindex="0" role="group" aria-label="Tablas de la base"></div>
+      </section>
+
+      <section class="panel salida" data-panel="salida" data-alto="1.3">
+        <div class="panel-cab">
+          <span class="titulo-panel">Salida</span>
+          <button class="btn mini-btn" id="btnLimpiar">Limpiar</button>
+        </div>
+        <div id="consola" class="consola" tabindex="0" role="log" aria-live="polite" aria-label="Salida del programa"></div>
+      </section>
+
+      <section class="panel consulta-rapida" data-panel="rapida" data-alto="0.8">
+        <div class="panel-cab">
+          <span class="titulo-panel">SQL a mano</span>
+          <span class="mini">probá una consulta sin tocar el programa · Ctrl + Enter</span>
+        </div>
+        <div class="rapida-cuerpo">
+          <textarea id="sqlRapido" spellcheck="false" aria-label="Consulta SQL suelta"
+                    placeholder="SELECT * FROM alumnos;"></textarea>
+          <button class="btn primario" id="btnCorrerSQL" type="button">Correr</button>
+        </div>
+      </section>
+
+      <section class="panel entrada oculto" data-panel="entrada" data-alto="0.7" id="panelEntrada">
+        <div class="panel-cab">
+          <span class="titulo-panel">Entrada de datos</span>
+          <span class="mini">lo que consume <code>leer()</code> — una línea por lectura</span>
+        </div>
+        <textarea id="entrada" spellcheck="false" aria-label="Entrada de datos del programa"></textarea>
+      </section>
+
+      <section class="panel variables oculto" data-panel="variables" data-alto="1" id="panelVars">
+        <div class="panel-cab">
+          <span class="titulo-panel">Variables</span>
+          <span class="mini" id="varsLinea"></span>
+        </div>
+        <div class="vars" id="varsCuerpo"></div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<!-- ============================== diálogos ============================ -->
+<dialog id="dlgExportar" class="dlg dlg-traduccion">
+  <h3 id="tituloExportar">La base, en SQL</h3>
+  <p class="nota" id="notaExportar"></p>
+  <pre class="traduccion"><code id="codigoExportado"></code></pre>
+  <div class="dlg-fila derecha">
+    <button class="btn" id="btnCopiarSQL">Copiar</button>
+    <button class="btn" id="btnBajarSQL">Guardar archivo</button>
+    <button class="btn primario" id="btnCerrarExportar">Cerrar</button>
+  </div>
+</dialog>
+
+<dialog id="dlgDiagramaBD" class="dlg dlg-ancho">
+  <h3>Diagrama de la base</h3>
+  <p class="nota">Una caja por tabla. La llave marca la clave primaria y la flecha, la columna
+     que señala a otra tabla.</p>
+  <div class="db-vista">
+    <div class="db-lienzo" id="dibujoBD" tabindex="0" role="region" aria-label="Diagrama de la base de datos"></div>
+    <pre class="db-palabras" id="palabrasBD" tabindex="0" role="region" aria-label="El diagrama contado en palabras"></pre>
+  </div>
+  <div class="dlg-fila derecha">
+    <button class="btn" id="btnCopiarBD">Copiar la descripción</button>
+    <button class="btn" id="btnBajarBD">Guardar el dibujo</button>
+    <button class="btn primario" id="btnCerrarDiagramaBD">Cerrar</button>
+  </div>
+</dialog>
+
+<datalist id="tiposBD">
+  <option value="INTEGER"></option>
+  <option value="REAL"></option>
+  <option value="TEXT"></option>
+  <option value="VARCHAR(50)"></option>
+  <option value="DECIMAL(10,2)"></option>
+</datalist>
+
+<dialog id="dlgEditorBD" class="dlg dlg-ancho">
+  <h3>Dibujar el diagrama</h3>
+  <p class="nota">Cada columna que apunta a otra tabla es una flecha del diagrama. El código
+     aparece solo, abajo, en orden de creación.</p>
+  <div class="db-editor">
+    <div class="db-tablas" id="tablasBD"></div>
+    <div class="db-previa">
+      <div class="db-lienzo" id="dibujoEditorBD" tabindex="0" role="region" aria-label="Vista previa del diagrama"></div>
+      <ul class="db-problemas oculto" id="problemasBD" aria-live="polite"></ul>
+      <pre class="db-codigo" tabindex="0" role="region" aria-label="El código que crea estas tablas"><code id="codigoBD"></code></pre>
+    </div>
+  </div>
+  <div class="dlg-fila">
+    <button class="btn" id="btnNuevaTablaBD" data-ic="nuevo">Agregar una tabla</button>
+    <button class="btn" id="btnTraerBaseBD" data-ic="base" title="Empezar desde las tablas que ya están en la base">Traer las de la base</button>
+    <span class="crece"></span>
+    <button class="btn" id="btnCopiarCodigoBD">Copiar el código</button>
+    <button class="btn" id="btnBajarEditorBD">Guardar el dibujo</button>
+    <button class="btn primario" id="btnUsarCodigoBD">Escribirlo en el programa</button>
+    <button class="btn" id="btnCerrarEditorBD">Cerrar</button>
+  </div>
+</dialog>
+
+<script src="vendor/codemirror/codemirror.min.js"></script>
+<script src="vendor/codemirror/addon/edit/matchbrackets.min.js"></script>
+<script src="vendor/codemirror/addon/hint/show-hint.min.js"></script>
+<script src="js/modo-sle2.js"></script>
+<script src="js/sle2.js"></script>
+<script src="js/sql.js"></script>
+<script src="js/sle2bd.js"></script>
+<script src="js/exportar-sql.js"></script>
+<script src="js/diagrama-bd.js"></script>
+<script src="js/editor-bd.js"></script>
+<script src="js/diagrama-bd-ui.js"></script>
+<script src="js/editor-bd-ui.js"></script>
+<script src="js/estilo.js"></script>
+<script src="js/compartir.js"></script>
+<script src="js/consola.js"></script>
+<script src="js/depurador.js"></script>
+<script src="js/presentacion.js"></script>
+<script src="js/sonido.js"></script>
+<script src="js/autocompletar.js"></script>
+<script src="js/autocompletar-ui.js"></script>
+<script src="js/flexible.js"></script>
+<script src="js/flexible-ui.js"></script>
+<script src="js/ajustar-texto.js"></script>
+<script src="js/animo.js"></script>
+<script src="js/animo-ui.js"></script>
+<script src="js/voz.js"></script>
+<script src="js/dictado.js"></script>
+<script src="js/voz-ui.js"></script>
+<script src="js/disposicion.js"></script>
+<script src="js/iconos.js"></script>
+<script src="js/bd-ejemplos.js"></script>
+<script src="js/bd-app.js"></script>
+<script src="js/indice.js"></script>
+<script src="js/buscador.js"></script>
+<script src="js/menus.js"></script>
+<script src="js/instalar.js"></script>
+</body>
+</html>

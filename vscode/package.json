@@ -1,0 +1,66 @@
+{
+  "name": "sle2",
+  "displayName": "SLE2 · pseudocódigo en español",
+  "description": "Resaltado, errores en vivo y ejecución de programas SLE2 (CNC–UNA). El mismo compilador que corre en esle2.vercel.app.",
+  "version": "1.0.0",
+  "publisher": "esle2",
+  "license": "MIT",
+  "engines": { "vscode": "^1.75.0" },
+  "categories": ["Programming Languages", "Linters", "Education"],
+  "keywords": ["sle2", "pseudocodigo", "pseudocódigo", "español", "algoritmos", "una"],
+  "repository": { "type": "git", "url": "https://github.com/esle2/esle2" },
+  "activationEvents": [],
+  "main": "./extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "sle2",
+        "aliases": ["SLE2", "sle2", "pseudocódigo"],
+        "extensions": [".sl", ".sle", ".slp", ".sldb"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "sle2",
+        "scopeName": "source.sle2",
+        "path": "./syntaxes/sle2.tmLanguage.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "sle2.ejecutar",
+        "title": "SLE2: Ejecutar el programa",
+        "category": "SLE2"
+      },
+      {
+        "command": "sle2.revisar",
+        "title": "SLE2: Revisar recomendaciones",
+        "category": "SLE2"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "sle2.ejecutar",
+        "key": "ctrl+enter",
+        "mac": "cmd+enter",
+        "when": "editorTextFocus && editorLangId == sle2"
+      }
+    ],
+    "configuration": {
+      "title": "SLE2",
+      "properties": {
+        "sle2.revisarAlEscribir": {
+          "type": "boolean",
+          "default": true,
+          "description": "Marcar los errores de sintaxis mientras se escribe, sin tener que ejecutar."
+        },
+        "sle2.recomendaciones": {
+          "type": "boolean",
+          "default": true,
+          "description": "Mostrar además las recomendaciones del revisor (variables sin usar, etc.)."
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="ESLE2">
+  <title>ESLE2</title>
+  <!--
+    Reinterpretación del icono original de SLE2: una ventana de programa con
+    marco gris biselado, pantalla negra, editor azul con código en amarillo y
+    barra de estado turquesa. Misma paleta EGA del icono de 2004.
+  -->
+  <defs>
+    <linearGradient id="marco" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e9e9e6"/>
+      <stop offset="1" stop-color="#b9b9b4"/>
+    </linearGradient>
+  </defs>
+
+  <!-- marco exterior biselado -->
+  <rect x="1" y="3" width="62" height="58" rx="5" fill="url(#marco)"/>
+  <rect x="1" y="3" width="62" height="58" rx="5" fill="none" stroke="#7b7b76" stroke-width="1.5"/>
+  <path d="M3.5 58.5V8a2 2 0 0 1 2-2h55" fill="none" stroke="#ffffff" stroke-width="1.4" opacity=".85"/>
+
+  <!-- pantalla -->
+  <rect x="5" y="7" width="54" height="50" rx="2" fill="#0b0b0b"/>
+
+  <!-- barra de título -->
+  <rect x="7" y="9" width="50" height="6" fill="#808080"/>
+  <rect x="9" y="11" width="20" height="2" fill="#e8e8e8"/>
+  <rect x="51" y="11" width="4" height="2" fill="#e8e8e8"/>
+
+  <!-- editor azul con código amarillo -->
+  <rect x="7" y="17" width="50" height="28" fill="#0000c0"/>
+  <g fill="#ffff55">
+    <rect x="10" y="20" width="30" height="2.4"/>
+    <rect x="13" y="24" width="12" height="2.4"/>
+    <rect x="13" y="28" width="21" height="2.4"/>
+    <rect x="16" y="32" width="26" height="2.4"/>
+    <rect x="13" y="36" width="9" height="2.4"/>
+    <rect x="10" y="40" width="16" height="2.4"/>
+  </g>
+  <rect x="53" y="17" width="4" height="28" fill="#000080"/>
+  <rect x="53.6" y="19" width="2.8" height="7" fill="#c3c3c3"/>
+
+  <!-- barra de estado turquesa -->
+  <rect x="7" y="47" width="50" height="8" fill="#008080"/>
+  <g fill="#c8ffff">
+    <rect x="10" y="50" width="10" height="2.2"/>
+    <rect x="23" y="50" width="7" height="2.2"/>
+    <rect x="33" y="50" width="12" height="2.2"/>
+  </g>
+</svg>

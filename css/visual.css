@@ -1,0 +1,229 @@
+/* ESLE2 Visual — lo único que esta página tiene y las demás no.
+ *
+ * La disposición, la cabecera, la barra de herramientas, los paneles, los
+ * menús, el curso y los diálogos son los de css/estilo.css: ESLE2 Visual es
+ * el mismo IDE con otros paneles, no otro programa. Acá quedan tres cosas
+ * que no existen en ningún otro lado:
+ *
+ *   1. la pantalla donde se ve la ventana que dibuja el programa del alumno;
+ *   2. el cuadro de herramientas del menú «Insertar»;
+ *   3. el árbol de controles y su tabla de propiedades.
+ *
+ * La ventana se pinta siempre con colores claros fijos —no con las variables
+ * del tema— porque es la ventana del programa, no parte de la interfaz: en
+ * modo oscuro tiene que seguir viéndose como una ventana de escritorio.
+ */
+
+/* ------------------------ la ventana del programa ---------------------- */
+.lienzo-doc {
+  flex: 1 1 auto; min-height: 0; max-height: 68vh; overflow: auto;
+  border: 1px solid var(--linea); border-radius: var(--r);
+  display: grid; place-items: center; padding: 14px;
+  background: var(--fondo-2);
+  background-image:
+    linear-gradient(45deg, var(--linea-2) 25%, transparent 25%, transparent 75%, var(--linea-2) 75%),
+    linear-gradient(45deg, var(--linea-2) 25%, transparent 25%, transparent 75%, var(--linea-2) 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 8px 8px;
+}
+.vacio-forma { color: var(--texto-2); font-size: 13.5px; text-align: center; margin: 0; padding: 20px; }
+
+.forma {
+  background: #f0f0f0; color: #111; border: 1px solid #9a9a9a; border-radius: 3px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .35); max-width: 100%;
+}
+.forma-titulo {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  background: linear-gradient(#fdfdfd, #eaeaea); border-bottom: 1px solid #c8c8c8;
+  border-radius: 2px 2px 0 0;
+  padding: 5px 8px; font-family: var(--sans); font-size: 12.5px; color: #222;
+}
+.forma-botones { display: flex; gap: 4px; }
+.forma-botones i {
+  font-style: normal; font-size: 10px; color: #444; border: 1px solid #bbb;
+  border-radius: 2px; padding: 0 5px; background: #f6f6f6;
+}
+/* Sin escalar: las coordenadas de los controles son píxeles, y si la ventana
+   cambiara de tamaño el dibujo dejaría de coincidir con el programa. */
+.forma-cuerpo {
+  position: relative; width: 480px; height: 320px; background: #f0f0f0; overflow: auto;
+}
+
+/* los controles que crea el programa */
+.forma-cuerpo .ctrl { position: absolute; font-family: var(--sans); font-size: 13px; }
+.ctrl-etiqueta { display: flex; align-items: center; color: #111; }
+.ctrl-boton {
+  background: #e1e1e1; border: 1px solid #adadad; border-radius: 2px; color: #111;
+  cursor: pointer; font-size: 13px;
+}
+.ctrl-boton:hover { background: #e5f1fb; border-color: #0078d7; }
+.ctrl-caja { border: 1px solid #7a7a7a; background: #fff; color: #111; padding: 2px 6px; }
+.ctrl-casilla { display: flex; align-items: center; gap: 6px; color: #111; }
+.ctrl-lista { border: 1px solid #7a7a7a; background: #fff; color: #111; }
+.ctrl-deslizador { display: flex; align-items: center; }
+.ctrl-deslizador input { width: 100%; }
+.ctrl-lienzo { background: #fff; border: 1px solid #c0c0c0; }
+.ctrl.desactivado { opacity: .55; pointer-events: none; }
+.ctrl.elegido { outline: 2px solid var(--acento); outline-offset: 1px; }
+
+/* El botón que la abre. La pastilla dice cuántos controles hay adentro, así
+   que se sabe que la ventana tiene algo sin tener que abrirla. */
+.btn.ver-ventana { display: inline-flex; align-items: center; gap: 6px; }
+.btn.ver-ventana.viva { border-color: var(--acento); color: var(--acento); }
+.pastilla {
+  display: inline-grid; place-items: center; min-width: 17px; height: 17px; padding: 0 4px;
+  border-radius: 9px; background: var(--acento-sua); color: var(--acento);
+  font-family: var(--sans); font-size: 11px; font-weight: 600;
+}
+.btn.ver-ventana.viva .pastilla { background: var(--acento); color: #fff; }
+.dlg.dlg-ventana { max-width: min(96vw, 760px); }
+.dlg.dlg-ventana .dlg-fila.derecha { justify-content: space-between; }
+
+/* --------------------- el cuadro de herramientas ----------------------- */
+/* Va adentro del menú «Insertar»: dos rejillas de botones que pegan código. */
+.menu-caja.menu-ancha { min-width: 328px; }
+.menu-titulo {
+  margin: 4px 4px 2px; font-size: 11px; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--tenue);
+}
+.menu-titulo + .menu-rejilla { margin-bottom: 4px; }
+.menu-rejilla { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px; }
+.menu-rejilla button {
+  display: flex; align-items: center; gap: 8px; width: 100%; text-align: left;
+  background: transparent; border: 1px solid transparent; border-radius: var(--r);
+  color: var(--texto-2); cursor: pointer;
+  font-family: var(--sans); font-size: 12.5px; padding: 5px 8px;
+}
+.menu-rejilla button:hover { background: var(--fondo-2); border-color: var(--linea); color: var(--texto); }
+/* El recuadro del icono. «--hueco» es el color con el que se pintan los
+   huecos del dibujo —el renglón de una etiqueta, el tilde de una casilla—, y
+   tiene que ser el mismo fondo del recuadro para que se vean como huecos. */
+.glifo {
+  --hueco: var(--fondo-2);
+  flex: 0 0 auto; width: 19px; height: 19px; display: grid; place-items: center;
+  border: 1px solid var(--linea); border-radius: 3px; background: var(--fondo-2);
+  font-size: 11px; color: var(--texto-2);
+}
+.glifo.con-icono { padding: 1px; }
+.glifo svg { width: 100%; height: 100%; display: block; }
+.menu-rejilla button:hover .glifo,
+.arbol-ctrl button:hover .glifo { color: var(--acento); }
+.arbol-ctrl .hijo.elegido .glifo { --hueco: var(--panel); background: var(--panel); border-color: var(--acento); color: var(--acento); }
+
+/* ------------------ árbol de controles y propiedades ------------------- */
+.ctrl-cuerpo { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; }
+.arbol-ctrl { overflow: auto; padding: 6px 0; border-right: 1px solid var(--linea-2); min-height: 0; }
+.props-ctrl { overflow: auto; padding: 6px 8px; min-height: 0; }
+
+.arbol-ctrl button {
+  display: flex; align-items: center; gap: 7px; width: 100%; text-align: left;
+  background: transparent; border: 0; cursor: pointer; color: var(--texto-2);
+  font-family: var(--sans); font-size: 12.5px; padding: 4px 10px;
+}
+.arbol-ctrl button:hover { background: var(--fondo-2); color: var(--texto); }
+.arbol-ctrl .raiz { font-weight: 600; color: var(--texto); text-transform: uppercase; font-size: 11.5px; letter-spacing: .04em; }
+.arbol-ctrl .hijo { padding-left: 22px; }
+.arbol-ctrl .hijo.elegido { background: var(--acento-sua); color: var(--acento); box-shadow: inset 2px 0 0 var(--acento); }
+.arbol-ctrl .tipo-ctrl { color: var(--tenue); font-size: 11.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.props-ctrl table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.props-ctrl td { padding: 3px 4px; border-bottom: 1px solid var(--linea-2); vertical-align: middle; }
+.props-ctrl td:first-child { color: var(--tenue); width: 42%; }
+.props-ctrl input {
+  width: 100%; background: var(--fondo-2); border: 1px solid var(--linea); border-radius: 4px;
+  color: var(--texto); font-family: var(--mono); font-size: 11.5px; padding: 2px 5px;
+}
+.props-ctrl input:focus { border-color: var(--acento); outline: none; }
+.props-ctrl .nota, .arbol-ctrl .nota { margin: 6px 10px; font-size: 12px; }
+
+/* --------------------------- pantallas chicas -------------------------- */
+@media (max-width: 1000px) {
+  .ctrl-cuerpo { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
+  .arbol-ctrl { border-right: 0; border-bottom: 1px solid var(--linea-2); }
+  .panel.controles-panel { min-height: 200px; }
+  .lienzo-doc { max-height: 58vh; }
+  .menu-caja.menu-ancha { min-width: 0; }
+}
+@media (max-width: 420px) {
+  .menu-rejilla { grid-template-columns: 1fr; }
+  .lienzo-doc { padding: 6px; }
+}
+
+/* ====================== diseñador de ventanas ========================= */
+.dlg-disenar { max-width: min(1100px, 96vw); width: min(1100px, 96vw); }
+.dis-cab h3 { margin: 0 0 4px; }
+.dis-cab .nota { margin: 0 0 10px; }
+
+.dis-cuerpo {
+  display: grid; grid-template-columns: 160px 1fr 230px; gap: 14px;
+  align-items: start;
+}
+
+.dis-caja-herr .menu-titulo,
+.dis-props .menu-titulo { margin: 0 0 6px; }
+.dis-herr { display: flex; flex-direction: column; gap: 4px; }
+.dis-herr .btn { justify-content: flex-start; }
+.dis-check { display: flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 12.5px; }
+
+/* La ventana, a tamaño real, sobre una cuadrícula que ayuda a alinear. */
+.dis-lienzo-caja { overflow: auto; max-height: 62vh; }
+.dis-ventana {
+  border: 1px solid var(--linea); border-radius: var(--r);
+  background: var(--panel); box-shadow: var(--sombra); overflow: hidden;
+  margin: 0 auto;
+}
+.dis-titulo {
+  background: var(--acento); color: #fff; font-size: 12.5px; font-weight: 600;
+  padding: 5px 10px;
+}
+.dis-area {
+  position: relative; background: var(--fondo);
+  background-image:
+    linear-gradient(to right, var(--linea-2) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--linea-2) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+.dis-medidas { margin: 8px 0 0; font-size: 12px; color: var(--texto-2); text-align: center; }
+
+.dis-ctrl {
+  position: absolute; box-sizing: border-box; cursor: move;
+  border: 1px dashed transparent; border-radius: 3px;
+  display: flex; align-items: stretch;
+}
+.dis-ctrl:hover { border-color: var(--acento); }
+.dis-ctrl:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; }
+.dis-ctrl.elegido { border: 1px solid var(--acento); box-shadow: 0 0 0 2px var(--acento-sua); }
+.dis-ctrl.moviendo { opacity: .75; }
+.dis-ctrl.trabado { cursor: not-allowed; }
+.dis-ctrl.trabado::after {
+  content: ""; position: absolute; inset: 0; border-radius: 3px;
+  background: repeating-linear-gradient(45deg, transparent 0 6px, var(--linea) 6px 7px);
+  pointer-events: none;
+}
+
+/* El dibujo de adentro es el mismo del programa corriendo, pero acá no se
+   toca: los clics son para arrastrar, no para apretar el botón. */
+.dis-dibujo { pointer-events: none; width: 100%; height: 100%; margin: 0; }
+.dis-ctrl > div.dis-dibujo { display: flex; align-items: center; overflow: hidden; }
+
+.dis-tirador {
+  position: absolute; right: -4px; bottom: -4px; width: 10px; height: 10px;
+  background: var(--acento); border: 1px solid var(--panel); border-radius: 2px;
+  cursor: nwse-resize;
+}
+
+.dis-props { font-size: 12.5px; }
+.dis-prop-tipo { margin: 0 0 8px; font-weight: 600; }
+.dis-prop-texto { display: block; margin-bottom: 8px; }
+.dis-prop-grilla { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.dis-prop-grilla label { display: flex; flex-direction: column; gap: 2px; font-size: 12px; }
+.dis-props .nota { margin: 8px 0; }
+.dis-props .btn.borrar { width: 100%; margin-top: 8px; }
+
+.dis-aviso { margin: 10px 0 0; font-size: 12.5px; color: var(--texto-2); min-height: 1.2em; }
+
+@media (max-width: 900px) {
+  .dis-cuerpo { grid-template-columns: 1fr; }
+  .dis-herr { flex-direction: row; flex-wrap: wrap; }
+  .dis-lienzo-caja { max-height: 48vh; }
+}

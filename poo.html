@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ESLE2 POO — el lenguaje SLE2 con objetos</title>
+<meta name="description" content="ESLE2 POO: el lenguaje SL (SLE2) extendido con clases, objetos, herencia y polimorfismo, con IDE y curso en el navegador.">
+<link rel="icon" href="img/logo-poo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="vendor/codemirror/codemirror.min.css">
+<link rel="stylesheet" href="vendor/codemirror/addon/hint/show-hint.min.css">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#3a6b8f" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1a1d22" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ESLE2">
+<link rel="apple-touch-icon" href="img/icono-180.png">
+<link rel="stylesheet" href="css/estilo.css">
+<script src="js/tema.js"></script>
+<script src="js/diseno.js"></script>
+</head>
+<body class="app">
+
+<a class="saltar" href="#vista-ide">Saltar al contenido</a>
+
+<header class="barra">
+  <a class="marca" href="poo.html">
+    <img class="logo" src="img/logo-poo.svg" alt="" width="30" height="30">
+    <div>
+      <h1>ESLE2<span class="sufijo">POO</span></h1>
+      <p>El mismo lenguaje, ahora con objetos</p>
+    </div>
+  </a>
+
+  <nav class="pestanas" id="nav">
+    <button class="pest activa" data-vista="ide">IDE</button>
+    <button class="pest" data-vista="curso">Curso</button>
+    <a class="pest" href="poo-documentacion.html">Documentación POO</a>
+    <a class="pest tenue" href="index.html" title="Volver al SLE2 clásico">← SLE2 clásico</a>
+    <a class="pest destacada" href="visual.html" title="Ventanas, controles y dibujo">ESLE2 Visual</a>
+    <a class="pest destacada" href="bd.html" title="Bases de datos y SQL">ESLE2 BD</a>
+    <a class="pest" href="diseno.html">Diseño</a>
+  </nav>
+
+  <div class="barra-acciones">
+    <span class="racha oculto" id="racha" title="Días seguidos resolviendo ejercicios"></span>
+    <div class="progreso-global" title="Ejercicios resueltos">
+      <span id="progresoTexto">0 / 0</span>
+      <div class="barrita"><i id="progresoBarra"></i></div>
+    </div>
+    <button class="btn-buscar oculto" id="btnInstalar" type="button" data-ic="instalar" aria-label="Instalar ESLE2 como aplicación"
+            title="Instalar ESLE2 como aplicación"><span class="etiqueta">Instalar</span></button>
+    <button class="btn-buscar" id="btnBuscar" type="button" data-ic="buscar" aria-label="Buscar en todo ESLE2"
+            title="Buscar en todo ESLE2 (Ctrl + K)"><span class="etiqueta">Buscar</span><kbd>Ctrl K</kbd></button>
+    <button class="btn-buscar" id="btnProyectar" type="button" data-ic="proyectar" aria-pressed="false"
+            title="Modo presentación para proyectar en clase (Ctrl + Shift + P)">Proyectar</button>
+    <button class="btn-tema" id="btnSonido" type="button" aria-pressed="true">🔊</button>
+    <button class="btn-tema" id="btnTema" type="button">☾</button>
+  </div>
+</header>
+
+<!-- ============================== IDE ============================== -->
+<main class="vista activa" id="vista-ide" tabindex="-1">
+  <div class="herramientas">
+    <button class="btn primario" id="btnEjecutar" data-ic="ejecutar" title="Ejecutar el programa (Ctrl + Enter)">Ejecutar</button>
+    <button class="btn" id="btnCompilar" data-ic="revisar" title="Verificar la sintaxis y revisar recomendaciones">Revisar</button>
+    <button class="btn" id="btnDepurar" data-ic="depurar" title="Ejecutar paso a paso (F9)">Depurar</button>
+    <button class="btn" id="btnGrabar" data-ic="historial" title="Correr el programa entero y después ir para atrás y para adelante con una barra">Grabar ejecución</button>
+    <button class="btn peligro oculto" id="btnDetener" data-ic="detener" title="Cortar el programa (Esc)">Detener</button>
+    <button class="btn oculto" id="btnPaso" data-ic="paso" title="Ejecutar la sentencia marcada (F10)">Paso</button>
+    <button class="btn oculto" id="btnContinuar" data-ic="continuar" title="Seguir sin pausas (F8)">Continuar</button>
+
+    <details class="menu" id="menuArchivo">
+      <summary class="btn" data-ic="guardar" title="Nuevo, abrir, guardar y compartir">Archivo</summary>
+      <div class="menu-caja">
+        <button class="btn menu-item" id="btnGuardar" data-ic="guardar" title="Ctrl + S">Guardar .slp</button>
+        <button class="btn menu-item" id="btnCompartir" data-ic="compartir" title="Copiar un enlace con este programa adentro">Compartir</button>
+        <button class="btn menu-item" id="btnJuntos" type="button" data-ic="compartir" aria-pressed="false" title="Escribir el mismo programa entre dos, cada uno desde su computadora">Programar de a dos…</button>
+        <button class="btn menu-item" id="btnVivo" type="button" data-ic="compartir" aria-pressed="false" title="Un enlace corto para que otros vean, en el momento, cómo vas escribiendo">Transmitir mi lógica…</button>
+        <label class="menu-campo">Ejemplos
+          <select id="selEjemplos" class="control" title="Cargar un ejemplo" aria-label="Cargar un ejemplo">
+            <option value="">Elegí uno…</option>
+          </select>
+        </label>
+      </div>
+    </details>
+
+    <details class="menu" id="menuVer">
+      <summary class="btn" data-ic="diagrama" title="Diagrama, memoria, historial y paneles">Ver</summary>
+      <div class="menu-caja">
+        <button class="btn menu-item" id="btnExplorador" type="button" data-ic="paneles"
+                aria-pressed="false" title="Trabajar con varios programas a la vez"><span class="menu-etiqueta">Explorador de archivos</span></button>
+        <button class="btn menu-item" id="btnAjustar" type="button" data-ic="ajustar"
+                aria-pressed="false" title="Cortar las líneas largas al ancho del panel (Alt + Z)"><span class="menu-etiqueta">Ajustar texto</span></button>
+        <button class="btn menu-item" id="btnEnfoque" type="button" data-ic="ventana"
+                aria-pressed="false" title="Dejar solo el editor, sin menús ni paneles, con música de fondo si querés (Alt + E)"><span class="menu-etiqueta">Modo enfoque</span></button>
+        <button class="btn menu-item" id="btnFlexible" type="button" data-ic="flexible"
+                aria-pressed="false" title="Compilar aunque haya errores y verlos todos de una vez"><span class="menu-etiqueta">Modo flexible</span></button>
+        <button class="btn menu-item" id="btnDiagrama" data-ic="diagrama" title="Ver el programa como diagrama de flujo">Diagrama de flujo</button>
+        <button class="btn menu-item" id="btnEditorDiagrama" data-ic="editar-diagrama" title="Armar el programa dibujando el diagrama, bloque por bloque">Editor de diagramas</button>
+        <button class="btn menu-item" id="btnMemoria" data-ic="memoria" title="Ver cómo se crean y cambian las variables en la memoria">Simulador de memoria</button>
+        <button class="btn menu-item" id="btnEscritorio" data-ic="escritorio" title="Seguir el programa paso a paso en una tabla, como en el pizarrón">Prueba de escritorio</button>
+        <button class="btn menu-item" id="btnHistorial" data-ic="historial" title="Versiones anteriores de tu programa">Historial de versiones</button>
+        <button class="btn menu-item" id="btnLeerCodigo" type="button" data-ic="sonido"
+                aria-pressed="false" title="Decir en voz alta cada línea al moverte por el programa (Alt + L)"><span class="menu-etiqueta">Leer el código</span></button>
+        <button class="btn menu-item" id="btnLeerTodo" type="button" data-ic="sonido"
+                title="Leer el programa entero en voz alta (Alt + Shift + L)">Leer todo el programa</button>
+        <button class="btn menu-item" id="btnDictar" type="button" data-ic="editar-diagrama"
+                title="Decir o escribir una línea en español y que se escriba en SLE2 (Alt + D)">Dictar código…</button>
+        <button class="btn menu-item" id="btnDisposicion" data-ic="paneles" title="Volver a la disposición original de los paneles">Restablecer los paneles</button>
+      </div>
+    </details>
+
+    <details class="menu" id="menuTraducir">
+      <summary class="btn" data-ic="traducir" title="Ver el mismo programa en otro lenguaje">Traducir</summary>
+      <div class="menu-caja">
+        <button class="btn menu-item" id="btnTraducirPy" data-ic="traducir" title="Ver el mismo programa escrito en Python">A Python</button>
+        <button class="btn menu-item" id="btnTraducirJava" data-ic="traducir" title="Ver el mismo programa escrito en Java">A Java</button>
+      </div>
+    </details>
+
+    <span class="estado" id="estado">listo</span>
+  </div>
+
+  <div id="bannerEjercicio" class="banner oculto">
+    <div><strong>Ejercicio:</strong> <span id="bannerTitulo"></span></div>
+    <div class="banner-acciones">
+      <button class="btn primario" id="btnVerificar">✓ Verificar solución</button>
+      <button class="btn" id="btnSalirEjercicio">Salir del ejercicio</button>
+    </div>
+  </div>
+
+  <div class="area">
+    <section class="panel explorador oculto" id="panelExplorador" aria-label="Explorador de archivos">
+      <div class="panel-cab">
+        <span class="titulo-panel">Explorador</span>
+        <span class="mini" id="expCuenta"></span>
+      </div>
+      <div class="exp-barra">
+        <button class="btn mini-btn" id="expNuevo" type="button" data-ic="nuevo"
+                title="Crear un archivo nuevo">Nuevo archivo</button>
+        <button class="btn mini-btn" id="expNuevaCarpeta" type="button" data-ic="abrir"
+                title="Crear una carpeta con un archivo adentro">Carpeta</button>
+      </div>
+      <div class="exp-cuerpo" id="expCuerpo"></div>
+    </section>
+    <section class="panel editor" data-panel="editor">
+      <div class="panel-cab">
+        <span class="titulo-panel" id="tituloArchivo" data-por-defecto="programa.slp">programa.slp</span>
+        <span class="mini" id="posCursor">1 : 1</span>
+      </div>
+      <textarea id="codigo"></textarea>
+    </section>
+
+    <div class="columna">
+      <section class="panel entrada" data-panel="entrada" data-alto="0.75">
+        <div class="panel-cab">
+          <span class="titulo-panel">Entrada de datos</span>
+          <span class="mini">lo que consume <code>leer()</code></span>
+        </div>
+        <textarea id="entrada" spellcheck="false" aria-label="Entrada de datos del programa" placeholder="Datos que va a leer tu programa."></textarea>
+      </section>
+
+      <section class="panel salida" data-panel="salida" data-alto="1.45">
+        <div class="panel-cab">
+          <span class="titulo-panel">Pantalla</span>
+          <button class="btn mini-btn" id="btnLimpiar">Limpiar</button>
+        </div>
+        <div id="consola" class="consola" tabindex="0" role="log" aria-live="polite" aria-label="Pantalla del programa"><div id="pantalla"></div></div>
+      </section>
+      <section class="panel variables oculto" data-panel="variables" id="panelVars">
+        <div class="panel-cab">
+          <span class="titulo-panel">Variables</span>
+          <span class="mini" id="varsLinea"></span>
+        </div>
+        <div class="vars" id="varsCuerpo"></div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<!-- ============================= CURSO ============================= -->
+<main class="vista" id="vista-curso">
+  <div class="curso">
+    <aside class="lista-ejercicios">
+      <p class="nota" style="margin-top:0">50 ejercicios para practicar objetos, de a poco.</p>
+      <div class="filtros" id="filtros">
+        <button class="chip activa" data-nivel="todos">Todos</button>
+        <button class="chip" data-nivel="facil">Fácil</button>
+        <button class="chip" data-nivel="medio">Medio</button>
+        <button class="chip" data-nivel="avanzado">Avanzado</button>
+      </div>
+      <ol id="listaEjercicios"></ol>
+      <section class="repaso oculto" id="panelRepaso" aria-label="Para repasar hoy"></section>
+      <section class="stats oculto" id="panelStats" aria-label="Cómo venís"></section>
+      <button class="btn" id="btnExamen" title="Armar o rendir un examen">Modo examen…</button>
+      <button class="btn" id="btnMisEj" title="Crear tus propios ejercicios">Mis ejercicios…</button>
+      <button class="btn" id="btnAula" title="Armar una guía de clase y repartirla como enlace">Modo aula…</button>
+      <div class="acciones-progreso">
+      <button class="btn" id="btnDuelo" title="Dos personas, el mismo problema, cinco minutos">Batallas de código…</button>
+        <button class="btn" id="btnExportar" title="Bajar un archivo con tu avance">Exportar progreso</button>
+        <button class="btn" id="btnImportar" title="Cargar un archivo de avance">Importar…</button>
+        <input type="file" id="archivoProgreso" accept=".json,application/json" hidden>
+      </div>
+      <button class="btn borrar" id="btnReiniciar">Reiniciar progreso</button>
+    </aside>
+
+    <article class="detalle" id="detalleEjercicio">
+      <div class="vacio">
+        <h2>Curso de objetos</h2>
+        <p>Elegí un ejercicio de la lista. Cada uno se abre en el IDE y se corrige solo.</p>
+        <p>Si es tu primera vez con objetos, empezá por la
+           <a href="poo-documentacion.html">documentación de ESLE2 POO</a>: explica los cuatro
+           pilares con ejemplos y dibujos, desde cero.</p>
+        <p class="nota">Tu progreso acá es independiente del curso de SLE2 clásico.</p>
+      </div>
+    </article>
+  </div>
+</main>
+
+<dialog id="dlgTraduccion" class="dlg dlg-traduccion">
+  <h3 id="tituloTraduccion">El mismo programa, en otro lenguaje</h3>
+  <p class="nota" id="notaTraduccion"></p>
+  <p class="mis-error" id="avisosTraduccion"></p>
+  <pre class="traduccion"><code id="codigoTraducido"></code></pre>
+  <div class="dlg-fila derecha">
+    <button class="btn" id="btnCopiarJS">Copiar</button>
+    <button class="btn" id="btnBajarJS">Guardar archivo</button>
+    <button class="btn primario" id="btnCerrarJS">Cerrar</button>
+  </div>
+</dialog>
+
+<dialog id="dlgEditorDiagrama" class="dlg dlg-editor-diagrama">
+  <h3>Editor de diagramas</h3>
+  <p class="nota">Armá el diagrama con bloques y el programa sale solo. El dibujo de la derecha
+     <strong>no es un dibujo aparte</strong>: es el diagrama del programa que estás generando, hecho
+     con el mismo dibujante que el resto del sitio, así que lo que ves y lo que se va a ejecutar no
+     pueden separarse. Adentro de cada bloque se escribe SLE2 tal cual —<code>total = total + n</code>,
+     <code>i &lt; 10</code>—, que es lo que hay que aprender a escribir.</p>
+  <div class="dlg-fila">
+    <button class="btn" id="deTraer" type="button" title="Convertir el programa que tenés en el editor en un diagrama">Traer el programa del editor</button>
+    <button class="btn" id="deLimpiar" type="button" title="Empezar un diagrama vacío">Empezar de cero</button>
+    <span class="mini" id="deResumen"></span>
+  </div>
+  <p class="mis-error oculto" id="deAviso"></p>
+  <div class="de-cuerpo">
+    <div class="de-izq">
+      <div id="deCabecera" class="de-cabecera"></div>
+      <div id="deBloques" class="de-bloques"></div>
+    </div>
+    <div class="de-der">
+      <h4>El diagrama</h4>
+      <div id="deDibujo" class="de-dibujo" tabindex="0" role="group" aria-label="Diagrama del programa"></div>
+      <h4>El programa</h4>
+      <pre class="de-codigo"><code id="deCodigo"></code></pre>
+    </div>
+  </div>
+  <div class="dlg-fila derecha">
+    <button class="btn primario" id="dePasar" type="button" title="Poner este programa en el editor">Pasar al editor</button>
+    <button class="btn" id="btnCerrarEditorDiagrama" type="button">Cerrar</button>
+  </div>
+</dialog>
+
+<dialog id="dlgDiagrama" class="dlg dlg-diagrama">
+  <h3>Diagrama de flujo</h3>
+  <p class="nota">El programa del editor dibujado con las formas de siempre:
+     óvalo para el inicio y el fin, rectángulo para un proceso, romboide para
+     la entrada y la salida, y rombo para cada decisión. Al lado va el mismo
+     diagrama contado en palabras.</p>
+  <label class="df-sel">Rutina:
+    <select id="selRutina" class="control mini-select" aria-label="Rutina a diagramar"></select>
+  </label>
+  <div class="df-cuerpo">
+    <div id="dibujoDiagrama" class="df-caja" tabindex="0" role="group" aria-label="Diagrama de flujo"></div>
+    <div class="df-lado">
+      <h4>El mismo diagrama, explicado</h4>
+      <div id="pasosDiagrama"></div>
+    </div>
+  </div>
+  <div class="dlg-fila derecha">
+    <button class="btn" id="btnCopiarPasos">Copiar la explicación</button>
+    <button class="btn" id="btnBajarSVG">Bajar el dibujo (.svg)</button>
+    <button class="btn primario" id="btnCerrarDiagrama">Cerrar</button>
+  </div>
+</dialog>
+
+<dialog id="dlgEscritorio" class="dlg dlg-escritorio">
+  <h3>Prueba de escritorio</h3>
+  <p class="nota">El programa seguido paso a paso, como se hace en el pizarrón: una fila por
+     sentencia ejecutada y una columna por variable. En cada celda el valor aparece
+     <strong>solo cuando cambia</strong>, que es lo que se quiere ver; las locales de una
+     subrutina llevan su nombre adelante (<code>sumar.i</code>) y un guion largo marca el paso en
+     que la subrutina termina y su caja deja de existir.</p>
+  <p class="mis-error oculto" id="escAviso"></p>
+  <div class="esc-cuerpo" id="pruebaEscritorio" tabindex="0" role="group" aria-label="Tabla de la prueba de escritorio"></div>
+  <div class="dlg-fila derecha">
+    <span class="mini" id="escResumen"></span>
+    <button class="btn" id="escCopiarTexto" type="button" title="Copiar la tabla alineada, para pegar en un documento">Copiar</button>
+    <button class="btn" id="escCopiarMD" type="button" title="Copiar la tabla en formato Markdown">Copiar en Markdown</button>
+    <button class="btn" id="escBajarCSV" type="button" title="Bajar la tabla para abrirla en una planilla">Bajar .csv</button>
+    <button class="btn primario" id="btnCerrarEscritorio" type="button">Cerrar</button>
+  </div>
+</dialog>
+
+<dialog id="dlgMemoria" class="dlg dlg-memoria">
+  <h3>Simulador de memoria</h3>
+  <p class="nota">Cada variable es una <strong>caja</strong> con su dirección, su tipo y lo que
+     guarda. La línea de tiempo recorre el programa sentencia por sentencia: se ve nacer cada caja,
+     cambiar su contenido y desaparecer cuando termina la subrutina. Las direcciones y los tamaños
+     son los <em>de manual</em> —un número 8 bytes, un lógico 1, una cadena una letra por byte—, no
+     los que usa el navegador por dentro.</p>
+  <p class="mis-error oculto" id="memAviso"></p>
+  <div class="mem-barra">
+    <button class="btn mini-btn" id="memInicio" type="button" title="Volver al principio" aria-label="Volver al principio">⏮</button>
+    <button class="btn mini-btn" id="memAtras" type="button" title="Un paso atrás" aria-label="Un paso atrás">◀</button>
+    <button class="btn mini-btn" id="memPlay" type="button" title="Reproducir" aria-label="Reproducir">▶</button>
+    <button class="btn mini-btn" id="memAdelante" type="button" title="Un paso adelante" aria-label="Un paso adelante">▶▶</button>
+    <button class="btn mini-btn" id="memFin" type="button" title="Ir al final" aria-label="Ir al final">⏭</button>
+    <input type="range" id="memPaso" min="0" max="0" value="0" step="1" aria-label="Paso de la ejecución">
+    <span class="mini" id="memEtiqueta"></span>
+  </div>
+  <div class="mem-cuerpo">
+    <div class="mem-mapa" id="memMapa" tabindex="0" role="group" aria-label="Mapa de la memoria"></div>
+    <div class="mem-lado">
+      <p class="mem-linea">Línea <b id="memLinea">1</b>: <code id="memCodigo"></code></p>
+      <h4>Qué pasó en este paso</h4>
+      <ul class="mem-narra" id="memNarra" aria-live="polite"></ul>
+      <p class="nota" id="memTotal"></p>
+    </div>
+  </div>
+  <div class="dlg-fila derecha">
+    <button class="btn primario" id="btnCerrarMemoria">Cerrar</button>
+  </div>
+</dialog>
+
+<dialog id="dlgHistorial" class="dlg dlg-historial">
+  <h3>Historial de versiones</h3>
+  <p class="nota">ESLE2 va guardando solo una copia de tu programa cada vez que lo ejecutás, cuando
+     resolvés un ejercicio y <strong>antes</strong> de cualquier cosa que pise el editor. Podés
+     volver a cualquiera de esas versiones; y como al restaurar también se guarda lo que tenías,
+     volver atrás nunca te hace perder nada. Es la idea de un control de versiones, en chiquito.</p>
+  <div class="dlg-fila">
+    <input type="text" id="hisMensaje" class="control" maxlength="80"
+           placeholder="Nombre para esta versión (por ejemplo: «antes de cambiar el ciclo»)"
+           aria-label="Nombre de la versión que se va a guardar">
+    <button class="btn primario" id="hisGuardar" type="button">Guardar versión</button>
+  </div>
+  <p class="mis-error oculto" id="hisAviso"></p>
+  <div class="his-cuerpo">
+    <ul class="his-lista" id="hisLista" aria-label="Versiones guardadas"></ul>
+    <div class="his-lado">
+      <h4 id="hisTitulo">Elegí una versión de la lista</h4>
+      <p class="nota" id="hisResumen"></p>
+      <div class="his-diff" id="hisDiff" tabindex="0" role="group" aria-label="Diferencias con el código actual"></div>
+      <div class="dlg-fila oculto" id="hisAcciones">
+        <button class="btn primario" id="hisRestaurar" type="button"
+                title="Poner esta versión en el editor (lo de ahora se guarda antes)">↩ Restaurar esta versión</button>
+        <button class="btn borrar" id="hisBorrar" type="button">Borrar del historial</button>
+      </div>
+    </div>
+  </div>
+  <div class="dlg-fila derecha">
+    <button class="btn primario" id="btnCerrarHistorial">Cerrar</button>
+  </div>
+</dialog>
+
+<script src="vendor/codemirror/codemirror.min.js"></script>
+<script src="vendor/codemirror/addon/edit/matchbrackets.min.js"></script>
+<script src="vendor/codemirror/addon/hint/show-hint.min.js"></script>
+<script src="js/modo-sle2.js"></script>
+<script src="js/sle2.js"></script>
+<script src="js/sle2poo.js"></script>
+<script src="js/traducir-poo.js"></script>
+<script src="js/consola.js"></script>
+<script src="js/estilo.js"></script>
+<script src="js/compartir.js"></script>
+<script src="js/depurador.js"></script>
+<script src="js/progreso.js"></script>
+<script src="js/racha.js"></script>
+<script src="js/mis-ejercicios.js"></script>
+<script src="js/aula.js"></script>
+<script src="js/aula-ui.js"></script>
+<script src="js/juntos.js"></script>
+<script src="js/juntos-ui.js"></script>
+<script src="js/enfoque.js"></script>
+<script src="js/enfoque-ui.js"></script>
+<script src="js/viaje.js"></script>
+<script src="js/viaje-ui.js"></script>
+<script src="js/vivo.js"></script>
+<script src="js/vivo-ui.js"></script>
+<script src="js/duelo.js"></script>
+<script src="js/duelo-ui.js"></script>
+<script src="js/examen.js"></script>
+<script src="js/estadisticas.js"></script>
+<script src="js/repaso.js"></script>
+<script src="js/presentacion.js"></script>
+<script src="js/ejercicios-poo.js"></script>
+<script src="js/sonido.js"></script>
+<script src="js/historial.js"></script>
+<script src="js/historial-ui.js"></script>
+<script src="js/autocompletar.js"></script>
+<script src="js/autocompletar-ui.js"></script>
+<script src="js/memoria.js"></script>
+<script src="js/memoria-ui.js"></script>
+<script src="js/escritorio.js"></script>
+<script src="js/escritorio-ui.js"></script>
+<script src="js/diagrama.js"></script>
+<script src="js/diagrama-ui.js"></script>
+<script src="js/diagrama-editor.js"></script>
+<script src="js/diagrama-editor-ui.js"></script>
+<script src="js/flexible.js"></script>
+<script src="js/flexible-ui.js"></script>
+<script src="js/ajustar-texto.js"></script>
+<script src="js/animo.js"></script>
+<script src="js/animo-ui.js"></script>
+<script src="js/voz.js"></script>
+<script src="js/dictado.js"></script>
+<script src="js/voz-ui.js"></script>
+<script src="js/disposicion.js"></script>
+<script src="js/iconos.js"></script>
+<script src="js/proyecto.js"></script>
+<script src="js/proyecto-ui.js"></script>
+<script src="js/app-poo.js"></script>
+<script src="js/indice.js"></script>
+<script src="js/buscador.js"></script>
+<script src="js/menus.js"></script>
+<script src="js/instalar.js"></script>
+</body>
+</html>

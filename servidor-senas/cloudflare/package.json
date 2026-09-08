@@ -1,0 +1,10 @@
+{
+  "name": "esle2-senas-cloudflare",
+  "private": true,
+  "type": "module",
+  "description": "El servidor de señas de ESLE2 en Cloudflare Workers. No tiene dependencias: wrangler se baja al vuelo con npx.",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  }
+}

@@ -1,0 +1,1910 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Documentación de ESLE2 — sintaxis y funcionamiento de SLE2</title>
+<meta name="description" content="Documentación completa del lenguaje SL (SLE2): sintaxis, tipos de datos, sentencias, subrutinas, funciones predefinidas y errores frecuentes, con buscador.">
+<link rel="icon" href="img/logo.svg" type="image/svg+xml">
+<link rel="alternate icon" href="img/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#3a6b8f" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1a1d22" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ESLE2">
+<link rel="apple-touch-icon" href="img/icono-180.png">
+<link rel="stylesheet" href="css/estilo.css">
+<script src="js/tema.js"></script>
+<script src="js/diseno.js"></script>
+</head>
+<body class="app">
+
+<a class="saltar" href="#docCuerpo">Saltar al contenido</a>
+
+<header class="barra">
+  <a class="marca" href="index.html">
+    <img class="logo" src="img/logo.svg" alt="" width="30" height="30">
+    <div>
+      <h1>ESLE2</h1>
+      <p>El lenguaje SLE2 en el navegador</p>
+    </div>
+  </a>
+  <nav class="pestanas">
+    <a class="pest" href="index.html">IDE</a>
+    <a class="pest" href="index.html#curso">Curso</a>
+    <a class="pest activa" href="documentacion.html">Documentación</a>
+    <a class="pest destacada" href="poo.html" title="El mismo lenguaje con clases y objetos">ESLE2 POO</a>
+    <a class="pest destacada" href="visual.html" title="Ventanas, controles y dibujo">ESLE2 Visual</a>
+    <a class="pest destacada" href="bd.html" title="Bases de datos y SQL">ESLE2 BD</a>
+    <a class="pest" href="bd-documentacion.html">Docs BD</a>
+    <a class="pest" href="diseno.html">Diseño</a>
+  </nav>
+
+  <div class="barra-acciones">
+    <button class="btn-buscar oculto" id="btnInstalar" type="button" data-ic="instalar" aria-label="Instalar ESLE2 como aplicación"
+            title="Instalar ESLE2 como aplicación"><span class="etiqueta">Instalar</span></button>
+    <button class="btn-buscar" id="btnBuscar" type="button" data-ic="buscar" aria-label="Buscar en todo ESLE2"
+            title="Buscar en todo ESLE2 (Ctrl + K)"><span class="etiqueta">Buscar</span><kbd>Ctrl K</kbd></button>
+    <button class="btn-tema" id="btnTema" type="button">☾</button>
+  </div>
+</header>
+
+<div class="doc">
+  <aside class="doc-lateral">
+    <div class="doc-buscador">
+      <span class="lupa">⌕</span>
+      <input type="search" id="docBuscar" placeholder="Buscar en la documentación…"
+             autocomplete="off" spellcheck="false" aria-label="Buscar en la documentación">
+      <button class="limpiar oculto" id="docLimpiar" title="Limpiar búsqueda" aria-label="Limpiar búsqueda">×</button>
+    </div>
+    <p id="docResultados"></p>
+    <ul class="doc-indice" id="docIndice"></ul>
+  </aside>
+
+  <main class="doc-cuerpo" id="docCuerpo" tabindex="-1">
+    <div class="doc-intro">
+      <h1>Documentación de ESLE2</h1>
+      <p class="nota">Todo el lenguaje SL (SLE2) explicado, tal como lo implementa este sitio.
+         Escribí en el buscador del índice para filtrar: se ocultan los apartados que no
+         tengan que ver con lo que buscás. Atajo: pulsá <kbd>/</kbd> para ir al buscador.</p>
+    </div>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-que-es" data-titulo="Qué es ESLE2">
+      <h2>Qué es ESLE2</h2>
+      <p class="sub">Un entorno completo de SLE2 que corre dentro del navegador.</p>
+
+      <div class="doc-bloque">
+        <h3>El lenguaje</h3>
+        <p><strong>SL</strong> (y su entorno <strong>SLE2</strong>) es un lenguaje creado en el
+           Centro Nacional de Computación de la Universidad Nacional de Asunción para enseñar
+           algoritmos. Su sintaxis se parece a la de Pascal y C, pero está simplificada: hay un
+           único tipo numérico, las cadenas crecen solas y no hace falta el punto y coma al final
+           de cada sentencia.</p>
+        <p>ESLE2 reimplementa ese lenguaje en JavaScript, así que podés escribir, compilar y
+           ejecutar programas SLE2 sin instalar nada.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Cómo se usa el IDE</h3>
+        <figure class="doc-figura ancha">
+          <svg viewBox="0 0 640 236" role="img" aria-label="Recorrido de un programa: editor, revisión, ejecución y pantalla">
+            <defs><marker id="fl1" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path class="dg-flecha" d="M0 0 L8 4 L0 8 z"/></marker></defs>
+            <text class="dg-tit" x="14" y="16">EL CAMINO DE UN PROGRAMA</text>
+
+            <rect class="dg-caja-ac" x="14" y="70" width="136" height="78" rx="6"/>
+            <text class="dg-t" x="30" y="98">Editor</text>
+            <text class="dg-c" x="30" y="118">programa.sl</text>
+            <text class="dg-n" x="30" y="136">lo que escribís vos</text>
+
+            <rect class="dg-caja" x="196" y="70" width="126" height="78" rx="6"/>
+            <text class="dg-t" x="212" y="98">Revisar</text>
+            <text class="dg-n" x="212" y="118">sintaxis y</text>
+            <text class="dg-n" x="212" y="134">recomendaciones</text>
+
+            <rect class="dg-caja" x="368" y="70" width="126" height="78" rx="6"/>
+            <text class="dg-t" x="384" y="98">Ejecutar</text>
+            <text class="dg-n" x="384" y="118">el intérprete</text>
+            <text class="dg-n" x="384" y="134">corre tu programa</text>
+
+            <rect class="dg-caja-ok" x="540" y="70" width="86" height="78" rx="6"/>
+            <text class="dg-t" x="556" y="98">Pantalla</text>
+            <text class="dg-n" x="556" y="118">la salida</text>
+
+            <path class="dg-fl" marker-end="url(#fl1)" d="M150 109 L190 109"/>
+            <path class="dg-fl" marker-end="url(#fl1)" d="M322 109 L362 109"/>
+            <path class="dg-fl" marker-end="url(#fl1)" d="M494 109 L534 109"/>
+
+            <rect class="dg-caja-2" x="368" y="180" width="126" height="44" rx="6"/>
+            <text class="dg-c" x="384" y="200">Entrada de datos</text>
+            <text class="dg-n" x="384" y="216">lo que consume leer()</text>
+            <path class="dg-fl" marker-end="url(#fl1)" d="M431 180 L431 154"/>
+
+            <path class="dg-punt" marker-end="url(#fl1)" d="M259 70 L259 40 L82 40 L82 64"/>
+            <text class="dg-n" x="272" y="36">si algo está mal, el error te devuelve al editor con una recomendación</text>
+          </svg>
+          <figcaption><b>Todo pasa dentro del navegador.</b> El programa que escribís se revisa, se
+            ejecuta y muestra su salida en la pantalla de abajo; los datos que necesite <code>leer()</code>
+            salen del panel <em>Entrada de datos</em>. Si hay un error, ESLE2 te lleva de vuelta a la
+            línea exacta del editor.</figcaption>
+        </figure>
+        <ul>
+          <li><strong>Explorador de archivos</strong> (en el menú <em>Ver</em>, <strong>viene
+              apagado</strong>): si lo encendés, aparece a la izquierda una lista con todos tus
+              programas, como en un editor de escritorio. El que tenías en el editor pasa a ser el
+              primero, así que no se pierde nada. Podés crear, renombrar, duplicar y borrar
+              archivos; al tocar uno se guarda solo el que estabas escribiendo y se abre el otro.
+              Las carpetas son parte del nombre: si a un archivo lo llamás
+              <code>parcial/ej1.sl</code> queda dentro de la carpeta «parcial», y moverlo de carpeta
+              es renombrarlo. Apagándolo, ESLE2 vuelve a trabajar con un solo programa y tus
+              archivos quedan guardados por si lo prendés de nuevo.</li>
+          <li><strong>ESLE2 Visual</strong>: una página aparte para hacer <strong>ventanas con
+              botones, cajas de texto y listas, y dibujar en un lienzo</strong>, con el mismo
+              lenguaje de siempre y sin ninguna palabra reservada nueva. Está en
+              <a href="visual.html">ESLE2 Visual</a> y tiene su propia
+              <a href="visual-documentacion.html">documentación</a>.</li>
+          <li>La barra de herramientas está <strong>agrupada en tres menús</strong> —Archivo, Ver y
+              Traducir— para que a la vista queden solo los botones que se usan todo el tiempo:
+              Ejecutar, Revisar y Depurar. Cada botón tiene su icono, y los menús se abren con el
+              teclado y se cierran con <kbd>Esc</kbd>.</li>
+          <li><strong>Editor</strong>: escribís el programa. Se guarda solo en tu navegador.</li>
+          <li><strong>Entrada de datos</strong>: las líneas que va a consumir <code>leer()</code>.
+              Si se agotan, ESLE2 te las pide por consola mientras el programa corre.</li>
+          <li><strong>Ejecutar</strong> (<kbd>Ctrl</kbd> + <kbd>Enter</kbd>): compila y corre.</li>
+          <li><strong>Revisar</strong>: verifica la sintaxis, muestra recomendaciones
+              (variables sin usar, ciclos que podrían no terminar, palabras mal escritas…) y
+              sugerencias de estilo para escribir el mismo programa mejor.</li>
+          <li><strong>Detener</strong> (o la tecla <kbd>Esc</kbd>): corta el programa en el acto,
+              esté dando vueltas en un ciclo o esperando datos, una tecla o una pausa de
+              <code>beep()</code>.</li>
+          <li><strong>Guardar .sl</strong> / <strong>Abrir…</strong>: bajás o subís el archivo fuente.</li>
+          <li><strong>Proyectar</strong> (<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd>): agranda el
+              código y la pantalla y saca de en medio lo que no se ve desde el fondo del aula. La
+              barra de abajo ajusta el tamaño y sale.</li>
+          <li>El panel <strong>Para repasar hoy</strong> propone rehacer, de memoria, ejercicios que
+              ya resolviste hace unos días: cuanto más te costó uno, antes vuelve.</li>
+          <li>Para el examen hay <strong>plantillas listas</strong> (lo básico, vectores y matrices,
+              cadenas, práctica rápida), y con <strong>Ver entregas…</strong> se pueden abrir varias
+              a la vez: sale una planilla del curso con la nota de cada uno, que se baja en
+              <code>.csv</code>.</li>
+          <li><strong>Modo examen…</strong> (en el Curso): el profesor elige ejercicios y minutos y
+              baja un archivo de examen; el alumno lo carga, lo rinde con cronómetro y sin pistas, y
+              al entregar el navegador corrige solo y baja la entrega con los resultados, el código y
+              los tiempos.</li>
+          <li>El panel <strong>Cómo venís</strong>, debajo de la lista del curso, cuenta cuántos
+              ejercicios resolviste por nivel, cuántas veces verificaste y en cuál te trabaste más.</li>
+          <li><strong>Mis ejercicios…</strong> (en el Curso): creá tus propios ejercicios con sus
+              casos de prueba —se corrigen solos igual que los del curso— y compartilos como archivo.</li>
+          <li><strong>Modo aula…</strong> (en el Curso): armá una <strong>guía</strong> con los
+              ejercicios que quieras —del curso, o tuyos con tus propios casos de prueba—, ponele un
+              título y un mensaje para la clase, y copiá un enlace. Quien lo abre ve esa guía y nada
+              más, y cada ejercicio se corrige solo, como siempre. <strong>La guía entera viaja
+              adentro del enlace</strong>, después del <code>#</code>: no hay servidor, no hay
+              cuentas, no hay nada que se caiga el día del parcial, y lo que va después del
+              <code>#</code> no se manda a ningún lado. Para volver al curso completo está
+              <em>Salir de la guía</em>.</li>
+          <li><strong>Leer el código</strong> (menú Ver, o <kbd>Alt</kbd> + <kbd>L</kbd>): dice en
+              voz alta la línea donde está el cursor, cada vez que te movés. No lee los caracteres
+              uno por uno: dice <em>«si x es mayor o igual que 5»</em>, y distingue
+              <code>=</code> («recibe») de <code>==</code> («es igual a»), que es el error más
+              difícil de encontrar de oído. La sangría se anuncia cuando cambia («nivel 2»).
+              <strong>Viene apagado</strong>: quien ya usa NVDA o VoiceOver no necesita que le
+              hablen encima. <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd> lee el programa
+              entero.</li>
+          <li><strong>Dictar código…</strong> (menú Ver, o <kbd>Alt</kbd> + <kbd>D</kbd>): decís una
+              línea en español y se escribe en SLE2 —<em>«si x es mayor a 5 entonces»</em> se
+              convierte en <code>si ( x &gt; 5 )</code>—. Siempre <strong>muestra qué entendió
+              antes de escribir nada</strong>, y si no entendió lo dice en vez de inventar una
+              línea. Se puede <strong>escribir la frase</strong> en lugar de hablarla, así funciona
+              en cualquier navegador (reconocer voz hoy es cosa de Chrome y Edge, y ahí el audio
+              pasa por los servidores del navegador).</li>
+          <li><strong>Grabar ejecución</strong> (al lado de <em>Depurar</em>): corre el programa
+              entero de una vez y deja abajo una <strong>barra de tiempo</strong>. Arrastrándola se
+              vuelve a cualquier instante: la línea que se estaba ejecutando se marca en el editor,
+              las variables vuelven al valor que tenían —y <strong>la que cambió en ese paso queda
+              resaltada</strong>—, y lo que el programa había imprimido y dibujado se borra o se
+              vuelve a pintar según hacia dónde muevas. Sirve para la pregunta que uno se hace de
+              verdad: <em>¿en qué momento esta variable se llenó de basura?</em> Si el programa no
+              termina, se corta a los 4000 pasos y te lo dice; lo grabado hasta ahí es justo lo que
+              hay que mirar. Mientras graba, los datos salen del panel <em>Entrada de datos</em>: no
+              te los va a pedir por consola.</li>
+          <li><strong>Modo enfoque</strong> (menú Ver, o <kbd>Alt</kbd> + <kbd>E</kbd>): deja el
+              editor y nada más —sin pestañas, sin menús, sin la columna de la derecha— con una
+              barra chica abajo. Al ejecutar, <strong>la pantalla vuelve sola</strong> para que veas
+              el resultado, y se va de nuevo en cuanto seguís escribiendo; también se puede dejar
+              fija. Trae <strong>música de fondo</strong> tranquila, apagada de entrada: se puede
+              encender y bajarle el volumen desde esa barra. La música no es un archivo descargado,
+              <strong>se calcula en el momento</strong>, así que no pesa nada y funciona sin
+              internet.</li>
+          <li><strong>Programar de a dos…</strong> (menú Archivo): dos alumnos escriben el mismo
+              programa desde computadoras distintas, como en un documento compartido. Uno crea la
+              sala y le pasa el enlace al otro. El texto viaja <strong>directo de una máquina a la
+              otra y cifrado</strong> con una contraseña que va en el mismo enlace: un servidor
+              ajeno solo las presenta y no puede leer nada. Se comparte solo el texto del programa
+              —la entrada, la salida y tu progreso siguen siendo tuyos—, y cada uno ejecuta en su
+              máquina. Es lo <strong>único</strong> de ESLE2 que necesita internet, y lo que hace
+              falta para que ande se descarga recién al abrirlo.</li>
+          <li><strong>Transmitir mi lógica…</strong> (menú Archivo): un enlace corto y fácil de
+              dictar —<code>esle2.vercel.app/live/juan</code>— para que otros vean, en el momento,
+              cómo vas escribiendo tu programa. Los que miran <strong>solo miran</strong>: no pueden
+              tocar tu código. Sirve para mostrarle algo a un profesor sin mandarle un archivo, o
+              para que la clase siga desde su pantalla lo que se hace adelante. <strong>Ese enlace
+              es público</strong>: el nombre es corto para poder dictarlo, así que también es fácil
+              de adivinar, y cualquiera que escriba esa dirección puede mirar mientras estés
+              transmitiendo. No pongas ahí tu nombre completo, y cortá la transmisión al terminar.
+              Cuando cerrás la pestaña no queda nada que mirar: no se guarda en ningún lado.</li>
+          <li><strong>Batallas de código…</strong> (en el Curso): dos personas, el mismo
+              problema, cinco minutos. Alguien crea la batalla, dicta el código —<code>RIO-482</code>—
+              y el resto entra con él; el sistema empareja de a dos y le da a cada pareja el mismo
+              ejercicio. Gana quien pasa todos los casos de prueba primero. <strong>El código que
+              escribe cada uno es suyo</strong>: entre las dos máquinas solo viaja «terminé, en
+              tantos segundos». Los puntos se guardan en tu navegador y no hay tabla mundial: la
+              idea es que dos se sienten a resolver lo mismo, no un ranking.</li>
+          <li><strong>Si te trabás, te lo decimos.</strong> Cuando el mismo error de sintaxis
+              aparece cinco veces seguidas en menos de dos minutos, sale un mensaje en la salida
+              ofreciendo mirar juntos la línea, y si sigue pasando, propone parar treinta segundos
+              —que destraba más que otros diez intentos—. No interrumpe, no roba el foco, no
+              repite, y se apaga para siempre con un botón.</li>
+          <li>ESLE2 <strong>funciona sin internet</strong>: la primera visita deja todo guardado en el
+              navegador. También se puede instalar como aplicación con el botón <strong>Instalar</strong>.</li>
+          <li><strong>A JavaScript</strong> y <strong>A Python</strong>: muestran el mismo programa
+              traducido, listo para correr con <code>node programa.js</code> o
+              <code>python programa.py</code>. Sirve para ver cómo se escribe en otro lenguaje lo que
+              ya sabés hacer en SLE2.</li>
+          <li><strong>En el celular</strong>: ESLE2 se adapta a la pantalla —la barra de arriba, las
+              pestañas y las herramientas se deslizan de costado en vez de apilarse, y los paneles
+              van uno debajo del otro— y se puede <strong>instalar como aplicación</strong> con el
+              botón <span aria-hidden="true">⤓</span>. Queda con su icono en la pantalla de inicio,
+              se abre sin la barra del navegador y anda sin internet. En Android e iPhone los pasos
+              son distintos: el mismo botón te muestra los de tu teléfono.</li>
+          <li><strong>Sonidos</strong>: el botón <span aria-hidden="true">🔊</span> de la barra de
+              arriba enciende y apaga tres avisos cortos y suaves —uno cuando el programa compila o
+              termina bien, otro cuando se resuelve un ejercicio, y uno más grave y bajito cuando
+              algo falla—. Duran menos de un segundo y no son archivos de audio: las notas se
+              generan en el momento, así que no pesan nada y andan sin internet. La preferencia se
+              guarda en este navegador.</li>
+          <li><strong>⟲ Historial</strong>: control de versiones en chiquito. ESLE2 guarda solo una
+              copia de tu programa cada vez que lo ejecutás, cuando resolvés un ejercicio y
+              <strong>antes</strong> de cualquier cosa que pise el editor —abrir un archivo, cargar
+              un ejemplo, empezar un ejercicio, «Nuevo»—; también podés guardar una a mano con un
+              nombre. En el diálogo se ve la lista de versiones y, al elegir una, qué cambió entre
+              esa versión y lo que tenés ahora: en rojo lo que ya no está, en verde lo que se
+              agregó. <em>Restaurar</em> la trae de vuelta al editor, y como antes de restaurar
+              también se guarda lo que había, volver atrás nunca te hace perder nada.</li>
+          <li><strong>Autocompletado</strong>: mientras escribís aparece una lista con lo que puede ir
+              ahí —palabras reservadas, subrutinas del lenguaje con su firma y su explicación, y las
+              variables, constantes, tipos y subrutinas de tu propio programa—. Se elige con las
+              flechas y <kbd>Enter</kbd>, se cierra con <kbd>Esc</kbd> y se abre a mano con
+              <kbd>Ctrl</kbd> + <kbd>Espacio</kbd>. Está pensado sobre todo para no escribir mal un
+              nombre: si ponés <code>imrimir</code> te ofrece <code>imprimir</code>, y si escribís
+              una palabra reservada con mayúsculas —<code>Si</code>, <code>MIENTRAS</code>— lo
+              primero que aparece es la forma en minúsculas, que es la única válida. Las estructuras
+              se completan enteras, con el <code>sino</code> adentro de las llaves.</li>
+          <li><strong>▤ Memoria</strong>: el <strong>simulador de memoria</strong>. Corre el programa
+              guardando una foto por sentencia y después se recorre con una línea de tiempo: se ve
+              nacer cada <em>caja</em> de variable —con su dirección, su tipo y cuántos bytes ocupa—,
+              ponerse en amarillo cuando cambia su contenido y desaparecer cuando termina la
+              subrutina. Cada llamada abre su marco en la pila, más abajo que el anterior, y al
+              costado va escrito en palabras qué pasó en ese paso. Las direcciones y los tamaños son
+              los <em>de manual</em> (un número 8 bytes, un lógico 1, una cadena una letra por byte),
+              no los que usa el navegador por dentro.</li>
+          <li><strong>◇ Diagrama</strong>: dibuja el programa como <strong>diagrama de flujo</strong>
+              —óvalo para el inicio y el fin, rectángulo para un proceso, romboide para la entrada y
+              la salida, rombo para cada decisión— y al costado lo cuenta en palabras, paso por paso.
+              El dibujo se baja como <code>.svg</code> y la explicación se copia al portapapeles, que
+              es lo que suelen pedir los trabajos prácticos. Cada subrutina tiene su propio diagrama.
+              El <code>desde</code> se dibuja abierto (inicializar, preguntar, cuerpo, sumar el paso)
+              porque es la forma en que se explica en clase.</li>
+          <li>Los <strong>paneles se acomodan</strong>: las barras que los separan cambian el tamaño
+              arrastrándolas —o con las flechas del teclado, que se pueden enfocar con
+              <kbd>Tab</kbd>—, y cada panel se mueve de lugar arrastrándolo del título o con el
+              botón <span aria-hidden="true">⇅</span> de su encabezado. La disposición queda guardada
+              en el navegador; <strong>⤢ Paneles</strong> vuelve a la original.</li>
+          <li><strong>Ajustar texto</strong> (<kbd>Alt</kbd> + <kbd>Z</kbd>, en el menú
+              <em>Ver</em>): corta las líneas largas al ancho del panel en vez de dejarlas salir por
+              la derecha. Lo que sigue abajo arranca a la altura de la línea original, así que un
+              <code>imprimir</code> sangrado se sigue leyendo sangrado. Sirve sobre todo en un
+              teléfono y proyectando en clase. Queda guardado, y cada ESLE2 tiene el suyo.</li>
+          <li><strong>Buscar</strong> (<kbd>Ctrl</kbd> + <kbd>K</kbd>): un solo campo para llegar a
+              cualquier parte: secciones de las dos documentaciones, ejercicios de los dos cursos y
+              subrutinas predefinidas.</li>
+          <li><strong>Exportar / Importar progreso</strong> (en el Curso): baja tu avance como archivo
+              y lo vuelve a cargar en otra computadora o después de limpiar el navegador.</li>
+          <li><strong>Depurar</strong> (<kbd>F9</kbd>): ejecuta el programa <em>paso a paso</em>. Se
+              detiene antes de cada sentencia, te marca la línea que está por ejecutarse y muestra el
+              panel <em>Variables</em>, que <strong>dibuja</strong> lo que vale cada una: los vectores
+              como casillas numeradas desde 1, las matrices como filas de casillas y los registros
+              con sus campos. <kbd>F10</kbd> da un
+              paso, <kbd>F8</kbd> sigue sin pausas y <strong>Detener</strong> corta.</li>
+          <li><strong>Compartir</strong>: copia un enlace con el programa y los datos de entrada
+              adentro. El que lo abre lo recibe cargado en su IDE. El programa viaja en la propia
+              dirección, así que no se sube a ningún servidor.</li>
+          <li><strong>Archivos…</strong>: los archivos de texto que usan <code>set_stdin()</code> y
+              <code>set_stdout()</code>. Viven en la memoria del navegador; podés crearlos, editarlos
+              y ver lo que escribió tu programa.</li>
+          <li><strong>Argumentos</strong>: los parámetros que devuelven <code>paramval()</code> y
+              <code>pcount()</code>. Si un argumento tiene espacios, ponelo entre comillas.</li>
+        </ul>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Las dos versiones del lenguaje</h3>
+        <p>ESLE2 acepta tanto la sintaxis del libro <em>Introducción al lenguaje SL</em> (1999) como
+           las novedades del manual de subrutinas predefinidas (2004). En concreto, además de lo
+           clásico podés usar:</p>
+        <ul>
+          <li><code>sub</code> como sinónimo de <code>subrutina</code>.</li>
+          <li><code>&amp;&amp;</code>, <code>||</code>, <code>!</code> y <code>!=</code> como
+              sinónimos de <code>and</code>, <code>or</code>, <code>not</code> y <code>&lt;&gt;</code>.</li>
+          <li>Declarar variables con valor inicial y dejar que el tipo se deduzca: <code>n = 0</code>.</li>
+          <li><code>leer()</code> e <code>imprimir()</code> con arreglos y registros enteros.</li>
+          <li>Archivos, colores, cursor, <code>ifval()</code>, <code>intercambiar()</code>,
+              <code>max()</code>, <code>min()</code>, <code>terminar()</code>, <code>beep()</code>
+              y <code>readkey()</code>.</li>
+        </ul>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>El curso</h3>
+        <p>La pestaña <em>Curso</em> tiene ejercicios de nivel fácil, medio y avanzado. Cada uno
+           trae enunciado, pista, plantilla y casos de prueba. Al pulsar <em>Verificar solución</em>
+           el programa se ejecuta con todos los casos y se compara la salida. El progreso queda
+           guardado en una cookie de tu navegador.</p>
+      </div>
+      <div class="doc-bloque">
+        <h3>Con el teclado y con lector de pantalla</h3>
+        <ul>
+          <li>El primer <kbd>Tab</kbd> de cada página ofrece <strong>Saltar al contenido</strong>,
+              para no recorrer la barra entera.</li>
+          <li>Todo lo que se puede tocar con el mouse se puede usar con el teclado, y lo que tiene el
+              foco se ve con un contorno.</li>
+          <li>La pantalla del programa se anuncia sola: un lector de pantalla lee lo que va
+              imprimiendo.</li>
+          <li>Los colores del sitio cumplen el contraste mínimo de la norma (WCAG AA, 4.5:1), en los
+              dos temas y en los ocho fondos de la página <a href="diseno.html">Diseño</a>.</li>
+        </ul>
+      </div>
+
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-primer" data-titulo="Tu primer programa">
+      <h2>Tu primer programa</h2>
+      <p class="sub">Leer un dato, calcular y mostrar el resultado.</p>
+
+      <div class="doc-bloque">
+        <h3>Ejemplo completo</h3>
+<pre><code>/*
+   Calcular e imprimir la suma de los numeros pares entre 1 y un n dado.
+*/
+programa suma_pares
+var
+   n, suma, k : numerico
+inicio
+   imprimir ("Ingrese un valor para n: ")
+   leer (n)
+   suma = 0
+   desde k=2 hasta n paso 2
+   {
+      suma = suma + k
+   }
+   imprimir ("\nLa suma es ", suma)
+fin</code></pre>
+        <p>Con <code>20</code> en la entrada de datos, el programa imprime
+           <code>La suma es 110</code>.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Qué mirar de ese programa</h3>
+        <ul>
+          <li>La cláusula <code>programa nombre</code> es opcional: solo documenta.</li>
+          <li>Todas las variables se declaran antes de usarlas, en la sección <code>var</code>.</li>
+          <li>El cuerpo va entre <code>inicio</code> y <code>fin</code>.</li>
+          <li><code>\n</code> dentro de una cadena hace que lo siguiente se imprima en otra línea.</li>
+          <li>No hace falta <code>;</code> al final de cada sentencia.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-estructura" data-titulo="Estructura de un programa">
+      <h2>Estructura de un programa</h2>
+      <p class="sub">Secciones de declaración, cuerpo principal y subrutinas.</p>
+
+      <div class="doc-bloque">
+        <h3>Esqueleto general</h3>
+        <figure class="doc-figura ancha">
+          <svg viewBox="0 0 620 320" role="img" aria-label="Partes de un programa de SLE2">
+            <defs><marker id="fl2" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path class="dg-flecha" d="M0 0 L8 4 L0 8 z"/></marker></defs>
+            <rect class="dg-caja-2" x="14" y="14" width="330" height="46" rx="6"/>
+            <text class="dg-c" x="30" y="43">programa suma_pares</text>
+            <text class="dg-n" x="360" y="38">nombre del programa (opcional)</text>
+
+            <rect class="dg-caja" x="14" y="68" width="330" height="42" rx="6"/>
+            <text class="dg-c" x="30" y="94">const   MAX = 100</text>
+            <text class="dg-n" x="360" y="93">valores que no cambian</text>
+
+            <rect class="dg-caja" x="14" y="118" width="330" height="42" rx="6"/>
+            <text class="dg-c" x="30" y="144">tipos   FECHA : registro { … }</text>
+            <text class="dg-n" x="360" y="143">tipos propios</text>
+
+            <rect class="dg-caja" x="14" y="168" width="330" height="42" rx="6"/>
+            <text class="dg-c" x="30" y="194">var     n, suma : numerico</text>
+            <text class="dg-n" x="360" y="193">las variables</text>
+
+            <rect class="dg-caja-ac" x="14" y="218" width="330" height="52" rx="6"/>
+            <text class="dg-c" x="30" y="240">inicio  … sentencias …</text>
+            <text class="dg-c" x="30" y="260">fin</text>
+            <text class="dg-n" x="360" y="240">el cuerpo: lo único obligatorio</text>
+            <text class="dg-n" x="360" y="258">es este bloque</text>
+
+            <rect class="dg-caja-2" x="14" y="278" width="330" height="30" rx="6"/>
+            <text class="dg-c" x="30" y="298">subrutina promedio (…) … fin</text>
+            <text class="dg-n" x="360" y="298">van siempre DESPUÉS del fin</text>
+
+            <path class="dg-punt" d="M350 37 L354 37"/>
+            <path class="dg-punt" d="M350 92 L354 92"/>
+            <path class="dg-punt" d="M350 142 L354 142"/>
+            <path class="dg-punt" d="M350 192 L354 192"/>
+            <path class="dg-punt" d="M350 244 L354 244"/>
+            <path class="dg-punt" d="M350 297 L354 297"/>
+          </svg>
+          <figcaption><b>Un programa mínimo es solo <code>inicio … fin</code>.</b> Todo lo demás
+            —nombre, constantes, tipos y variables— es opcional, puede repetirse y venir en cualquier
+            orden; las subrutinas, en cambio, van siempre después del <code>fin</code> del programa
+            principal.</figcaption>
+        </figure>
+<pre><code>programa nombre_del_programa     // opcional
+
+const
+   declaración de una o más constantes
+tipos
+   declaración de uno o más tipos de datos
+var
+   declaración de una o más variables
+
+inicio
+   sentencias...
+fin
+
+subrutina sub1 (parametros) retorna tipo_dato
+   const / tipos / var propios
+inicio
+   sentencias...
+   retorna ( algun_valor )
+fin</code></pre>
+        <p>Las cláusulas <code>const</code>, <code>tipos</code> y <code>var</code> pueden aparecer
+           ninguna o varias veces y en cualquier orden. Las subrutinas van siempre
+           <strong>después</strong> del <code>fin</code> del programa principal, y pueden tener sus
+           propias constantes, tipos y variables.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Separadores de sentencias</h3>
+        <p>El lenguaje es de formato libre: una sentencia puede ocupar varias líneas y no necesita
+           <code>;</code> al final. Si querés poner dos sentencias en la misma línea, ahí sí las
+           separás con punto y coma:</p>
+<pre><code>a = (b + c) * (b / y) +
+    (y / c)              // una sola sentencia en dos líneas
+
+a = b + c; n = a / y     // dos sentencias en una línea</code></pre>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-comentarios" data-titulo="Comentarios">
+      <h2>Comentarios</h2>
+      <p class="sub">Texto que el compilador ignora.</p>
+      <div class="doc-bloque">
+        <h3>Las dos formas</h3>
+<pre><code>// Comentario de una línea: vale hasta el fin de la línea.
+
+/*
+   Comentario de varias líneas.
+   Puede contener // adentro, pero no otro comentario /* ... */
+</code></pre>
+        <p>Los comentarios multilínea <strong>no se pueden anidar</strong>: el primer
+           <code>*/</code> cierra el comentario.</p>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-identificadores" data-titulo="Identificadores y palabras reservadas">
+      <h2>Identificadores y palabras reservadas</h2>
+      <p class="sub">Cómo se nombran variables, constantes, tipos y subrutinas.</p>
+
+      <div class="doc-bloque">
+        <h3>Reglas de los identificadores</h3>
+        <ul>
+          <li>Empiezan con una letra o con guión bajo <code>_</code>.</li>
+          <li>Pueden tener hasta 32 caracteres.</li>
+          <li>No llevan espacios ni guiones medios.</li>
+          <li>Admiten letras, dígitos, <code>_</code> y también <code>ñ</code> / <code>Ñ</code>.</li>
+          <li><strong>No</strong> admiten vocales acentuadas.</li>
+          <li>Distinguen mayúsculas de minúsculas: <code>CANTIDAD</code>, <code>cantidad</code> y
+              <code>Cantidad</code> son tres identificadores distintos.</li>
+        </ul>
+        <p>Válidos: <code>peso</code>, <code>total_puntos</code>, <code>MAXCOLUMNAS</code>,
+           <code>mat2</code>, <code>sgte_año</code>.<br>
+           No válidos: <code>2da_var</code>, <code>$prueba</code>, <code>cant alumnos</code>,
+           <code>tot-puntos</code>.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Palabras reservadas</h3>
+        <p>Se escriben <strong>siempre en minúsculas</strong>. No pueden usarse como nombres:</p>
+<pre><code>and        archivo    caso       const      constantes
+desde      eval       fin        hasta      inicio
+lib        libext     matriz     mientras   not
+or         paso       sub        subrutina  programa
+ref        registro   repetir    retorna    si
+sino       tipos      var        variables  vector</code></pre>
+        <p><code>sub</code> es el nombre corto de <code>subrutina</code> que usa el manual de 2004;
+           las dos formas son equivalentes.</p>
+        <div class="doc-cuidado">Si escribís <code>Si</code> o <code>MIENTRAS</code>, el compilador
+          las toma como nombres de variables y el error aparece más adelante, en un lugar raro.
+          El botón <em>Revisar</em> del IDE detecta este caso y te avisa.</div>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-tipos" data-titulo="Tipos de datos y constantes literales">
+      <h2>Tipos de datos y constantes literales</h2>
+      <p class="sub">numerico, cadena y logico, más los valores que se escriben directamente.</p>
+
+      <div class="doc-bloque">
+        <h3>Tipos básicos</h3>
+        <figure class="doc-figura ancha">
+          <svg viewBox="0 0 620 172" role="img" aria-label="Los tres tipos de datos de SLE2">
+            <rect class="dg-caja-ac" x="14" y="20" width="184" height="132" rx="6"/>
+            <text class="dg-t" x="30" y="46">numerico</text>
+            <text class="dg-c" x="30" y="70">42    -7.5    1.7E308</text>
+            <text class="dg-n" x="30" y="96">Un solo tipo para enteros</text>
+            <text class="dg-n" x="30" y="112">y decimales.</text>
+            <text class="dg-n" x="30" y="138">arranca en 0</text>
+
+            <rect class="dg-caja-ok" x="216" y="20" width="184" height="132" rx="6"/>
+            <text class="dg-t" x="232" y="46">cadena</text>
+            <text class="dg-c" x="232" y="70">"hola"   "12/2026"</text>
+            <text class="dg-n" x="232" y="96">Crece sola: no hay que</text>
+            <text class="dg-n" x="232" y="112">declarar su largo.</text>
+            <text class="dg-n" x="232" y="138">arranca en ""</text>
+
+            <rect class="dg-caja-av" x="418" y="20" width="184" height="132" rx="6"/>
+            <text class="dg-t" x="434" y="46">logico</text>
+            <text class="dg-c" x="434" y="70">TRUE / FALSE</text>
+            <text class="dg-n" x="434" y="96">SI y NO son sinónimos</text>
+            <text class="dg-n" x="434" y="112">de esos dos valores.</text>
+            <text class="dg-n" x="434" y="138">arranca en FALSE</text>
+          </svg>
+          <figcaption><b>Tres tipos y nada más.</b> No hay <code>entero</code> separado de
+            <code>real</code>, ni un largo máximo para las cadenas. Toda variable arranca con un valor
+            razonable, así que nunca vas a leer basura.</figcaption>
+        </figure>
+        <table>
+          <tr><th>Tipo</th><th>Valores que admite</th><th>Valor inicial</th></tr>
+          <tr><td><code>numerico</code></td><td>Enteros y reales, con o sin signo (de −1.7E308 a 1.7E308). SL no distingue entre entero y real.</td><td><code>0</code></td></tr>
+          <tr><td><code>cadena</code></td><td>Cualquier secuencia de caracteres. La longitud se ajusta sola; la cadena vacía es <code>""</code>.</td><td><code>""</code></td></tr>
+          <tr><td><code>logico</code></td><td><code>TRUE</code> y <code>FALSE</code>, o sus sinónimos <code>SI</code> y <code>NO</code>.</td><td><code>FALSE</code></td></tr>
+        </table>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Números</h3>
+        <p>Enteros, reales con punto decimal y notación científica:</p>
+<pre><code>314      -100     +217
+3.14     2e+10    5e-3     8E+131</code></pre>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Cadenas y secuencias de escape</h3>
+        <p>Una cadena va entre comillas dobles o entre apóstrofes. Sirve cualquiera de los dos,
+           lo que permite incluir el otro adentro:</p>
+<pre><code>"Aprendiendo a programar..."
+"Conteste con 'si' o 'no', por favor"
+'Maria dijo: "Buenos dias!"'</code></pre>
+        <table>
+          <tr><th>Secuencia</th><th>Significado</th></tr>
+          <tr><td><code>\n</code></td><td>Pasa al inicio de la línea siguiente</td></tr>
+          <tr><td><code>\r</code></td><td>Vuelve al inicio de la línea actual</td></tr>
+          <tr><td><code>\t</code></td><td>Tabulador</td></tr>
+          <tr><td><code>\\</code> <code>\"</code> <code>\'</code></td><td>El carácter que sigue a la barra, tal cual</td></tr>
+        </table>
+        <p>Una constante de cadena tiene que entrar en una sola línea. Para repartirla, se concatena:</p>
+<pre><code>texto = "Aprender a programar " +
+        "es divertido"</code></pre>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-variables" data-titulo="Variables y constantes">
+      <h2>Variables y constantes</h2>
+      <p class="sub">Declaración, valores por defecto y constantes manifiestas.</p>
+
+      <div class="doc-bloque">
+        <h3>Declarar variables</h3>
+<pre><code>var
+   edad : numerico
+   nombre : cadena
+   tot_mensual, tot_general : numerico   // varias del mismo tipo</code></pre>
+        <p>Todas las variables se declaran antes de usarlas. SL les da un valor inicial automático
+           (0, cadena vacía o FALSE según el tipo).</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Valor inicial e inferencia de tipo</h3>
+        <p>Una declaración puede traer su valor inicial. Si lo trae, el tipo puede omitirse: SL lo
+           deduce del valor. Las tres formas son válidas y se pueden mezclar:</p>
+<pre><code>var
+   n = 0                                  // numerico, vale 0
+   nombre = ""                            // cadena vacía
+   ok = TRUE                              // logico
+   pos_A = ord ("A")                      // el valor inicial puede ser una expresión
+   nom_dias : vector [*] cadena = {"dom", "lun", "mar", "mie",
+                                   "jue", "vie", "sab"}
+   tope : vector [12] numerico = {31, 28, 31, 30, 31, 30,
+                                  31, 31, 30, 31, 30, 31}</code></pre>
+        <p>El valor inicial se evalúa una sola vez, al empezar el programa (o al entrar en la
+           subrutina, si la variable es local). Un literal <code>{ … }</code> sin tipo declarado
+           produce un vector abierto del tipo de su primer elemento.</p>
+        <div class="doc-nota">Escribir <code>n = 0</code> en la sección <code>var</code> declara una
+          variable; escribirlo en la sección <code>const</code> declara una constante que no puede
+          cambiar.</div>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Constantes manifiestas</h3>
+<pre><code>const
+   RAIZ_3  = 1.732050808
+   DIGITOS = "0123456789"
+   MAX     = 20</code></pre>
+        <p>El tipo de la constante lo determina el valor que se le asigna. El compilador impide
+           que se le asigne otro valor durante la ejecución. Sirven para no repetir “números
+           mágicos” y para cambiar un valor en un solo lugar.</p>
+        <p>Están predefinidas cuatro constantes lógicas: <code>TRUE</code>, <code>FALSE</code>,
+           <code>SI</code> (sinónimo de TRUE) y <code>NO</code> (sinónimo de FALSE).</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Ámbito: global y local</h3>
+        <p>Lo declarado al inicio del programa principal es <strong>global</strong> y se ve desde
+           cualquier parte. Lo declarado dentro de una subrutina (o sus parámetros) es
+           <strong>local</strong> y solo se ve ahí. Si un nombre local coincide con uno global, el
+           global queda tapado mientras dura la subrutina.</p>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-arreglos" data-titulo="Vectores y matrices">
+      <h2>Vectores y matrices</h2>
+      <p class="sub">Arreglos de tamaño fijo, arreglos abiertos, dim(), alen() y literales.</p>
+
+      <div class="doc-bloque">
+        <h3>Declaración</h3>
+        <figure class="doc-figura ancha">
+          <svg viewBox="0 0 620 300" role="img" aria-label="Un vector con índices desde 1 y una matriz de filas y columnas">
+            <defs><marker id="fl4" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path class="dg-flecha" d="M0 0 L8 4 L0 8 z"/></marker></defs>
+            <text class="dg-tit" x="14" y="18">VECTOR</text>
+            <text class="dg-c" x="90" y="18">A : vector [6] numerico</text>
+            <g>
+              <rect class="dg-caja" x="14" y="30" width="72" height="42"/>
+              <rect class="dg-caja" x="86" y="30" width="72" height="42"/>
+              <rect class="dg-caja-ac" x="158" y="30" width="72" height="42"/>
+              <rect class="dg-caja" x="230" y="30" width="72" height="42"/>
+              <rect class="dg-caja" x="302" y="30" width="72" height="42"/>
+              <rect class="dg-caja" x="374" y="30" width="72" height="42"/>
+              <text class="dg-t" x="42" y="57">14</text>
+              <text class="dg-t" x="114" y="57">7</text>
+              <text class="dg-t" x="186" y="57">31</text>
+              <text class="dg-t" x="258" y="57">0</text>
+              <text class="dg-t" x="330" y="57">92</text>
+              <text class="dg-t" x="402" y="57">5</text>
+              <text class="dg-n" x="45" y="88">1</text>
+              <text class="dg-n" x="117" y="88">2</text>
+              <text class="dg-n" x="189" y="88">3</text>
+              <text class="dg-n" x="261" y="88">4</text>
+              <text class="dg-n" x="333" y="88">5</text>
+              <text class="dg-n" x="405" y="88">6</text>
+            </g>
+            <text class="dg-c" x="466" y="48">A [3]  →  31</text>
+            <text class="dg-c" x="466" y="68">alen (A) → 6</text>
+            <text class="dg-n" x="14" y="112">Los índices empiezan en 1. No existe A [0].</text>
+
+            <text class="dg-tit" x="14" y="142">MATRIZ</text>
+            <text class="dg-c" x="90" y="142">M : matriz [3, 4] numerico</text>
+            <g>
+              <rect class="dg-caja" x="60" y="164" width="60" height="36"/>
+              <rect class="dg-caja" x="120" y="164" width="60" height="36"/>
+              <rect class="dg-caja" x="180" y="164" width="60" height="36"/>
+              <rect class="dg-caja" x="240" y="164" width="60" height="36"/>
+              <rect class="dg-caja" x="60" y="200" width="60" height="36"/>
+              <rect class="dg-caja" x="120" y="200" width="60" height="36"/>
+              <rect class="dg-caja-ac" x="180" y="200" width="60" height="36"/>
+              <rect class="dg-caja" x="240" y="200" width="60" height="36"/>
+              <rect class="dg-caja" x="60" y="236" width="60" height="36"/>
+              <rect class="dg-caja" x="120" y="236" width="60" height="36"/>
+              <rect class="dg-caja" x="180" y="236" width="60" height="36"/>
+              <rect class="dg-caja" x="240" y="236" width="60" height="36"/>
+              <text class="dg-n" x="34" y="187">fila 1</text>
+              <text class="dg-n" x="34" y="223">fila 2</text>
+              <text class="dg-n" x="34" y="259">fila 3</text>
+              <text class="dg-n" x="82" y="160">col 1</text>
+              <text class="dg-n" x="142" y="160">col 2</text>
+              <text class="dg-n" x="202" y="160">col 3</text>
+              <text class="dg-n" x="262" y="160">col 4</text>
+              <text class="dg-t" x="200" y="224">8</text>
+            </g>
+            <path class="dg-fl" marker-end="url(#fl4)" d="M330 222 L306 220"/>
+            <text class="dg-c" x="338" y="212">M [2, 3]  →  8</text>
+            <text class="dg-c" x="338" y="234">alen (M) → 3   (filas)</text>
+            <text class="dg-c" x="338" y="254">alen (M [1]) → 4   (columnas)</text>
+          </svg>
+          <figcaption><b>Un vector es una fila de casillas numeradas desde 1; una matriz es una
+            cuadrícula.</b> En la matriz, el primer índice es la fila y el segundo la columna, y
+            <code>alen()</code> aplicado a una fila da la cantidad de columnas.</figcaption>
+        </figure>
+<pre><code>var
+   A  : vector [100] numerico       // 100 elementos, índices de 1 a 100
+   M  : matriz [5, 10] cadena       // 5 filas por 10 columnas
+   M3 : matriz [3, 5, 2] numerico   // tres dimensiones
+   v  : vector [*] numerico         // arreglo abierto (tamaño desconocido)
+   Q  : matriz [*, 8] numerico      // filas abiertas, 8 columnas fijas</code></pre>
+        <div class="doc-nota">Los índices <strong>empiezan en 1</strong>, no en 0.
+          <code>A[1]</code> es el primer elemento.</div>
+        <p>Una vez que se pone un tamaño concreto, las dimensiones siguientes ya no pueden ser
+           <code>*</code>: <code>matriz [5, *]</code> es un error.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Arreglos abiertos: dim() y alen()</h3>
+<pre><code>var
+   v : vector [*] numerico
+   n, k : numerico
+inicio
+   leer (n)
+   dim (v, n)                 // recién ahora v tiene n elementos
+   desde k=1 hasta alen (v)   // alen() devuelve la cantidad de elementos
+   {
+      v [k] = 0
+   }
+fin</code></pre>
+        <p><code>alen()</code> devuelve 0 si el arreglo abierto todavía no fue inicializado. Usar
+           un arreglo abierto sin dimensionar es un error de ejecución.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Literales estructurados</h3>
+<pre><code>tope_meses = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}
+dias_sem   = {"lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo"}
+mat        = { {1, 2, 3},
+               {4, 5, 6},
+               {7, 8, 9} }
+
+v = {0, ...}          // completa con ceros todo el vector (solo tamaño fijo)
+v = {}                // vuelve a dejar "sin inicializar" un arreglo abierto</code></pre>
+        <p>Los tres puntos repiten el último valor hasta el final; solo se pueden usar en arreglos
+           de tamaño fijo. Asignar un literal a un arreglo abierto lo dimensiona automáticamente.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Contornos irregulares</h3>
+        <p>En SL una matriz es un vector de vectores, así que las filas pueden tener distinto largo:</p>
+<pre><code>M = { {1, 3, 13, 31},
+      {7, 21, 5, 17, 19, 2},
+      {},
+      {71, 23} }
+
+alen (M)      // 4 filas
+alen (M[2])   // 6 elementos en la segunda fila</code></pre>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Asignación entre arreglos</h3>
+<pre><code>M2 = M1        // copia completa, elemento por elemento
+V1 = M1 [2]    // una fila de la matriz es un vector
+V2 = V1</code></pre>
+        <p>Para que dos arreglos sean asignables, los tipos de sus elementos tienen que ser
+           compatibles y el destino debe tener la misma cantidad de elementos o ser abierto.
+           La asignación <strong>copia</strong> los valores: después son independientes.</p>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-registros" data-titulo="Registros">
+      <h2>Registros</h2>
+      <p class="sub">Agrupar varios datos en una sola variable.</p>
+
+      <div class="doc-bloque">
+        <h3>Declaración y acceso</h3>
+        <figure class="doc-figura ancha">
+          <svg viewBox="0 0 620 244" role="img" aria-label="Un registro con sus campos y un registro anidado">
+            <defs><marker id="fl5" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path class="dg-flecha" d="M0 0 L8 4 L0 8 z"/></marker></defs>
+            <rect class="dg-caja" x="14" y="26" width="290" height="200" rx="6"/>
+            <rect class="dg-caja-ac" x="14" y="26" width="290" height="32" rx="6"/>
+            <text class="dg-t" x="30" y="48">r : registro</text>
+
+            <rect class="dg-caja-2" x="30" y="70" width="258" height="30"/>
+            <text class="dg-c" x="42" y="90">nombre : cadena</text>
+            <rect class="dg-caja-2" x="30" y="104" width="258" height="30"/>
+            <text class="dg-c" x="42" y="124">edad, peso : numerico</text>
+
+            <rect class="dg-caja-ok" x="30" y="138" width="258" height="76"/>
+            <text class="dg-c" x="42" y="158">fecha_nac : registro</text>
+            <text class="dg-cp" x="58" y="178">dia, mes, año : numerico</text>
+            <text class="dg-n" x="58" y="200">un registro adentro de otro</text>
+
+            <path class="dg-fl" marker-end="url(#fl5)" d="M330 84 L296 84"/>
+            <text class="dg-c" x="338" y="88">r.nombre</text>
+            <path class="dg-fl" marker-end="url(#fl5)" d="M330 174 L296 174"/>
+            <text class="dg-c" x="338" y="178">r.fecha_nac.dia</text>
+
+            <text class="dg-n" x="338" y="120">Cada campo se toca con un punto,</text>
+            <text class="dg-n" x="338" y="136">encadenando tantos como haga falta.</text>
+            <text class="dg-n" x="338" y="212">A [2].nombre  si es un vector de registros</text>
+          </svg>
+          <figcaption><b>Un registro es una ficha: varios datos con nombre en una sola variable.</b>
+            Se llega a cada campo con un punto, y un campo puede a su vez ser otro registro o un
+            arreglo.</figcaption>
+        </figure>
+<pre><code>var
+   r : registro
+   {
+      nombre : cadena
+      edad, peso : numerico
+      fecha_nac : registro
+      {
+         dia, mes, año : numerico
+      }
+      notas : vector [100] numerico
+   }
+inicio
+   r.nombre = "Maria Gonzalez"
+   r.edad = 15
+   r.fecha_nac.dia = 23
+   r.notas [2] = 98
+fin</code></pre>
+        <p>A las variables que contiene un registro se las llama <strong>campos</strong> y se
+           acceden con un punto. Un registro necesita al menos un campo y no puede tener dos campos
+           con el mismo nombre.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Literales y asignación entre registros</h3>
+<pre><code>r = { "Carolina Gomez",     // campo nombre
+      {12, 07, 1969},       // campo fecha_nac
+      {87, 91, 99, 93} }    // campo notas
+
+a = b   // copia todos los campos</code></pre>
+        <p>Dos registros son asignables si tienen la misma cantidad de campos y cada campo coincide
+           en características con el de la misma posición del otro. Los nombres de los campos no
+           importan para esa comparación.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Arreglos de registros</h3>
+<pre><code>var
+   A : vector [*] registro
+   {
+      nombre : cadena
+      cedula : numerico
+      notas  : vector [*] numerico
+   }
+inicio
+   dim (A, 25)
+   A [3].cedula = 1234567
+   A = { {"Mirta", 12781891, {78, 96, 100}},
+         {"Jose",  14271843, {91, 68, 83}} }
+fin</code></pre>
+        <p>Para leer o imprimir un registro hay que hacerlo campo por campo: no se puede
+           <code>imprimir (r)</code> directamente.</p>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-tipos-propios" data-titulo="Tipos definidos por el programador">
+      <h2>Tipos definidos por el programador</h2>
+      <p class="sub">La sección tipos: nombres propios y alias.</p>
+      <div class="doc-bloque">
+        <h3>Definir un tipo</h3>
+<pre><code>tipos
+   PRODUCTO : registro
+   {
+      codigo  : numerico
+      descrip : cadena
+      precio  : numerico
+   }
+   LISTA : vector [*] PRODUCTO
+   TLineaTexto : cadena          // alias de un tipo existente
+
+var
+   monitor, teclado : PRODUCTO
+   catalogo : LISTA
+   primera_linea : TLineaTexto</code></pre>
+        <p>Una vez definido, el nombre del tipo se puede usar en cualquier lugar donde SL espere un
+           tipo de dato, incluidos los parámetros y el valor de retorno de las subrutinas. Un alias
+           es intercambiable con el tipo original.</p>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-operadores" data-titulo="Operadores y expresiones">
+      <h2>Operadores y expresiones</h2>
+      <p class="sub">Aritméticos, relacionales, lógicos, concatenación y precedencia.</p>
+
+      <div class="doc-bloque">
+        <h3>Operadores aritméticos</h3>
+        <table>
+          <tr><th>Operador</th><th>Significado</th><th>Ejemplo</th></tr>
+          <tr><td><code>+</code></td><td>Suma</td><td><code>a = b + 10</code></td></tr>
+          <tr><td><code>-</code></td><td>Resta</td><td><code>a = b - 10</code></td></tr>
+          <tr><td><code>*</code></td><td>Multiplicación</td><td><code>a = b * 10</code></td></tr>
+          <tr><td><code>/</code></td><td>División (da decimales)</td><td><code>1234 / 10</code> → 123.4; con <code>int()</code> se queda la parte entera</td></tr>
+          <tr><td><code>%</code></td><td>Módulo: resto de la división. Ignora las partes decimales</td><td><code>10 % 3</code> → 1</td></tr>
+          <tr><td><code>^</code></td><td>Potenciación; el exponente puede ser fraccionario</td><td><code>2 ^ 4</code> → 16; <code>2 ^ 0.5</code> → 1.41421</td></tr>
+          <tr><td><code>-</code> <code>+</code></td><td>Cambio de signo / identidad (un solo operando)</td><td><code>b = -a</code></td></tr>
+        </table>
+        <div class="doc-cuidado">Dividir por cero (con <code>/</code> o con <code>%</code>) corta la
+          ejecución del programa.</div>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Operadores relacionales</h3>
+        <table>
+          <tr><th>Operador</th><th>Significado</th></tr>
+          <tr><td><code>&lt;</code></td><td>Menor que</td></tr>
+          <tr><td><code>&gt;</code></td><td>Mayor que</td></tr>
+          <tr><td><code>&lt;=</code></td><td>Menor o igual que (no vale <code>=&lt;</code>)</td></tr>
+          <tr><td><code>&gt;=</code></td><td>Mayor o igual que (no vale <code>=&gt;</code>)</td></tr>
+          <tr><td><code>==</code></td><td>Igual que</td></tr>
+          <tr><td><code>&lt;&gt;</code></td><td>Distinto de (no vale <code>&gt;&lt;</code>)</td></tr>
+        </table>
+        <p>Se aplican a dos valores del mismo tipo simple y dan un resultado lógico. Con cadenas se
+           comparan carácter por carácter según la tabla ASCII, de izquierda a derecha:</p>
+        <table>
+          <tr><th>Comparación</th><th>Resultado</th><th>Por qué</th></tr>
+          <tr><td><code>"ABC" &lt; "ACC"</code></td><td>verdadero</td><td>La <code>B</code> viene antes que la <code>C</code></td></tr>
+          <tr><td><code>"a" &lt;= "A"</code></td><td>falso</td><td>Las minúsculas están después de las mayúsculas</td></tr>
+          <tr><td><code>"ABA" &gt; "AB"</code></td><td>verdadero</td><td>Coinciden, pero la primera tiene un carácter más</td></tr>
+          <tr><td><code>"Z" &gt; ""</code></td><td>verdadero</td><td>Cualquier cadena es mayor que la vacía</td></tr>
+        </table>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Operadores lógicos</h3>
+        <p><code>and</code> (conjunción) y <code>or</code> (disyunción) son binarios;
+           <code>not</code> (negación) es unario.</p>
+<pre><code>si ( a &gt;= 1 and a &lt;= 100 ) { ... }
+ok = not (n == 0)</code></pre>
+        <p>SLE2 admite además los símbolos al estilo C, que aparecen en los ejemplos del manual de
+           2004. Son exactamente equivalentes:</p>
+        <table>
+          <tr><th>Forma con palabras</th><th>Forma con símbolos</th></tr>
+          <tr><td><code>a and b</code></td><td><code>a &amp;&amp; b</code></td></tr>
+          <tr><td><code>a or b</code></td><td><code>a || b</code></td></tr>
+          <tr><td><code>not a</code></td><td><code>!a</code></td></tr>
+          <tr><td><code>a &lt;&gt; b</code></td><td><code>a != b</code></td></tr>
+        </table>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Concatenación de cadenas</h3>
+        <p>El mismo <code>+</code> concatena cuando los dos operandos son cadenas:</p>
+<pre><code>cad3 = cad1 + " " + cad2
+apellido + ", " + nombre     // "Gonzalez, Marta"</code></pre>
+        <p>No es conmutativa, y no se puede mezclar una cadena con un número: para eso están
+           <code>str()</code> y <code>val()</code>.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Precedencia de los operadores</h3>
+        <p>De mayor a menor. Los de la misma línea se evalúan de izquierda a derecha:</p>
+        <ol>
+          <li><code>^</code> (potenciación; se asocia a la derecha: <code>2^3^2</code> es <code>2^(3^2)</code>)</li>
+          <li><code>-</code> <code>+</code> unarios</li>
+          <li><code>*</code> <code>/</code> <code>%</code></li>
+          <li><code>+</code> <code>-</code></li>
+          <li><code>==</code> <code>&lt;&gt;</code> <code>&lt;</code> <code>&lt;=</code> <code>&gt;</code> <code>&gt;=</code></li>
+          <li><code>not</code></li>
+          <li><code>and</code></li>
+          <li><code>or</code></li>
+        </ol>
+        <p>Por eso <code>-2^2</code> vale −4 y <code>(-2)^2</code> vale 4. Ante la duda, usá
+           paréntesis: sobran sin costo y hacen el programa más legible.</p>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-sentencias" data-titulo="Sentencias">
+      <h2>Sentencias</h2>
+      <p class="sub">Asignación, si, eval, mientras, repetir, desde, llamadas y retorna.</p>
+
+      <div class="doc-bloque">
+        <h3>Asignación</h3>
+<pre><code>a = 10.231
+b = a + 1
+hipotenusa = sqrt (a^2 + b^2)
+v [3] = 0
+r.nombre = "Ana"</code></pre>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Sentencia si</h3>
+        <figure class="doc-figura ancha">
+          <svg viewBox="0 0 640 300" role="img" aria-label="Diagramas de si, mientras, repetir y desde">
+            <defs><marker id="fl6" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path class="dg-flecha" d="M0 0 L8 4 L0 8 z"/></marker></defs>
+            <text class="dg-tit" x="14" y="18">si</text>
+            <path class="dg-caja-ac" d="M78 26 L128 48 L78 70 L28 48 z"/>
+            <text class="dg-cp" x="60" y="52">cond</text>
+            <path class="dg-fl" marker-end="url(#fl6)" d="M78 70 L78 92"/>
+            <rect class="dg-caja" x="28" y="92" width="100" height="30" rx="4"/>
+            <text class="dg-cp" x="46" y="112">sentencias</text>
+            <path class="dg-fl" d="M128 48 L156 48 L156 140 L80 140"/>
+            <text class="dg-n" x="132" y="42">no</text>
+            <text class="dg-n" x="84" y="86">sí</text>
+            <path class="dg-fl" d="M78 122 L78 140"/>
+            <path class="dg-fl" marker-end="url(#fl6)" d="M78 140 L78 164"/>
+            <text class="dg-n" x="86" y="162">sigue</text>
+
+            <text class="dg-tit" x="184" y="18">mientras</text>
+            <path class="dg-fl" marker-end="url(#fl6)" d="M248 20 L248 30"/>
+            <path class="dg-caja-ac" d="M248 32 L298 54 L248 76 L198 54 z"/>
+            <text class="dg-cp" x="230" y="58">cond</text>
+            <path class="dg-fl" marker-end="url(#fl6)" d="M248 76 L248 98"/>
+            <rect class="dg-caja" x="198" y="98" width="100" height="30" rx="4"/>
+            <text class="dg-cp" x="216" y="118">cuerpo</text>
+            <path class="dg-fl" marker-end="url(#fl6)" d="M198 113 L172 113 L172 54 L194 54"/>
+            <text class="dg-n" x="254" y="94">sí</text>
+            <path class="dg-fl" marker-end="url(#fl6)" d="M298 54 L322 54 L322 164"/>
+            <text class="dg-n" x="330" y="162">sigue</text>
+            <text class="dg-n" x="302" y="48">no</text>
+            <text class="dg-n" x="172" y="186">puede no entrar nunca</text>
+
+            <text class="dg-tit" x="360" y="18">repetir … hasta</text>
+            <path class="dg-fl" marker-end="url(#fl6)" d="M424 20 L424 30"/>
+            <rect class="dg-caja" x="374" y="30" width="100" height="30" rx="4"/>
+            <text class="dg-cp" x="392" y="50">cuerpo</text>
+            <path class="dg-fl" marker-end="url(#fl6)" d="M424 60 L424 78"/>
+            <path class="dg-caja-ac" d="M424 80 L474 102 L424 124 L374 102 z"/>
+            <text class="dg-cp" x="406" y="106">cond</text>
+            <path class="dg-fl" marker-end="url(#fl6)" d="M374 102 L348 102 L348 45 L370 45"/>
+            <text class="dg-n" x="344" y="120">no</text>
+            <path class="dg-fl" marker-end="url(#fl6)" d="M424 124 L424 164"/>
+            <text class="dg-n" x="430" y="144">sí</text>
+            <text class="dg-n" x="440" y="162">sigue</text>
+            <text class="dg-n" x="362" y="186">el cuerpo corre al menos una vez</text>
+
+            <text class="dg-tit" x="14" y="206">desde k = 1 hasta n paso p</text>
+            <rect class="dg-caja-2" x="14" y="218" width="116" height="34" rx="4"/>
+            <text class="dg-cp" x="28" y="240">k = 1</text>
+            <path class="dg-fl" marker-end="url(#fl6)" d="M130 235 L162 235"/>
+            <path class="dg-caja-ac" d="M222 214 L280 235 L222 256 L164 235 z"/>
+            <text class="dg-cp" x="196" y="239">k &lt;= n</text>
+            <path class="dg-fl" marker-end="url(#fl6)" d="M280 235 L316 235"/>
+            <rect class="dg-caja" x="318" y="218" width="110" height="34" rx="4"/>
+            <text class="dg-cp" x="336" y="240">cuerpo</text>
+            <path class="dg-fl" marker-end="url(#fl6)" d="M428 235 L462 235"/>
+            <rect class="dg-caja-2" x="464" y="218" width="116" height="34" rx="4"/>
+            <text class="dg-cp" x="478" y="240">k = k + p</text>
+            <path class="dg-fl" marker-end="url(#fl6)" d="M522 252 L522 280 L222 280 L222 260"/>
+            <text class="dg-n" x="292" y="296">el paso por omisión es 1; con paso negativo cuenta hacia atrás</text>
+          </svg>
+          <figcaption><b>Las cuatro formas de repetir y decidir.</b> <code>mientras</code> pregunta
+            antes (puede no entrar nunca) y <code>repetir…hasta</code> pregunta después (el cuerpo
+            corre al menos una vez); <code>desde</code> es un <code>mientras</code> con el contador ya
+            resuelto.</figcaption>
+        </figure>
+<pre><code>si ( condicion )
+{
+   sentencias...
+sino
+   sentencias...
+}</code></pre>
+        <p>Y la forma encadenada, que evita anidar:</p>
+<pre><code>si ( pnt &gt;= 95 )
+{
+   n5 = n5 + 1
+sino si ( pnt &gt;= 85 )
+   n4 = n4 + 1
+sino si ( pnt &lt; 60 )
+   n1 = n1 + 1
+sino
+   otros = otros + 1
+}</code></pre>
+        <div class="doc-cuidado">Lo más distinto de otros lenguajes: en SL el <code>sino</code> va
+          <strong>dentro</strong> de las llaves, y las ramas <code>sino si (...)</code> no llevan
+          llaves propias. La llave de cierre es una sola, al final de toda la cadena.</div>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Sentencia eval</h3>
+        <p>Equivale a un <code>si</code> encadenado largo, pero se lee mejor:</p>
+<pre><code>eval
+{
+   caso ( let &gt;= 'A' and let &lt;= 'Z' )
+      msg = "letra mayuscula"
+   caso ( let &gt;= 'a' and let &lt;= 'z' )
+      msg = "letra minuscula"
+   caso ( let &gt;= '0' and let &lt;= '9' )
+      msg = "digito"
+   sino
+      msg = "algun otro"
+}</code></pre>
+        <p>Se evalúan los casos en orden y se ejecuta el primero que dé verdadero; después se sigue
+           con la sentencia que está tras la llave de cierre. La cláusula <code>sino</code> es
+           opcional y, si está, tiene que ir última.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Ciclo mientras</h3>
+<pre><code>mientras ( condicion )
+{
+   sentencias...
+}</code></pre>
+        <p>Comprueba la condición <strong>antes</strong> de cada vuelta, así que el cuerpo puede no
+           ejecutarse nunca. La condición va siempre entre paréntesis.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Ciclo repetir … hasta</h3>
+<pre><code>repetir
+   dig = num % 10
+   imprimir ("\n", dig)
+   num = int (num / 10)
+hasta ( num == 0 )</code></pre>
+        <p>Comprueba la condición <strong>al final</strong>, de modo que el cuerpo se ejecuta al
+           menos una vez. Ojo: la condición es de <em>fin</em>, no de continuación.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Ciclo desde</h3>
+<pre><code>desde variable = valor_inicial hasta valor_final [paso incremento]
+{
+   sentencias...
+}
+
+desde k=1 hasta 10          { imprimir ("\n", k, " : ", k^2) }
+desde k=strlen (z) hasta 1 paso -1 { imprimir (z [k]) }</code></pre>
+        <ul>
+          <li>El valor inicial y el incremento se truncan a enteros; el incremento puede ser negativo.</li>
+          <li>El ciclo puede ejecutarse de 0 a n veces.</li>
+          <li>La variable de control tiene que ser numérica (puede ser un elemento de un arreglo).</li>
+          <li>Cambiar el valor final o el incremento adentro no altera la cantidad de vueltas: se
+              calculan al entrar. Para salir antes, asignale a la variable de control el valor final.</li>
+        </ul>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Llamada a subrutinas y retorna</h3>
+<pre><code>cls()
+imprimir_explicacion()
+calcular_suma (n)
+
+retorna ( expresion )     // última sentencia de una función</code></pre>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-subrutinas" data-titulo="Subrutinas y funciones">
+      <h2>Subrutinas y funciones</h2>
+      <p class="sub">Procedimientos, funciones, parámetros por valor y por referencia, recursión.</p>
+
+      <div class="doc-bloque">
+        <h3>Los dos tipos</h3>
+        <figure class="doc-figura ancha">
+          <svg viewBox="0 0 620 250" role="img" aria-label="Diferencia entre pasar un parámetro por valor y por referencia">
+            <defs><marker id="fl7" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path class="dg-flecha" d="M0 0 L8 4 L0 8 z"/></marker></defs>
+            <text class="dg-tit" x="14" y="18">POR VALOR — (n : numerico)</text>
+            <rect class="dg-caja" x="14" y="30" width="128" height="52" rx="6"/>
+            <text class="dg-n" x="28" y="50">el que llama</text>
+            <text class="dg-t" x="28" y="70">a = 5</text>
+            <path class="dg-fl" marker-end="url(#fl7)" d="M142 56 L188 56"/>
+            <text class="dg-n" x="146" y="48">copia</text>
+            <rect class="dg-caja-2" x="190" y="30" width="128" height="52" rx="6"/>
+            <text class="dg-n" x="204" y="50">la subrutina</text>
+            <text class="dg-t" x="204" y="70">n = 5 → 99</text>
+            <rect class="dg-caja-av" x="352" y="30" width="252" height="52" rx="6"/>
+            <text class="dg-c" x="366" y="52">al volver, a sigue valiendo 5</text>
+            <text class="dg-n" x="366" y="70">la subrutina trabajó sobre una copia</text>
+
+            <text class="dg-tit" x="14" y="138">POR REFERENCIA — (ref n : numerico)</text>
+            <rect class="dg-caja" x="14" y="150" width="128" height="52" rx="6"/>
+            <text class="dg-n" x="28" y="170">el que llama</text>
+            <text class="dg-t" x="28" y="190">a = 5 → 99</text>
+            <path class="dg-fl" marker-end="url(#fl7)" d="M142 176 L188 176"/>
+            <path class="dg-fl" marker-end="url(#fl7)" d="M188 194 L142 194"/>
+            <text class="dg-n" x="118" y="218">la misma casilla</text>
+            <rect class="dg-caja-2" x="190" y="150" width="128" height="52" rx="6"/>
+            <text class="dg-n" x="204" y="170">la subrutina</text>
+            <text class="dg-t" x="204" y="190">n = 99</text>
+            <rect class="dg-caja-ok" x="352" y="150" width="252" height="52" rx="6"/>
+            <text class="dg-c" x="366" y="172">al volver, a vale 99</text>
+            <text class="dg-n" x="366" y="190">las dos ven la misma variable</text>
+
+            <text class="dg-n" x="14" y="230">Los arreglos y registros grandes conviene pasarlos con ref: se evita copiarlos enteros.</text>
+          </svg>
+          <figcaption><b>Sin <code>ref</code>, la subrutina recibe una copia.</b> Con <code>ref</code>,
+            recibe la variable misma, así que lo que le haga adentro se ve afuera. Es la única forma
+            de que un procedimiento devuelva más de un resultado.</figcaption>
+        </figure>
+        <ul>
+          <li><strong>Funciones</strong>: llevan <code>retorna tipo</code> en el encabezado,
+              devuelven un valor y pueden usarse dentro de una expresión.</li>
+          <li><strong>Procedimientos</strong>: no devuelven nada; se invocan como una sentencia.</li>
+        </ul>
+<pre><code>subrutina entero (n : numerico) retorna numerico
+var
+   ent : numerico
+inicio
+   ent = 0
+   mientras ( n &gt;= 1 )
+   {
+      ent = ent + 1
+      n = n - 1
+   }
+   retorna ( ent )
+fin</code></pre>
+        <p>Una función puede devolver cualquier tipo, incluidos arreglos y registros. No hace falta
+           declarar prototipos: las subrutinas pueden aparecer en cualquier orden después del
+           programa principal.</p>
+        <p>La palabra <code>sub</code> es un sinónimo de <code>subrutina</code>; el manual de 2004
+           la usa en todas sus definiciones:</p>
+<pre><code>sub entero (n : numerico) retorna numerico</code></pre>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Parámetros por valor y por referencia</h3>
+<pre><code>subrutina mi_sub (a : numerico; ref b : numerico)
+subrutina prt (v1, v2 : numerico; r : cadena)
+subrutina intercambiar (ref primera, segunda : numerico)   // "ref" alcanza al grupo</code></pre>
+        <ul>
+          <li><strong>Por valor</strong> (lo normal): la subrutina recibe una copia; los cambios no
+              salen de la subrutina.</li>
+          <li><strong>Por referencia</strong> (<code>ref</code>): recibe la variable en sí, así que
+              los cambios se ven en quien la llamó. Es obligatorio pasar una variable, no una cuenta.</li>
+        </ul>
+        <div class="doc-nota">Si una subrutina tiene que <em>llenar</em> un arreglo o un registro,
+          el parámetro debe ir con <code>ref</code>; si no, lo cargado se pierde al salir.</div>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Arreglos abiertos como parámetros</h3>
+<pre><code>subrutina impr_vect (v : vector [*] numerico)
+var
+   k : numerico
+inicio
+   desde k=1 hasta alen (v)
+   {
+      imprimir (v [k], " ")
+   }
+fin
+
+impr_vect (A)                    // vector de tamaño fijo
+impr_vect ({100, 200, 300})      // literal</code></pre>
+        <p>Así se escriben subrutinas generales, que sirven para arreglos de cualquier tamaño.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Recursión</h3>
+<pre><code>subrutina fact (n : numerico) retorna numerico
+inicio
+   si ( n &lt;= 1 ) { retorna (1) }
+   retorna ( n * fact (n - 1) )
+fin</code></pre>
+        <p>Como cada llamada tiene sus propias variables locales, la recursión funciona sin más.
+           Acordate siempre del caso base.</p>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-cadenas" data-titulo="Operaciones con cadenas">
+      <h2>Operaciones con cadenas</h2>
+      <p class="sub">Longitud, acceso a caracteres, subcadenas y conversiones.</p>
+
+      <div class="doc-bloque">
+        <h3>Acceso y modificación de caracteres</h3>
+        <p>Una cadena se puede usar como si fuera un vector de caracteres, con índices desde 1:</p>
+<pre><code>dig = "0123456789"
+desde k=strlen (dig) hasta 1 paso -1
+{
+   imprimir ("\n", dig [k])
+}
+
+z [k] = 'b'        // también se puede asignar</code></pre>
+        <div class="doc-nota">A diferencia de los vectores, pedir un carácter que no existe
+          devuelve la cadena vacía y asignar a una posición inexistente se ignora: no hay error.</div>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Funciones de cadena más usadas</h3>
+<pre><code>strlen ("prueba")            // 6
+substr ("ABCD", 2)           // "BCD"  (hasta el final)
+substr ("ABC", 1, 1)         // "A"
+substr ("ABCD", 5, 1)        // ""     (posición pasada del final)
+pos ("hola mundo", "mundo")  // 6, o 0 si no aparece
+strdup ("-", 5)              // "-----"
+upper ("ñandu")              // "ÑANDU"
+val ("123.4")                // 123.4   (0 si no es un número)
+str (123.40451, 10, 3)       // "   123.405"
+ord ("A")                    // 65
+ascii (65)                   // "A"</code></pre>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-entrada-salida" data-titulo="Entrada y salida de datos">
+      <h2>Entrada y salida de datos</h2>
+      <p class="sub">imprimir(), leer() y el separador de campos.</p>
+
+      <div class="doc-bloque">
+        <h3>imprimir()</h3>
+<pre><code>imprimir ("\nLa suma es ", suma)
+imprimir (a, b*10, s + "algo")</code></pre>
+        <p>Recibe cualquier cantidad de valores numéricos, de cadena o lógicos (estos últimos salen
+           como <code>TRUE</code> o <code>FALSE</code>) y los muestra uno tras otro, sin separación
+           automática. Los saltos de línea los ponés vos con <code>\n</code>.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>leer()</h3>
+        <figure class="doc-figura ancha">
+          <svg viewBox="0 0 620 220" role="img" aria-label="Cómo leer() consume las líneas de la entrada de datos">
+            <defs><marker id="fl8" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path class="dg-flecha" d="M0 0 L8 4 L0 8 z"/></marker></defs>
+            <text class="dg-tit" x="14" y="18">ENTRADA DE DATOS</text>
+            <rect class="dg-caja" x="14" y="26" width="220" height="132" rx="6"/>
+            <rect class="dg-caja-2" x="14" y="26" width="220" height="34"/>
+            <text class="dg-c" x="30" y="48">Ana,17</text>
+            <text class="dg-c" x="30" y="86">3,5</text>
+            <text class="dg-c" x="30" y="118">hola</text>
+            <path class="dg-l" d="M14 60 L234 60"/>
+            <path class="dg-l" d="M14 98 L234 98"/>
+            <path class="dg-l" d="M14 130 L234 130"/>
+
+            <path class="dg-fl" marker-end="url(#fl8)" d="M240 43 L300 43"/>
+            <text class="dg-c" x="308" y="38">leer (nombre, edad)</text>
+            <text class="dg-n" x="308" y="56">una línea entera, partida por comas</text>
+
+            <path class="dg-fl" marker-end="url(#fl8)" d="M240 82 L300 82"/>
+            <text class="dg-c" x="308" y="78">leer (a, b)</text>
+            <text class="dg-n" x="308" y="96">a = 3   b = 5</text>
+
+            <path class="dg-fl" marker-end="url(#fl8)" d="M240 116 L300 116"/>
+            <text class="dg-c" x="308" y="112">leer (t)</text>
+            <text class="dg-n" x="308" y="130">t = "hola"</text>
+
+            <text class="dg-n" x="14" y="182">Cada leer() consume una línea completa, tenga los datos que tenga.</text>
+            <text class="dg-n" x="14" y="202">Si la entrada se agota, ESLE2 te pide el dato por consola mientras el programa corre.</text>
+          </svg>
+          <figcaption><b>Una llamada a <code>leer()</code>, una línea.</b> Los valores de esa línea se
+            separan por comas (o por lo que digas con <code>set_ifs()</code>) y se reparten entre las
+            variables en orden.</figcaption>
+        </figure>
+<pre><code>leer (n)
+leer (a, b, c)
+leer (v [k])
+leer (c[k].nombre, c[k].nota)</code></pre>
+        <p>Toma los datos del panel <strong>Entrada de datos</strong>. Cada llamada consume tantos
+           campos como variables reciba; los campos de una misma línea se separan con el
+           <em>separador de campos</em>, que por defecto es la coma. Con la entrada:</p>
+<pre><code>100,ejemplo de cadena</code></pre>
+        <p>la llamada <code>leer (n, s)</code> deja <code>n = 100</code> y
+           <code>s = "ejemplo de cadena"</code>. Si se agotan los datos, ESLE2 te los pide por
+           consola; en la corrección automática de los ejercicios, en cambio, se produce un error.</p>
+        <p>Se pueden leer variables numéricas o de cadena, pero no lógicas.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Cambiar el separador de entrada</h3>
+<pre><code>set_ifs ("#")
+leer (n, s)      // ahora la entrada sería:  100#Perez, Juan
+get_ifs ()       // devuelve el separador actual</code></pre>
+        <p>El salto de línea siempre separa campos, además del carácter elegido. Dos casos útiles:
+           <code>set_ifs ("\n")</code> hace que cada campo sea una línea entera, y
+           <code>set_ifs ("")</code> hace que se lea carácter por carácter.</p>
+        <div class="doc-cuidado"><code>set_stdin()</code> restaura el separador a la coma, así que si
+          necesitás otro, llamá a <code>set_ifs()</code> <em>después</em> de <code>set_stdin()</code>.</div>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Leer e imprimir datos estructurados</h3>
+        <p>Tanto <code>leer()</code> como <code>imprimir()</code> aceptan arreglos y registros
+           enteros, no solo valores simples. Los recorren de principio a fin, campo por campo:</p>
+<pre><code>var
+   A : vector [10] numerico
+   r : registro { cedula : cadena  p1, p2 : numerico }
+inicio
+   leer (A)        // toma 10 valores de la entrada, uno por elemento
+   leer (r)        // toma 3 valores: cedula, p1 y p2
+   imprimir (A)    // 1,4,9,16,25,36,49,64,81,100
+fin</code></pre>
+        <p>Al imprimir, los valores se separan con el <strong>OFS</strong> (<em>output field
+           separator</em>), que por defecto es la coma. Un arreglo abierto sin dimensionar se
+           muestra como <code>&lt;nodim&gt;</code>.</p>
+        <div class="doc-cuidado">Para leer un arreglo abierto primero hay que dimensionarlo con
+          <code>dim()</code>: <code>leer()</code> necesita saber cuántos valores tomar.</div>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Cambiar el separador de salida: set_ofs()</h3>
+        <p>El parámetro de <code>set_ofs()</code> tiene dos partes: el primer carácter es el
+           separador y todo lo que sigue es lo que se muestra cuando aparece un arreglo sin
+           dimensionar. Por defecto es como haber escrito <code>set_ofs (",&lt;nodim&gt;")</code>.</p>
+<pre><code>tipos
+   Alumno : registro { cedula : cadena  notas : vector [*] numerico }
+var
+   lista : vector [3] Alumno
+   k = 0
+inicio
+   lista = { {"1283912", {5, 4, 5}},
+             {"1278217", {} },        // este alumno no tiene notas
+             {"1938281", {4, 3, 2}} }
+   set_ofs (" *Sin notas")            // separador = espacio
+   desde k=1 hasta alen (lista)
+   {
+      imprimir (lista [k], "\n")
+   }
+fin</code></pre>
+        <p>Imprime:</p>
+<pre><code>1283912 5 4 5
+1278217 *Sin notas
+1938281 4 3 2</code></pre>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-archivos" data-titulo="Archivos de texto">
+      <h2>Archivos de texto</h2>
+      <p class="sub">Redirigir la entrada y la salida con set_stdin(), set_stdout() y eof().</p>
+
+      <div class="doc-bloque">
+        <h3>Cómo funcionan en ESLE2</h3>
+        <p>En el navegador no hay disco, así que ESLE2 mantiene los archivos <strong>en memoria</strong>.
+           Se los ve y edita con el botón <strong>Archivos…</strong> de la barra de herramientas:
+           ahí podés crear un archivo de datos a mano antes de ejecutar, y también leer lo que el
+           programa escribió. Se pierden al recargar la página.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>set_stdout(): escribir en un archivo</h3>
+<pre><code>set_stdout (nombre_archivo)             // modo "wt": borra lo anterior
+set_stdout (nombre_archivo, "at")       // modo "at": agrega al final
+set_stdout ("")                         // vuelve a la pantalla</code></pre>
+        <p>Mientras hay un archivo abierto, todo lo que imprima <code>imprimir()</code> va al archivo
+           y no a la pantalla. Devuelve un valor lógico: falso si el archivo no se pudo abrir.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>set_stdin() y eof(): leer un archivo</h3>
+<pre><code>si ( not set_stdin ("datos.txt") )
+{
+   terminar ("No se pudo abrir datos.txt")
+}
+set_ifs ("\n")            // cada campo será una línea entera
+leer (linea)
+mientras ( not eof() )
+{
+   inc (num_linea)
+   imprimir ("\n", num_linea, ": ", linea)
+   leer (linea)
+}</code></pre>
+        <p>Leyendo de un archivo, <code>leer()</code> no produce error cuando se acaban los datos:
+           simplemente <code>eof()</code> pasa a valer verdadero. Ese es el motivo del orden del
+           ejemplo: se lee una vez antes del ciclo y otra al final de cada vuelta.</p>
+        <p><code>set_stdin ("")</code> vuelve a tomar los datos del teclado (el panel
+           <em>Entrada de datos</em>) y cierra el archivo.</p>
+      </div>
+      <div class="doc-bloque">
+        <h3>Traer y llevar archivos de verdad</h3>
+        <p>En el panel <strong>Archivos…</strong> del IDE, <strong>Subir…</strong> trae uno o varios
+           <code>.txt</code> de tu computadora —quedan con el mismo nombre, así que
+           <code>set_stdin ("notas.txt")</code> los encuentra— y <strong>Bajar</strong> guarda en tu
+           disco el archivo elegido, incluso si lo escribió tu programa con
+           <code>set_stdout()</code>.</p>
+        <p class="nota">Los archivos viven en la memoria del navegador: lo que no bajes se pierde al
+           recargar la página.</p>
+      </div>
+
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-pantalla" data-titulo="Pantalla, sonido y lienzo">
+      <h2>Pantalla, sonido y lienzo</h2>
+      <p class="sub">set_color(), set_curpos(), get_scrsize(), beep(), readkey() y dibujar_pixel().</p>
+
+      <div class="doc-bloque">
+        <h3>Colores</h3>
+        <figure class="doc-figura ancha">
+          <svg viewBox="0 0 620 236" role="img" aria-label="La pantalla de texto de 25 filas por 80 columnas con el cursor">
+            <defs><marker id="fl9" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path class="dg-flecha" d="M0 0 L8 4 L0 8 z"/></marker></defs>
+            <rect class="dg-caja" x="60" y="30" width="372" height="170" rx="6"/>
+            <text class="dg-n" x="60" y="22">columna 1</text>
+            <text class="dg-n" x="370" y="22">columna 80</text>
+            <text class="dg-n" x="14" y="46">fila 1</text>
+            <text class="dg-n" x="14" y="196">fila 25</text>
+            <path class="dg-punt" d="M60 56 L432 56"/>
+            <path class="dg-punt" d="M60 82 L432 82"/>
+            <path class="dg-punt" d="M60 108 L432 108"/>
+            <path class="dg-punt" d="M120 30 L120 200"/>
+            <path class="dg-punt" d="M180 30 L180 200"/>
+
+            <text class="dg-c" x="70" y="50">Menu principal</text>
+            <text class="dg-c" x="70" y="76">1. Cargar datos</text>
+            <rect class="dg-caja-ac" x="180" y="88" width="13" height="20"/>
+            <text class="dg-n" x="200" y="103">cursor: set_curpos (4, 3)</text>
+
+            <path class="dg-fl" marker-end="url(#fl9)" d="M470 96 L438 96"/>
+            <text class="dg-cp" x="448" y="130">get_scrsize (ref f, ref c)</text>
+            <text class="dg-n" x="448" y="148">→ f = 25 filas, c = 80 columnas</text>
+            <text class="dg-c" x="60" y="224">set_color (14, 1)  pinta el texto que sigue: amarillo sobre azul</text>
+          </svg>
+          <figcaption><b>La pantalla es una cuadrícula de 25 filas por 80 columnas.</b> El cursor se
+            mueve con <code>set_curpos (fila, columna)</code> —fila primero— y todo lo que se imprima
+            después sale desde ahí, con los colores vigentes.</figcaption>
+        </figure>
+<pre><code>set_color (primer_plano, fondo)     // cambia los colores del texto que sigue
+get_color (ref texto, ref fondo)    // deja los colores vigentes en dos variables</code></pre>
+        <p>Los colores se identifican por un número. El <strong>0 significa «no cambiar»</strong>,
+           así que se usan del 1 al 15:</p>
+        <table>
+          <tr><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th></tr>
+          <tr><td>azul</td><td>verde</td><td>cian</td><td>rojo</td><td>magenta</td><td>marrón</td><td>gris claro</td></tr>
+          <tr><th>8</th><th>9</th><th>10</th><th>11</th><th>12</th><th>13</th><th>14</th></tr>
+          <tr><td>gris oscuro</td><td>azul claro</td><td>verde claro</td><td>cian claro</td><td>rojo claro</td><td>magenta claro</td><td>amarillo</td></tr>
+        </table>
+        <p>El 15 es blanco. <code>get_color()</code> recibe sus dos parámetros por referencia, así
+           que hay que pasarle nombres de variables.</p>
+        <div class="doc-nota">Como el 0 significa «no cambiar», los colores elegidos siguen vigentes
+          hasta que se los cambie. Para volver a los colores normales de la pantalla, llamá a
+          <code>cls()</code>: además de limpiarla, reinicia el color de texto y de fondo.</div>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Cursor y tamaño de pantalla</h3>
+<pre><code>set_curpos (linea, columna)          // 0 en un parámetro = dejar como está
+get_curpos (ref linea, ref columna)  // dónde está el cursor
+get_scrsize (ref lineas, ref columnas)   // tamaño de la pantalla (25 x 80)
+cls()                                // limpia la pantalla</code></pre>
+        <p>La esquina superior izquierda es la posición (1, 1). Volver a una posición guardada sirve,
+           por ejemplo, para redibujar una barra de progreso siempre en el mismo lugar:</p>
+<pre><code>imprimir ("\nProgreso: ")
+get_curpos (lin, col)
+desde k=1 hasta 20
+{
+   set_curpos (lin, col)
+   imprimir (strdup ("#", k), strdup (".", 20-k), " ", str (k*5, 3, 0), "%")
+}</code></pre>
+        <div class="doc-nota">Cuando la salida está redirigida a un archivo, <code>cls()</code>,
+          <code>set_color()</code> y <code>set_curpos()</code> no tienen ningún efecto, y
+          <code>get_curpos()</code> devuelve ceros.</div>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Sonido y teclado</h3>
+<pre><code>beep (frecuencia, duracion_en_milisegundos)   // por defecto (500, 100)
+readkey (milisegundos)                        // espera una tecla y devuelve su código</code></pre>
+        <p><code>beep()</code> además <strong>pausa</strong> el programa el tiempo indicado, así que
+           <code>beep (0, 500)</code> es una pausa de medio segundo sin sonido.
+           <code>readkey()</code> sin parámetro espera indefinidamente; con parámetro espera ese
+           tiempo y devuelve 0 si no se pulsó nada. Para que reciba las teclas, hacé clic en la
+           pantalla de salida.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Dibujar en el lienzo</h3>
+        <p>El SLE original tenía unas pocas órdenes para dibujar en pantalla; con las mismas ideas
+           —un punto, una línea, un rectángulo, un círculo, todos de un color— alcanza para armar
+           un <strong>Snake</strong> o un <strong>Pong</strong> en pseudocódigo. El panel
+           <em>Lienzo</em> aparece solo, debajo de la Pantalla, la primera vez que el programa
+           dibuja algo.</p>
+<pre><code>dibujar_pixel (x, y, color)                    // un punto; color es opcional
+dibujar_linea (x1, y1, x2, y2, color)          // una línea recta
+dibujar_rectangulo (x, y, ancho, alto, color)  // relleno
+dibujar_circulo (x, y, radio, color)           // relleno
+limpiar_lienzo (color)                         // borra todo; color opcional
+lienzo_ancho ()  /  lienzo_alto ()             // 320 y 200</code></pre>
+        <p>Los colores son los mismos 1 a 15 de <code>set_color()</code>. Como en
+           <code>dibujar_pixel()</code> el color casi siempre es el mismo dentro de un dibujo, es
+           opcional (por defecto 15, blanco); en <code>limpiar_lienzo()</code> es 0 (negro).</p>
+        <p>Una pelotita que rebota, como para empezar:</p>
+<pre><code>var
+   x, y, dx, dy : numerico
+inicio
+   x = 160  y = 100  dx = 2  dy = 1
+   mientras (TRUE)
+   {
+      limpiar_lienzo ()
+      dibujar_circulo (x, y, 6, 12)
+      x = x + dx
+      y = y + dy
+      si (x &lt; 6 or x &gt; 314) { dx = -dx }
+      si (y &lt; 6 or y &gt; 194) { dy = -dy }
+      beep (0, 30)                    // el "beep" de pausa marca el ritmo de cada cuadro
+   }
+fin</code></pre>
+        <div class="doc-nota">No hay una orden para "leer una tecla sin esperar": usá
+          <code>readkey (ms)</code> con un tiempo corto —por ejemplo
+          <code>readkey (30)</code>— adentro del <code>mientras</code>, en vez de
+          <code>beep()</code>, para que el juego siga moviéndose mientras espera que
+          jueguen.</div>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-predefinidas" data-titulo="Subrutinas y funciones predefinidas">
+      <h2>Subrutinas y funciones predefinidas</h2>
+      <p class="sub">Referencia completa de lo que trae el lenguaje.</p>
+
+      <div class="doc-bloque">
+        <h3>Entrada y salida</h3>
+        <table>
+          <tr><th>Subrutina</th><th>Qué hace</th></tr>
+          <tr><td><code>imprimir (v1, v2, …)</code></td><td>Muestra los valores en la salida (pantalla o archivo). Acepta valores simples, arreglos y registros.</td></tr>
+          <tr><td><code>leer (v1, v2, …)</code></td><td>Lee valores y los asigna a las variables. También acepta arreglos y registros enteros.</td></tr>
+          <tr><td><code>cls ()</code></td><td>Limpia la pantalla de salida.</td></tr>
+          <tr><td><code>set_ifs (c)</code> / <code>get_ifs ()</code></td><td>Separador de campos de <code>leer()</code>. <code>""</code> = carácter por carácter.</td></tr>
+          <tr><td><code>set_ofs (c)</code> / <code>get_ofs ()</code></td><td>Separador con que <code>imprimir()</code> muestra los datos estructurados, más la marca de arreglo sin dimensionar.</td></tr>
+          <tr><td><code>eof ()</code></td><td>Verdadero cuando ya no quedan datos por leer.</td></tr>
+        </table>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Archivos</h3>
+        <table>
+          <tr><th>Subrutina</th><th>Qué hace</th></tr>
+          <tr><td><code>set_stdin (nombre)</code></td><td>De dónde lee <code>leer()</code>. <code>""</code> vuelve al teclado. Devuelve falso si no se pudo abrir. Restaura el separador a la coma.</td></tr>
+          <tr><td><code>set_stdout (nombre, modo)</code></td><td>A dónde escribe <code>imprimir()</code>. Modo <code>"wt"</code> (por defecto) borra el contenido previo; <code>"at"</code> agrega al final. <code>""</code> vuelve a la pantalla.</td></tr>
+        </table>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Pantalla y teclado</h3>
+        <table>
+          <tr><th>Subrutina</th><th>Qué hace</th></tr>
+          <tr><td><code>set_color (texto, fondo)</code></td><td>Cambia los colores (1 a 15; 0 = no cambiar).</td></tr>
+          <tr><td><code>get_color (ref texto, ref fondo)</code></td><td>Deja los colores vigentes en dos variables.</td></tr>
+          <tr><td><code>set_curpos (linea, col)</code></td><td>Mueve el cursor; 0 conserva la coordenada.</td></tr>
+          <tr><td><code>get_curpos (ref linea, ref col)</code></td><td>Posición actual del cursor.</td></tr>
+          <tr><td><code>get_scrsize (ref lineas, ref cols)</code></td><td>Tamaño de la pantalla.</td></tr>
+          <tr><td><code>beep (frecuencia, ms)</code></td><td>Pitido y pausa. Por defecto (500, 100).</td></tr>
+          <tr><td><code>readkey (ms)</code></td><td>Espera una tecla y devuelve su código; 0 si se agotó el tiempo.</td></tr>
+        </table>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Lienzo</h3>
+        <table>
+          <tr><th>Subrutina</th><th>Qué hace</th></tr>
+          <tr><td><code>dibujar_pixel (x, y, color)</code></td><td>Pinta un punto. <code>color</code> es opcional (15, blanco, por defecto).</td></tr>
+          <tr><td><code>dibujar_linea (x1, y1, x2, y2, color)</code></td><td>Una línea recta entre dos puntos.</td></tr>
+          <tr><td><code>dibujar_rectangulo (x, y, ancho, alto, color)</code></td><td>Un rectángulo relleno.</td></tr>
+          <tr><td><code>dibujar_circulo (x, y, radio, color)</code></td><td>Un círculo relleno.</td></tr>
+          <tr><td><code>limpiar_lienzo (color)</code></td><td>Borra el lienzo entero. <code>color</code> es opcional (0, negro, por defecto).</td></tr>
+          <tr><td><code>lienzo_ancho ()</code> / <code>lienzo_alto ()</code></td><td>El tamaño del lienzo: 320 × 200 píxeles.</td></tr>
+        </table>
+        <p>Los colores son los mismos 1 a 15 de <code>set_color()</code>. El panel <em>Lienzo</em>
+           aparece solo la primera vez que el programa dibuja algo.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Arreglos y control</h3>
+        <table>
+          <tr><th>Subrutina</th><th>Qué hace</th></tr>
+          <tr><td><code>dim (a, t1, t2, …)</code></td><td>Dimensiona un arreglo abierto. Solo se dan los tamaños de las dimensiones abiertas.</td></tr>
+          <tr><td><code>alen (a)</code></td><td>Cantidad de elementos (0 si es abierto y no fue inicializado).</td></tr>
+          <tr><td><code>intercambiar (a, b)</code> / <code>swap (a, b)</code></td><td>Intercambia dos variables del mismo tipo: simples, arreglos o registros.</td></tr>
+          <tr><td><code>terminar (mensaje)</code></td><td>Imprime el mensaje (opcional) y termina el programa. El control nunca vuelve.</td></tr>
+        </table>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Funciones matemáticas</h3>
+        <table>
+          <tr><th>Función</th><th>Qué devuelve</th></tr>
+          <tr><td><code>abs (n)</code></td><td>Valor absoluto.</td></tr>
+          <tr><td><code>int (n)</code></td><td>Parte entera: <code>int (3.45)</code> → 3.</td></tr>
+          <tr><td><code>sqrt (n)</code></td><td>Raíz cuadrada.</td></tr>
+          <tr><td><code>exp (n)</code></td><td>e elevado a n.</td></tr>
+          <tr><td><code>log (n)</code></td><td>Logaritmo en base 10.</td></tr>
+          <tr><td><code>sin (g)</code>, <code>cos (g)</code>, <code>tan (g)</code>, <code>arctan (g)</code></td><td>Trigonometría; el ángulo va en radianes.</td></tr>
+          <tr><td><code>random (tope, semilla)</code></td><td>Entero al azar entre 0 y <code>tope − 1</code>. La semilla es opcional y conviene omitirla: SL inicializa el generador solo al arrancar el programa (ESLE2 la acepta por compatibilidad pero no la usa).</td></tr>
+          <tr><td><code>inc (n, a)</code> / <code>dec (n, a)</code></td><td>Suma o resta <code>a</code> (por defecto 1) a la variable <code>n</code> —la recibe por referencia— y devuelve el nuevo valor.</td></tr>
+        </table>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Funciones de cadena y conversión</h3>
+        <table>
+          <tr><th>Función</th><th>Qué devuelve</th></tr>
+          <tr><td><code>strlen (s)</code></td><td>Cantidad de caracteres.</td></tr>
+          <tr><td><code>substr (s, inicio, cant)</code></td><td>Subcadena; si se omite <code>cant</code>, va hasta el final.</td></tr>
+          <tr><td><code>pos (s1, s2, ini)</code></td><td>Posición de <code>s2</code> dentro de <code>s1</code>, o 0.</td></tr>
+          <tr><td><code>strdup (s, cant)</code></td><td>La cadena repetida <code>cant</code> veces.</td></tr>
+          <tr><td><code>upper (s)</code> / <code>lower (s)</code></td><td>En mayúsculas / minúsculas.</td></tr>
+          <tr><td><code>ascii (n)</code></td><td>El carácter cuyo código ASCII es n.</td></tr>
+          <tr><td><code>ord (c)</code></td><td>El código ASCII del primer carácter de c.</td></tr>
+          <tr><td><code>val (s)</code></td><td>El valor numérico de la cadena; 0 si no se puede convertir.</td></tr>
+          <tr><td><code>str (n, ancho, dec, relleno)</code></td><td>El número como cadena con <code>dec</code> decimales (2 por defecto), completado a la izquierda hasta <code>ancho</code> con <code>relleno</code> (un espacio por defecto).</td></tr>
+        </table>
+<pre><code>n = 123.40451
+str (n)              // "123.40"
+str (n, 10)          // "    123.40"
+str (n, 10, 3)       // "   123.405"   (redondeado)
+str (n, 0, 0)        // "123"
+str (n, 10, 0, '*')  // "*******123"</code></pre>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Otras</h3>
+        <table>
+          <tr><th>Función</th><th>Qué devuelve</th></tr>
+          <tr><td><code>ifval (cond, e1, e2)</code></td><td><code>e1</code> si la condición es verdadera y <code>e2</code> si es falsa. Es una <em>expresión condicional</em>: solo evalúa la rama que corresponde. Las dos expresiones tienen que ser del mismo tipo simple.</td></tr>
+          <tr><td><code>max (a, b)</code> / <code>min (a, b)</code></td><td>El mayor / el menor de dos valores simples del mismo tipo. La cadena vacía es menor que cualquier otra.</td></tr>
+          <tr><td><code>paramval (k)</code> / <code>pcount ()</code></td><td>El k-ésimo argumento del programa (siempre una cadena) y cuántos hay. En ESLE2 se cargan en el campo <em>Argumentos</em>.</td></tr>
+          <tr><td><code>sec ()</code></td><td>Segundos transcurridos desde el 1 de enero de 1970. Sirve para medir cuánto tarda una parte del programa.</td></tr>
+          <tr><td><code>runcmd (cmd)</code></td><td>Ejecutaría un programa externo. En el navegador no existe: siempre devuelve 127.</td></tr>
+          <tr><td><code>mem ()</code></td><td>Memoria disponible (valor simbólico en la versión web).</td></tr>
+        </table>
+<pre><code>// ifval() protege de un índice fuera de rango sin escribir un si:
+retorna ifval (num_dia &gt; 0 and num_dia &lt; 8, nom_dias [num_dia], "MAL")</code></pre>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-errores" data-titulo="Errores frecuentes y cómo evitarlos">
+      <h2>Errores frecuentes y cómo evitarlos</h2>
+      <p class="sub">Qué significa cada mensaje de ESLE2 y qué hacer con él.</p>
+
+      <div class="doc-bloque">
+        <h3>Cómo lee el IDE los errores</h3>
+        <p>Cuando algo falla, ESLE2 muestra un recuadro con tres partes: el tipo de error y la
+           línea, la línea de código señalada, y una recomendación concreta. Además marca la línea
+           en el editor. Los errores de <strong>compilación</strong> aparecen antes de ejecutar
+           (sintaxis); los de <strong>ejecución</strong>, mientras el programa corre.</p>
+        <p>El botón <strong>Revisar</strong> agrega un tercer nivel: <em>avisos</em>, que no impiden
+           ejecutar pero suelen anticipar el problema (variables sin usar, un ciclo cuya condición
+           nunca cambia, una palabra reservada escrita con mayúsculas…).</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Errores de compilación</h3>
+        <table>
+          <tr><th>Mensaje</th><th>Causa habitual</th><th>Solución</th></tr>
+          <tr><td>la palabra "sino" está fuera de lugar</td><td>Se cerró la llave del <code>si</code> antes del <code>sino</code>, como en C o Pascal.</td><td>El <code>sino</code> va dentro de las llaves; la llave de cierre es una sola, al final.</td></tr>
+          <tr><td>apareció "=" dentro de una condición</td><td>Se escribió <code>si ( a = b )</code>.</td><td>Para comparar se usa <code>==</code>; el <code>=</code> solo asigna.</td></tr>
+          <tr><td>el programa termina antes de tiempo: falta …</td><td>Falta un <code>fin</code> o una llave de cierre.</td><td>Verificá que cada <code>inicio</code> tenga su <code>fin</code> y cada <code>{</code> su <code>}</code>.</td></tr>
+          <tr><td>"Si" no se reconoce como palabra reservada</td><td>Palabra reservada escrita con mayúsculas.</td><td>Todas las palabras reservadas van en minúsculas.</td></tr>
+          <tr><td>no se puede usar la letra acentuada "…"</td><td>Un identificador con tilde, o un texto sin comillas.</td><td>Sacá la tilde del nombre, o poné el texto entre comillas.</td></tr>
+          <tr><td>el operador "&amp;" solo, no existe en SL</td><td>Se escribió un solo <code>&amp;</code> o un solo <code>|</code>.</td><td>Los operadores lógicos son <code>and</code> / <code>&amp;&amp;</code> y <code>or</code> / <code>||</code>: van dobles.</td></tr>
+          <tr><td>constante de cadena sin cerrar</td><td>Falta una comilla, o el texto ocupa dos líneas.</td><td>Cerrá la comilla; para partir el texto, concatená con <code>+</code>.</td></tr>
+          <tr><td>sentencia no válida / sentencia incompleta</td><td>Falta el <code>=</code> de la asignación o los paréntesis de la llamada.</td><td>Revisá la línea señalada: toda sentencia es una asignación, una llamada o una estructura de control.</td></tr>
+        </table>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Errores de ejecución</h3>
+        <table>
+          <tr><th>Mensaje</th><th>Causa habitual</th><th>Solución</th></tr>
+          <tr><td>identificador no declarado: "x"</td><td>Falta declarar la variable, o está escrita distinto (SL distingue mayúsculas).</td><td>Declarala en <code>var</code>. ESLE2 te sugiere el nombre parecido más cercano.</td></tr>
+          <tr><td>no hay concordancia de tipos</td><td>Se mezcló una cadena con un número.</td><td>Convertí con <code>val (s)</code> o con <code>str (n)</code>.</td></tr>
+          <tr><td>índice fuera de rango</td><td>Se usó el índice 0, o se pasó del último elemento.</td><td>Los índices van de 1 a <code>alen (v)</code>. Revisá los límites del ciclo.</td></tr>
+          <tr><td>el arreglo abierto todavía no fue inicializado</td><td>Se usó un <code>vector [*]</code> sin darle tamaño.</td><td>Llamá antes a <code>dim (v, n)</code> o asignale un literal.</td></tr>
+          <tr><td>división por cero</td><td>El divisor terminó valiendo 0.</td><td>Verificá el divisor antes de dividir.</td></tr>
+          <tr><td>no hay más datos en la entrada para leer()</td><td>El programa lee más veces de las que hay datos.</td><td>Agregá líneas en <em>Entrada de datos</em> o controlá con <code>eof()</code>.</td></tr>
+          <tr><td>el programa ejecutó demasiadas instrucciones</td><td>Un ciclo que no termina.</td><td>Dentro del ciclo tiene que cambiar alguna variable de la condición.</td></tr>
+          <tr><td>la función "f" terminó sin ejecutar "retorna"</td><td>Hay un camino que no retorna nada.</td><td>Asegurate de que todos los caminos ejecuten <code>retorna ( … )</code>.</td></tr>
+          <tr><td>demasiadas llamadas anidadas</td><td>Recursión sin caso base.</td><td>Agregá la condición que corta las llamadas.</td></tr>
+          <tr><td>no se puede leer un arreglo abierto sin dimensionar</td><td>Se pasó un <code>vector [*]</code> entero a <code>leer()</code> sin darle tamaño.</td><td>Llamá antes a <code>dim (v, n)</code>: <code>leer()</code> necesita saber cuántos valores tomar.</td></tr>
+          <tr><td>leer() no admite variables lógicas</td><td>Se intentó <code>leer (ok)</code> con <code>ok : logico</code>.</td><td>Leé un número o una cadena y convertilo: <code>ok = (resp == "s")</code>.</td></tr>
+          <tr><td>«…» recibe sus parámetros por referencia</td><td>A <code>get_color()</code>, <code>get_curpos()</code>, <code>get_scrsize()</code> o <code>intercambiar()</code> se les pasó una cuenta o un valor fijo.</td><td>Pasales nombres de variables, no expresiones.</td></tr>
+          <tr><td>no se pueden intercambiar … y …</td><td>Las dos variables de <code>intercambiar()</code> son de tipos distintos.</td><td>Tienen que coincidir en tipo (dos números, dos vectores del mismo tipo, etc.).</td></tr>
+          <tr><td>max() / min() compara dos valores simples del mismo tipo</td><td>Se les pasó un arreglo, un registro, o dos tipos distintos.</td><td>Compará valores simples: dos números, dos cadenas o dos lógicos.</td></tr>
+          <tr><td>imprimir() no puede mostrar este valor</td><td>Se quiso imprimir algo que no es número, cadena, lógico, arreglo ni registro.</td><td>Revisá qué le estás pasando a <code>imprimir()</code>.</td></tr>
+        </table>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Recomendaciones para escribir sin errores</h3>
+        <ul>
+          <li>Declará todo lo que vayas a usar y respetá mayúsculas y minúsculas.</li>
+          <li>Escribí el esqueleto completo (<code>inicio</code> … <code>fin</code>, llaves) antes de
+              llenarlo: así no te faltan cierres.</li>
+          <li>Indentá tres espacios por nivel; con las llaves alineadas los errores saltan a la vista.</li>
+          <li>Antes de dividir o de indexar, preguntate si el valor puede ser 0 o pasarse del rango.</li>
+          <li>En cada ciclo, mirá qué variable cambia para que la condición llegue a ser falsa.</li>
+          <li>Probá con casos límite: 0, un solo elemento, la cadena vacía, un número negativo.</li>
+          <li>Usá el botón <em>Revisar</em> antes de ejecutar; casi todos los avisos son bugs en potencia.</li>
+        </ul>
+      </div>
+      <div class="doc-bloque">
+        <h3>Sugerencias de estilo</h3>
+        <p><strong>Revisar</strong> también avisa de cosas que <em>andan igual</em> pero se pueden
+           escribir mejor. Aparecen aparte de los errores, en azul, y nunca impiden ejecutar:</p>
+        <table>
+          <tr><th>Sugerencia</th><th>En vez de</th><th>Conviene</th></tr>
+          <tr><td>Comparar con TRUE o FALSE</td><td><code>si ( listo == TRUE )</code></td><td><code>si ( listo )</code></td></tr>
+          <tr><td>Un <code>si</code> que solo guarda un lógico</td><td><code>si (n % 2 == 0) { par = TRUE sino par = FALSE }</code></td><td><code>par = ( n % 2 == 0 )</code></td></tr>
+          <tr><td>Variable que se escribe y no se lee</td><td><code>resto = a % b</code> y nunca se usa</td><td>usarla, o sacar la línea</td></tr>
+          <tr><td>Condición que no depende de nada</td><td><code>si ( 2 > 1 )</code></td><td>una condición con variables</td></tr>
+          <tr><td>Bloque vacío</td><td><code>si ( n > 0 ) { }</code></td><td>completarlo o sacarlo</td></tr>
+          <tr><td>Línea inalcanzable</td><td>algo después de <code>retorna</code></td><td>moverlo antes</td></tr>
+          <tr><td>Cambiar la variable del <code>desde</code> adentro</td><td><code>desde k=1 hasta 10 { k = k + 1 }</code></td><td><code>mientras</code>, que sí la maneja el programa</td></tr>
+          <tr><td>El mismo número grande repetido</td><td><code>365</code> tres veces</td><td><code>const DIAS = 365</code></td></tr>
+          <tr><td>Una letra sola para un texto o una ficha</td><td><code>t = "Ana"</code></td><td><code>nombre = "Ana"</code></td></tr>
+        </table>
+        <p class="nota">Están pensadas para no molestar: las 50 soluciones del curso pasan sin una
+           sola sugerencia.</p>
+      </div>
+
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-diferencias" data-titulo="Diferencias con el SLE2 de escritorio">
+      <h2>Diferencias con el SLE2 de escritorio</h2>
+      <p class="sub">Qué cambia respecto del programa original para Windows y Linux.</p>
+      <div class="doc-bloque">
+        <h3>Lo que cambia</h3>
+        <ul>
+          <li><strong>Archivos</strong>: <code>set_stdin()</code> y <code>set_stdout()</code> funcionan,
+              pero sobre archivos guardados en la memoria del navegador (botón <em>Archivos…</em>).
+              No se tocan archivos de tu computadora.</li>
+          <li><strong>Argumentos</strong>: <code>paramval()</code> y <code>pcount()</code> leen el campo
+              <em>Argumentos</em> de la barra de herramientas, no una línea de comandos.</li>
+          <li><strong>Pantalla</strong>: <code>get_scrsize()</code> informa siempre 25 × 80, como el
+              SLE original, aunque el panel del navegador se adapte a tu ventana.</li>
+          <li><code>runcmd()</code> no puede ejecutar programas externos: devuelve 127.</li>
+          <li><code>mem()</code> devuelve un valor simbólico.</li>
+        </ul>
+      </div>
+      <div class="doc-bloque">
+        <h3>Lo que no está</h3>
+        <ul>
+          <li>El depurador paso a paso con puntos de parada y visor de expresiones.</li>
+          <li>Las cláusulas <code>lib</code>, <code>libext</code> y <code>archivo</code>, reservadas en
+              el compilador original pero no documentadas.</li>
+        </ul>
+      </div>
+      <div class="doc-bloque">
+        <h3>Lo que se agregó</h3>
+        <ul>
+          <li>Recomendaciones y detección de errores frecuentes (botón <em>Revisar</em>).</li>
+          <li>Corte automático de programas que no terminan, y botón <em>Detener</em>.</li>
+          <li>Curso con corrección automática y progreso guardado.</li>
+        </ul>
+        <p class="nota">Nota fina: el ejemplo de precedencias de la página 41 del manual imprime
+           valores que no se corresponden con su propio código fuente. ESLE2 respeta la tabla de
+           precedencias, que sí es coherente.</p>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-enlaces" data-titulo="Enlaces y fuentes">
+      <h2>Enlaces y fuentes</h2>
+      <p class="sub">De dónde sale todo esto.</p>
+      <div class="doc-bloque">
+        <ul>
+          <li><a href="https://www.cnc.una.py/sl/SL-index.html" target="_blank" rel="noopener">Página oficial de SL — CNC / UNA</a></li>
+          <li><a href="https://www.cnc.una.py/sl/libro-sl.pdf" target="_blank" rel="noopener">Libro «Introducción al lenguaje SL», Juan Segovia Silvero (PDF)</a></li>
+          <li>«Índice de subrutinas y funciones predefinidas de SL», J. Segovia Silvero, 2004 — la
+              referencia de la que salen <code>ifval()</code>, <code>intercambiar()</code>,
+              <code>max()</code>, <code>min()</code>, <code>beep()</code>, <code>readkey()</code>,
+              los colores, el cursor y los archivos.</li>
+          <li><a href="https://sledos.blogspot.com/p/descarga.html" target="_blank" rel="noopener">Descargas y documentos de SLE2</a></li>
+          <li><a href="https://www.youtube.com/playlist?list=PL798714BBE87A5965" target="_blank" rel="noopener">Videotutoriales de SLE2</a></li>
+        </ul>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script src="js/doc.js"></script>
+<script src="js/indice.js"></script>
+<script src="js/buscador.js"></script>
+<script src="js/iconos.js"></script>
+<script src="js/menus.js"></script>
+<script src="js/instalar.js"></script>
+</body>
+</html>

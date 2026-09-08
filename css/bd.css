@@ -1,0 +1,130 @@
+/* ESLE2 BD — lo único que esta página tiene y las demás no.
+ *
+ * La cabecera, la barra, los paneles, los menús y los diálogos salen de
+ * css/estilo.css: ESLE2 BD es el mismo IDE con dos paneles distintos, no otro
+ * programa. Acá quedan tres cosas:
+ *
+ *   1. el panel que muestra las tablas de la base;
+ *   2. la tabla con la que se dibuja el resultado de una consulta;
+ *   3. el panel de SQL suelto.
+ */
+
+/* ---------------------- el esquema de la base ------------------------- */
+.esquema-cuerpo { flex: 1 1 auto; min-height: 0; overflow: auto; padding: 8px 10px; }
+
+.tabla-esq { border: 1px solid var(--linea); border-radius: var(--r); margin-bottom: 8px; padding: 6px 8px; }
+.tabla-esq > summary {
+  cursor: pointer; display: flex; align-items: center; gap: 8px;
+  font-size: 12.5px; list-style: none;
+}
+.tabla-esq > summary::-webkit-details-marker { display: none; }
+.tabla-esq > summary::before { content: '▸'; color: var(--tenue); font-size: 11px; }
+.tabla-esq[open] > summary::before { content: '▾'; }
+.tabla-esq > summary .mini { margin-left: auto; }
+.tabla-esq ul { list-style: none; margin: 6px 0 6px 14px; padding: 0; }
+.tabla-esq li { display: flex; gap: 8px; align-items: baseline; padding: 1px 0; }
+.tabla-esq .col-n { font-family: var(--mono); font-size: 12px; }
+/* La clave primaria se marca: es lo primero que se busca al mirar una tabla. */
+.tabla-esq .col-n.pk { color: var(--acento); font-weight: 600; }
+.tabla-esq .col-n.pk::after { content: ' 🔑'; font-size: 9px; }
+.tabla-esq .col-t { font-size: 11px; color: var(--tenue); margin-left: auto; }
+.tabla-esq .mini-btn { margin-top: 2px; }
+
+/* ------------------ el resultado de una consulta ---------------------- */
+.tabla-sql {
+  border-collapse: collapse; margin: 6px 0 10px; font-size: 12.5px;
+  font-family: var(--mono); max-width: 100%;
+}
+.tabla-sql th, .tabla-sql td {
+  border: 1px solid var(--linea); padding: 3px 9px; text-align: left; white-space: nowrap;
+}
+.tabla-sql th { background: var(--fondo-2); font-weight: 600; font-family: var(--sans); font-size: 12px; }
+.tabla-sql td.num { text-align: right; }
+/* NULL en gris y en cursiva: no puede confundirse con el texto «NULL» que
+   alguien haya guardado de verdad en la columna. */
+.tabla-sql td.nulo { color: var(--tenue); font-style: italic; }
+.tabla-sql tbody tr:hover td { background: var(--fondo-2); }
+
+/* ------------------------- el SQL suelto ------------------------------ */
+.rapida-cuerpo { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 6px; padding: 8px 10px; }
+#sqlRapido {
+  flex: 1 1 auto; min-height: 52px; resize: none;
+  background: var(--fondo-2); color: var(--texto);
+  border: 1px solid var(--linea); border-radius: var(--r);
+  font-family: var(--mono); font-size: 12.5px; padding: 7px 9px;
+}
+#sqlRapido:focus { border-color: var(--acento); outline: none; }
+.rapida-cuerpo .btn { align-self: flex-start; }
+
+/* ------------------ el diagrama de la base y su editor ---------------- */
+/*
+ * El SVG del diagrama trae sus colores adentro, para que el archivo que se
+ * baja se vea igual abierto en cualquier lado. Por eso el dibujo va sobre un
+ * fondo claro fijo también en el tema oscuro: es una hoja, no una pantalla.
+ */
+.dlg-ancho { max-width: 1080px; }
+
+.db-vista { display: grid; grid-template-columns: 1.4fr 1fr; gap: 12px; }
+.db-lienzo {
+  overflow: auto; background: #f7f7f4; border: 1px solid var(--linea);
+  border-radius: var(--r); padding: 10px; min-height: 200px; max-height: 58vh;
+}
+.db-lienzo svg { display: block; }
+.db-palabras {
+  overflow: auto; margin: 0; max-height: 58vh; white-space: pre-wrap;
+  background: var(--fondo-2); border: 1px solid var(--linea); border-radius: var(--r);
+  padding: 10px 12px; font-family: var(--mono); font-size: 12px; color: var(--texto);
+}
+
+.db-editor { display: grid; grid-template-columns: 1.1fr 1fr; gap: 12px; }
+.db-tablas { overflow: auto; max-height: 58vh; display: flex; flex-direction: column; gap: 10px; }
+.db-previa { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.db-previa .db-lienzo { max-height: 30vh; min-height: 130px; }
+
+.db-tabla {
+  border: 1px solid var(--linea); border-radius: var(--r);
+  background: var(--fondo-2); padding: 9px 10px;
+}
+.db-tabla-cabeza { display: flex; gap: 8px; align-items: center; margin-bottom: 7px; }
+.db-nombre { flex: 1 1 auto; min-width: 0; font-weight: 600; }
+.db-tabla input[type="text"] {
+  background: var(--panel); color: var(--texto); border: 1px solid var(--linea);
+  border-radius: 5px; padding: 4px 7px; font-size: 12.5px; font-family: inherit;
+}
+.db-tabla input[type="text"]:focus, .db-tabla select:focus { border-color: var(--acento); outline: none; }
+.db-tabla select {
+  background: var(--panel); color: var(--texto); border: 1px solid var(--linea);
+  border-radius: 5px; padding: 4px 5px; font-size: 12px; max-width: 152px;
+}
+
+.db-columna {
+  display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
+  padding: 4px 0; border-top: 1px solid var(--linea);
+}
+.db-columna > input[type="text"] { flex: 1 1 92px; min-width: 82px; }
+.db-columna .db-tipo-campo { flex: 0 1 108px; font-family: var(--mono); font-size: 12px; }
+.db-campo { display: inline-flex; gap: 4px; align-items: center; font-size: 11.5px; color: var(--tenue); }
+.db-campo input { margin: 0; }
+
+.db-problemas {
+  margin: 0; padding: 8px 10px 8px 26px;
+  border: 1px solid var(--aviso); border-radius: var(--r);
+  background: var(--fondo-2); font-size: 12.5px;
+}
+.db-problemas li { margin: 2px 0; }
+
+.db-codigo {
+  margin: 0; overflow: auto; max-height: 26vh; white-space: pre;
+  background: var(--fondo-2); border: 1px solid var(--linea); border-radius: var(--r);
+  padding: 9px 11px; font-family: var(--mono); font-size: 12px; color: var(--texto);
+}
+
+@media (max-width: 1000px) {
+  .panel.esquema { min-height: 180px; }
+  .panel.consulta-rapida { min-height: 150px; }
+}
+
+@media (max-width: 900px) {
+  .db-vista, .db-editor { grid-template-columns: 1fr; }
+  .db-lienzo, .db-palabras, .db-tablas { max-height: 34vh; }
+}

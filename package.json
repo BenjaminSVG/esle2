@@ -1,0 +1,14 @@
+{
+  "name": "esle2",
+  "version": "44.0.0",
+  "private": true,
+  "description": "ESLE2: IDE, curso y documentación del lenguaje SL/SLE2 (CNC-UNA). Sitio estático, sin dependencias.",
+  "scripts": {
+    "test": "node tools/probar.js",
+    "revisar": "node tools/soltar.js",
+    "soltar": "node tools/soltar.js --publicar",
+    "indice": "node tools/generar-indice.js",
+    "cache": "node tools/revisar-cache.js --arreglar"
+  },
+  "license": "MIT"
+}

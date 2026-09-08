@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Documentación de ESLE2 BD — bases de datos y SQL</title>
+<meta name="description" content="Cómo escribir SQL desde el lenguaje SLE2: crear tablas, consultar, agrupar, hacer JOIN y exportar la base a SQLite, MySQL y PostgreSQL.">
+<link rel="icon" href="img/logo.svg" type="image/svg+xml">
+<link rel="alternate icon" href="img/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#3a6b8f" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1a1d22" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ESLE2">
+<link rel="apple-touch-icon" href="img/icono-180.png">
+<link rel="stylesheet" href="css/estilo.css">
+<script src="js/tema.js"></script>
+<script src="js/diseno.js"></script>
+</head>
+<body class="app">
+
+<a class="saltar" href="#docCuerpo">Saltar al contenido</a>
+
+<header class="barra">
+  <a class="marca" href="index.html">
+    <img class="logo" src="img/logo.svg" alt="" width="30" height="30">
+    <div>
+      <h1>ESLE2 <span class="sufijo">BD</span></h1>
+      <p>Bases de datos y SQL</p>
+    </div>
+  </a>
+  <nav class="pestanas">
+    <a class="pest" href="index.html">IDE</a>
+    <a class="pest" href="documentacion.html">Documentación</a>
+    <a class="pest" href="poo.html">ESLE2 POO</a>
+    <a class="pest" href="visual.html">ESLE2 Visual</a>
+    <a class="pest destacada" href="bd.html" title="El entorno de bases de datos">ESLE2 BD</a>
+    <a class="pest activa" href="bd-documentacion.html">Docs BD</a>
+  </nav>
+
+  <div class="barra-acciones">
+    <button class="btn-buscar oculto" id="btnInstalar" type="button" data-ic="instalar" aria-label="Instalar ESLE2 como aplicación"
+            title="Instalar ESLE2 como aplicación"><span class="etiqueta">Instalar</span></button>
+    <button class="btn-buscar" id="btnBuscar" type="button" data-ic="buscar" aria-label="Buscar en todo ESLE2"
+            title="Buscar en todo ESLE2 (Ctrl + K)"><span class="etiqueta">Buscar</span><kbd>Ctrl K</kbd></button>
+    <button class="btn-tema" id="btnTema" type="button">☾</button>
+  </div>
+</header>
+
+<div class="doc">
+  <aside class="doc-lateral">
+    <div class="doc-buscador">
+      <span class="lupa">⌕</span>
+      <input type="search" id="docBuscar" placeholder="Buscar en la documentación…"
+             autocomplete="off" spellcheck="false" aria-label="Buscar en la documentación">
+      <button class="limpiar oculto" id="docLimpiar" title="Limpiar búsqueda" aria-label="Limpiar búsqueda">×</button>
+    </div>
+    <p id="docResultados"></p>
+    <ul class="doc-indice" id="docIndice"></ul>
+  </aside>
+
+  <main class="doc-cuerpo" id="docCuerpo" tabindex="-1">
+    <div class="doc-intro">
+      <h2>Documentación de ESLE2 BD</h2>
+      <p>Cómo crear tablas, guardar datos y consultarlos con SQL desde
+         <strong>el mismo lenguaje SLE2</strong> del curso. Escribí en el buscador del índice para
+         filtrar: se ocultan los apartados que no tengan que ver con lo que buscás.</p>
+      <p class="nota">El entorno está en <a href="bd.html">ESLE2 BD</a>. Los programas se guardan
+         con extensión <code>.sldb</code>. Si es la primera vez, empezá por
+         <a href="#s-bases">Qué es una base de datos</a>, que explica de qué se trata todo esto
+         antes de escribir una línea.</p>
+    </div>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-bases" data-titulo="Qué es una base de datos">
+      <h2>Qué es una base de datos</h2>
+      <p class="sub">Datos guardados de una forma que permite preguntarles cosas.</p>
+
+      <div class="doc-bloque">
+        <h3>El problema que resuelve</h3>
+        <p>Un programa puede guardar sus datos en un archivo de texto, y para veinte líneas
+           alcanza. El problema aparece cuando hay que <em>buscar</em>: para responder «¿quién sacó
+           más de 7?» hay que leer el archivo entero y comparar a mano, y para responder «¿cuántos
+           alumnos hay por ciudad?» hay que leerlo entero otra vez.</p>
+        <p>Una <strong>base de datos</strong> guarda los mismos datos, pero con una forma
+           declarada —qué hay, de qué tipo, qué no puede faltar, qué no se puede repetir— y con un
+           idioma para preguntarle: <strong>SQL</strong>. En vez de escribir <em>cómo</em>
+           recorrerlos, se escribe <em>qué</em> se quiere, y el motor se arregla.</p>
+        <pre><code>// Con un archivo: hay que decir cómo buscar.
+desde i = 1 hasta cuantos
+{
+   si (nota [i] &gt; 7)
+   {
+      imprimir (nombre [i], "\n")
+   }
+}
+
+// Con una base: se dice qué se quiere.
+SELECCIONAR nombre DE alumnos DONDE nota &gt; 7</code></pre>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Tabla, fila, columna</h3>
+        <p>Una base es un conjunto de <strong>tablas</strong>. Una tabla es una planilla:</p>
+        <ul>
+          <li>cada <strong>columna</strong> es un dato que se guarda de cada cosa —el nombre,
+              la nota— y tiene un <strong>tipo</strong> (número, texto);</li>
+          <li>cada <strong>fila</strong> es una de esas cosas: un alumno, una venta, una ciudad;</li>
+          <li>el <strong>orden de las filas no significa nada</strong>. Si querés verlas en un
+              orden, hay que pedirlo con <code>ORDER BY</code>. Esta es la diferencia más grande
+              con un vector de SL, donde la posición 3 es la posición 3.</li>
+        </ul>
+        <p>Si ya viste registros y vectores en SL, la comparación es casi exacta: una fila es un
+           registro y una tabla es un vector de registros… que además sabe buscarse solo, controla
+           lo que se le mete y no se pierde cuando termina el programa.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>La clave primaria: cómo se nombra una fila</h3>
+        <p>Dos alumnos se pueden llamar igual. Entonces «el alumno Ana» no señala a nadie en
+           particular, y sin poder señalar una fila no se la puede modificar ni borrar sin llevarse
+           puesta la otra.</p>
+        <p>Para eso está la <strong>clave primaria</strong>: una columna cuyo valor
+           <strong>no se repite nunca y no puede faltar</strong>. Casi siempre es un número que no
+           quiere decir nada —un <code>id</code>—, justamente para que nunca haya que cambiarlo:
+           una persona se puede cambiar el apellido, pero su número de legajo no.</p>
+        <pre><code>   CREAR TABLA alumnos (
+      id     INTEGER PRIMARY KEY,   -- no se repite y no puede faltar
+      nombre TEXT NOT NULL,
+      nota   REAL
+   )</code></pre>
+        <p class="nota">ESLE2 BD la hace cumplir de verdad: si intentás meter dos filas con el
+           mismo <code>id</code>, el programa para y lo dice.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Por qué no una sola tabla grande</h3>
+        <p>La primera idea siempre es poner todo junto:</p>
+        <pre><code>alumnos (nombre, nota, ciudad, departamento_de_la_ciudad)
+
+Ana    9   Asunción      Capital
+Beto   6   Encarnación   Itapúa
+Cata   8   Asunción      Capital
+Dani   7   Asunsión      Capital     ← escrito distinto: ¿es otra ciudad?</code></pre>
+        <p>Tres problemas, y son siempre los mismos tres:</p>
+        <ul>
+          <li><strong>se repite.</strong> «Asunción / Capital» está escrito dos veces, y con mil
+              alumnos, mil veces;</li>
+          <li><strong>se contradice.</strong> Alcanza con una letra de más para que existan dos
+              Asunción, y ninguna consulta las va a juntar;</li>
+          <li><strong>no se puede decir lo que todavía no pasó.</strong> Una ciudad donde no vive
+              ningún alumno no se puede ni anotar: no hay dónde.</li>
+        </ul>
+        <p>La solución es <strong>una tabla por cada cosa distinta</strong> —una de alumnos y una
+           de ciudades— y una columna que las una. Eso es todo lo que quiere decir «normalizar»:
+           que cada dato esté escrito en un solo lugar.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>La clave foránea: cómo se unen dos tablas</h3>
+        <p>En vez de guardar el nombre de la ciudad en cada alumno, se guarda
+           <strong>su clave primaria</strong>. Esa columna es una <strong>clave foránea</strong>, y
+           se declara con <code>REFERENCES</code>:</p>
+        <pre><code>   CREAR TABLA ciudades (
+      id     INTEGER PRIMARY KEY,
+      nombre TEXT NOT NULL,
+      depto  TEXT
+   )
+
+   CREAR TABLA alumnos (
+      id     INTEGER PRIMARY KEY,
+      nombre TEXT NOT NULL,
+      ciudad INTEGER REFERENCES ciudades (id)
+   )</code></pre>
+        <p>Ahora «Asunción» está escrito <strong>una sola vez</strong>. Y ESLE2 BD lo hace cumplir:
+           un <code>ciudad</code> que no existe en <code>ciudades</code> se rechaza. Se admite
+           <code>NULL</code>, que quiere decir «todavía no se sabe en cuál vive» —y es por eso que
+           existe el <a href="#s-sql">LEFT JOIN</a>—.</p>
+        <p>La relación se lee siempre en los dos sentidos, y conviene decirla en voz alta:
+           <strong>cada alumno vive en una ciudad; en cada ciudad viven muchos alumnos</strong>. Eso
+           es una relación <strong>uno a muchos</strong>, la más común de todas. La clave foránea
+           va siempre <em>del lado de los muchos</em>.</p>
+        <div class="doc-nota">¿Y si fuera <strong>muchos a muchos</strong> —un alumno cursa varias
+          materias y una materia tiene varios alumnos—? Entonces hace falta una tercera tabla en el
+          medio, con una clave foránea a cada lado:
+          <code>inscripciones (alumno REFERENCES alumnos (id), materia REFERENCES materias (id))</code>.
+          No hay otra forma, y es la parte que más cuesta al principio.</div>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Volver a juntarlas: <code>JOIN</code></h3>
+        <p>Separar en dos tablas no pierde nada, porque se pueden volver a unir cuando haga falta.
+           Eso es un <code>JOIN</code>: dos tablas puestas una al lado de la otra, emparejadas por
+           la columna que las relaciona.</p>
+        <pre><code>   SELECCIONAR a.nombre, c.nombre, c.depto
+   DE alumnos a
+   JOIN ciudades c ON a.ciudad = c.id</code></pre>
+        <p class="nota">Guardar el dato una vez y juntarlo al consultar es el intercambio central
+           de las bases de datos: se escribe un poco más al preguntar, a cambio de que nunca haya
+           dos versiones del mismo dato.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Qué mira el motor por vos</h3>
+        <table>
+          <tr><th>Se declara</th><th>Y entonces el motor no deja</th></tr>
+          <tr><td><code>PRIMARY KEY</code></td><td>repetir el valor, ni dejarlo vacío.</td></tr>
+          <tr><td><code>NOT NULL</code></td><td>que falte el dato.</td></tr>
+          <tr><td><code>UNIQUE</code></td><td>que se repita (un correo, un documento).</td></tr>
+          <tr><td><code>DEFAULT valor</code></td><td>—: pone ese valor cuando no se dice ninguno.</td></tr>
+          <tr><td><code>REFERENCES otra (col)</code></td><td>apuntar a una fila que no existe.</td></tr>
+        </table>
+        <p>Todo esto se declara <strong>una vez</strong>, al crear la tabla, y vale para siempre y
+           para todos los programas que toquen esa base. Es la diferencia de fondo con controlarlo
+           a mano con <code>si</code>: un control escrito en el programa se olvida en el programa
+           siguiente.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>De acá en adelante</h3>
+        <ul>
+          <li><a href="#s-que-es">Cómo se escribe todo esto en ESLE2 BD</a>;</li>
+          <li><a href="#s-diagrama">el diagrama de la base</a>, que dibuja las tablas y sus flechas
+              —y que también se puede dibujar primero y sacar el código después—;</li>
+          <li><a href="#s-null">NULL</a>, que es lo que más cuesta;</li>
+          <li><a href="#s-exportar">exportar</a> a SQLite, MySQL o PostgreSQL, cuando la base ya
+              tiene que salir de acá.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-que-es" data-titulo="Qué es ESLE2 BD">
+      <h2>Qué es ESLE2 BD</h2>
+      <p class="sub">El lenguaje de siempre, con las instrucciones de la base adentro.</p>
+
+      <div class="doc-bloque">
+        <h3>Las instrucciones se escriben solas</h3>
+        <p>En ESLE2 BD una instrucción de la base es <strong>una sentencia más</strong>: va sola, sin
+           comillas y sin envolverla en nada. Y va en español, aunque también se entiende
+           en inglés.</p>
+        <pre><code>inicio
+   CREAR TABLA alumnos (id INTEGER PRIMARY KEY, nombre TEXT, nota REAL)
+
+   INSERTAR DENTRO alumnos VALORES (1, 'Ana', 9), (2, 'Beto', 6)
+
+   SELECCIONAR nombre, nota DE alumnos ORDER BY nota DESC
+fin</code></pre>
+        <p>Un <code>SELECCIONAR</code> suelto <strong>imprime su tabla</strong> y además deja el
+           resultado listo para recorrer con <code>filas()</code> y <code>dato()</code>.</p>
+        <p>Alrededor está el SL de siempre, sin ningún cambio: las mismas variables, los mismos
+           ciclos, el mismo <code>si</code>. Lo que hay que aprender en una materia de bases de
+           datos es <strong>SQL</strong>, no otra sintaxis.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Dónde empieza y dónde termina</h3>
+        <p>Una instrucción empieza en la <strong>primera palabra de un renglón</strong>, cuando esa
+           palabra es un verbo de SQL —<code>CREAR</code>, <code>INSERTAR</code>,
+           <code>SELECCIONAR</code>, <code>ACTUALIZAR</code>, <code>BORRAR</code>,
+           <code>ELIMINAR</code>, <code>USAR</code>, o cualquiera de sus formas en inglés— y en ese
+           mismo renglón viene algo más.</p>
+        <p>Termina en el <code>;</code>, o en el renglón donde deja de tener sentido seguirla: uno en
+           blanco, uno que empieza con una palabra de SL, con <code>}</code>, con un comentario, con
+           otra instrucción de la base, o con una asignación o una llamada. Los paréntesis abiertos
+           mandan: mientras haya uno sin cerrar, la instrucción sigue.</p>
+        <pre><code>   CREAR TABLA alumnos (
+      id     INTEGER PRIMARY KEY,
+      nombre TEXT NOT NULL,
+      nota   REAL
+   )
+
+   SELECCIONAR nombre, nota
+   DE alumnos
+   DONDE nota &gt;= 7
+   ORDER BY nota DESC
+
+   imprimir ("listo\n")</code></pre>
+        <p class="nota">Si alguna vez queda la duda de dónde corta, poné un <code>;</code> al final:
+           ahí termina, sin discusión.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Meter una variable: <code>@nombre</code></h3>
+        <p>Adentro de una instrucción, <code>@nombre</code> es el valor de esa variable de SL. ESLE2
+           BD lo escribe como lo escribiría SQL: los números tal cual y el texto entre comillas
+           simples, con las comillas de adentro dobladas.</p>
+        <pre><code>var
+   quien : cadena
+   i : numerico
+inicio
+   quien = "O'Higgins"
+   i = 7
+
+   INSERTAR DENTRO gente VALORES (@quien, @i)
+   SELECCIONAR * DE gente DONDE nombre = @quien</code></pre>
+        <p>Por eso no hace falta armar la consulta a mano con <code>+</code> y <code>str()</code>,
+           que es donde se cuelan las comillas mal puestas. Un <code>@</code> adentro de un texto de
+           SQL —un correo, por ejemplo— queda como está.</p>
+        <p class="nota">Cuando lo que cambia no es un valor sino la consulta entera (la columna por
+           la que se ordena, por ejemplo), sigue estando <code>sql()</code>: ver
+           <a href="#s-subrutinas">las subrutinas de la base</a>.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>El motor corre en tu navegador</h3>
+        <p>No hay servidor, no hay cuenta que crear y no hace falta conexión: la base vive en la
+           pestaña mientras la tengas abierta. El motor está escrito a mano en JavaScript, igual que
+           el intérprete de SL, así que se puede leer entero y funciona sin conexión.</p>
+        <div class="doc-nota">La base <strong>no se guarda sola</strong> al cerrar la pestaña. Para
+          conservarla, usá <em>Exportar</em>: baja un archivo <code>.sql</code> que después podés
+          volver a cargar con <em>Base → Importar .sql</em>, o abrir directamente en SQLite, MySQL o
+          PostgreSQL.</div>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Una cadena puede ocupar varias líneas</h3>
+        <p>La otra diferencia con el SL clásico, y está porque una consulta armada como texto se lee
+           mucho mejor en varios renglones:</p>
+        <pre><code>   consultar ("SELECCIONAR c.nombre, COUNT(*) AS cuantos
+                 DE gente g
+                 JOIN ciudades c ON g.ciudad = c.id
+                GROUP BY c.nombre
+                ORDER BY cuantos DESC")</code></pre>
+        <p class="nota">En el IDE clásico esto sigue siendo un error: ahí una cadena empieza y
+           termina en la misma línea.</p>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-subrutinas" data-titulo="Las subrutinas de la base">
+      <h2>Las subrutinas de la base</h2>
+      <p class="sub">Diez, y con eso alcanza.</p>
+
+      <div class="doc-bloque">
+        <table>
+          <tr><th>Subrutina</th><th>Qué hace</th></tr>
+          <tr><td><code>sql (texto)</code></td>
+              <td>Ejecuta una instrucción <strong>armada como texto</strong>. Hace falta solo cuando
+                  la consulta se arma en el programa; si está escrita tal cual, va suelta y no se
+                  usa esto.</td></tr>
+          <tr><td><code>consultar (texto)</code></td>
+              <td>Igual, pero para un <code>SELECT</code> que se va a recorrer <em>sin</em>
+                  imprimirlo. Devuelve la cantidad de filas. Si le pasás algo que no es un
+                  <code>SELECT</code>, avisa.</td></tr>
+          <tr><td><code>filas ()</code></td><td>Cuántas filas trajo la última consulta.</td></tr>
+          <tr><td><code>afectadas ()</code></td>
+              <td>Cuántas filas tocó el último <code>INSERT</code>, <code>UPDATE</code> o
+                  <code>DELETE</code>. Hace falta porque una instrucción escrita directa es una
+                  sentencia, no una expresión: no se le puede pedir el resultado con un
+                  <code>=</code>.</td></tr>
+          <tr><td><code>columnas ()</code></td><td>Cuántas columnas trajo.</td></tr>
+          <tr><td><code>columna (i)</code></td><td>El nombre de la columna <code>i</code>, desde 1.</td></tr>
+          <tr><td><code>dato (fila, col)</code></td>
+              <td>El valor de una celda. <code>col</code> puede ser el número (desde 1) o el nombre
+                  de la columna: <code>dato (i, "nota")</code>.</td></tr>
+          <tr><td><code>hay_dato (fila, col)</code></td>
+              <td><code>FALSE</code> si ese valor es <code>NULL</code>. Ver
+                  <a href="#s-null">NULL</a>.</td></tr>
+          <tr><td><code>mostrar ()</code></td>
+              <td>Imprime el resultado como una tabla alineada. Es lo que hace solo un
+                  <code>SELECCIONAR</code> escrito directo; esto sirve después de
+                  <code>consultar()</code>.</td></tr>
+          <tr><td><code>tablas ()</code> · <code>nombre_tabla (i)</code></td>
+              <td>Cuántas tablas hay en la base, y cómo se llama cada una.</td></tr>
+        </table>
+        <p class="nota">Todos los índices empiezan en <strong>1</strong>, igual que los vectores
+           de SL.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Recorrer un resultado</h3>
+        <pre><code>var
+   i : numerico
+inicio
+   CREAR TABLA alumnos (nombre TEXT, nota REAL)
+   INSERTAR DENTRO alumnos VALORES ('Ana', 9), ('Beto', 6)
+
+   consultar ("SELECCIONAR nombre, nota DE alumnos ORDER BY nombre")
+   desde i = 1 hasta filas ()
+   {
+      imprimir (dato (i, "nombre"), ": ", dato (i, "nota"), "\n")
+   }
+fin</code></pre>
+        <p class="nota">Acá se usa <code>consultar()</code> y no un <code>SELECCIONAR</code> suelto
+           porque el suelto además imprimiría la tabla, y lo que se quiere es solo el ciclo.</p>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-sql" data-titulo="El SQL que entiende">
+      <h2>El SQL que entiende</h2>
+      <p class="sub">El de una primera materia de bases de datos, completo.</p>
+
+      <div class="doc-bloque">
+        <h3>Las palabras, en español y en inglés</h3>
+        <p>Cada verbo vale en las dos formas —el motor entiende ambas, y se pueden mezclar en la
+           misma consulta—. Las del español están tomadas de
+           <a href="https://fernandoarciniega.com/pseudocodigo-en-mysql/" target="_blank" rel="noopener">un
+           tutorial de pseudocódigo para MySQL</a>:</p>
+        <table>
+          <tr><th>Inglés</th><th>Español</th></tr>
+          <tr><td><code>SELECT</code></td><td><code>SELECCIONAR</code></td></tr>
+          <tr><td><code>FROM</code></td><td><code>DE</code></td></tr>
+          <tr><td><code>WHERE</code></td><td><code>DONDE</code></td></tr>
+          <tr><td><code>INSERT INTO</code></td><td><code>INSERTAR DENTRO</code></td></tr>
+          <tr><td><code>VALUES</code></td><td><code>VALORES</code></td></tr>
+          <tr><td><code>UPDATE</code></td><td><code>ACTUALIZAR</code></td></tr>
+          <tr><td><code>SET</code></td><td><code>CONJUNTO</code></td></tr>
+          <tr><td><code>DELETE</code></td><td><code>BORRAR</code></td></tr>
+          <tr><td><code>CREATE TABLE</code></td><td><code>CREAR TABLA</code></td></tr>
+          <tr><td><code>DROP TABLE</code></td><td><code>ELIMINAR TABLA</code></td></tr>
+          <tr><td><code>CREATE DATABASE</code> / <code>USE</code></td><td><code>CREAR BASE DE DATOS</code> / <code>USAR</code></td></tr>
+        </table>
+        <pre><code>SELECCIONAR nombre, nota DE alumnos DONDE nota &gt;= 7
+ACTUALIZAR alumnos CONJUNTO nota = nota + 1 DONDE nombre = 'Beto'
+BORRAR DE alumnos DONDE nota IS NULL</code></pre>
+        <p><code>AND</code>, <code>OR</code>, <code>NOT</code>, <code>LIKE</code> y
+           <code>NULL</code> se dejaron en inglés a propósito: son cortos, ya se enseñan así, y
+           traducir <code>AND</code>/<code>OR</code> a <code>Y</code>/<code>O</code> —una sola
+           letra— chocaría con cualquier columna así de corta (una tabla de puntos con una columna
+           <code>y</code>, como en <a href="documentacion.html#s-pantalla">dibujar_pixel()</a>,
+           por ejemplo).</p>
+        <div class="doc-nota"><code>CREAR BASE DE DATOS nombre</code> y <code>USAR nombre</code>
+          se entienden y no hacen nada más que decirlo: ESLE2 BD ya trabaja con una única base, la
+          que se ve en el panel <em>La base</em>. Están para que las primeras dos líneas de un
+          tutorial copiado tal cual no corten el programa justo al empezar.</div>
+        <p>Un texto va entre comillas simples <strong>o dobles</strong> —las dos formas del
+           tutorial—: <code>'Ana'</code> y <code>"Ana"</code> son lo mismo. Para citar un
+           <strong>nombre</strong> de tabla o columna que choque con una palabra reservada se usan
+           acentos graves o corchetes (<code>`select`</code>, <code>[order]</code>); pero un
+           nombre entre comillas dobles también se entiende directo donde se espera un nombre
+           —<code>CREAR TABLA "clientes" (...)</code>— porque es justo lo que exportan SQLite y
+           PostgreSQL, y si no, ni el propio volcado de ESLE2 BD se podría volver a cargar.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Crear y borrar tablas</h3>
+        <pre><code>CREATE TABLE alumnos (
+  id     INTEGER PRIMARY KEY,
+  nombre TEXT NOT NULL,
+  nota   REAL,
+  ciudad VARCHAR(30) DEFAULT 'Asunción'
+)
+
+CREATE TABLE IF NOT EXISTS alumnos (...)
+DROP TABLE alumnos
+DROP TABLE IF EXISTS alumnos</code></pre>
+        <p>Los modificadores que acepta cada columna son <code>PRIMARY KEY</code>,
+           <code>NOT NULL</code>, <code>UNIQUE</code>, <code>DEFAULT valor</code> y
+           <code>REFERENCES</code>. La clave primaria y las columnas <code>UNIQUE</code> se hacen
+           cumplir de verdad: si intentás meter un valor repetido, el programa para y lo dice.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Relacionar dos tablas: <code>REFERENCES</code></h3>
+        <p>Una columna puede decir que su valor es la clave primaria de otra tabla. Eso es una
+           <a href="#s-bases">clave foránea</a>, y se escribe de las dos formas de siempre:</p>
+        <pre><code>-- pegada a la columna
+CREATE TABLE alumnos (
+  id     INTEGER PRIMARY KEY,
+  ciudad INTEGER REFERENCES ciudades (id)
+)
+
+-- o al final, que es como lo escriben los volcados
+CREATE TABLE alumnos (
+  id     INTEGER PRIMARY KEY,
+  ciudad INTEGER,
+  FOREIGN KEY (ciudad) REFERENCES ciudades (id)
+)</code></pre>
+        <p>La columna entre paréntesis se puede omitir —<code>REFERENCES ciudades</code>— y
+           entonces es la clave primaria de esa tabla, que es lo que se quiere casi siempre.</p>
+        <p>Se controlan tres cosas:</p>
+        <ul>
+          <li><strong>al crear la tabla</strong>, que la otra exista y que la columna a la que
+              apunta sea <code>PRIMARY KEY</code> o <code>UNIQUE</code>. Por eso las tablas se
+              crean de la referida a la que referencia;</li>
+          <li><strong>al insertar y al modificar</strong>, que el valor exista allá.
+              <code>NULL</code> sí se admite: quiere decir «todavía no se sabe cuál»;</li>
+          <li><strong>al borrar, no se controla nada</strong>. Ver
+              <a href="#s-limites">Lo que no hace</a>.</li>
+        </ul>
+        <p class="nota">Estas relaciones son las flechas del
+           <a href="#s-diagrama">diagrama de la base</a>, y también salen en el
+           <code>.sql</code> que baja <a href="#s-exportar">Exportar</a>.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Insertar, modificar y borrar</h3>
+        <pre><code>INSERT INTO alumnos VALUES (1, 'Ana', 9)
+INSERT INTO alumnos (id, nombre) VALUES (2, 'Beto'), (3, 'Cata')
+
+UPDATE alumnos SET nota = nota + 1 WHERE nota &lt; 7
+DELETE FROM alumnos WHERE nota IS NULL</code></pre>
+        <div class="doc-nota">Un <code>UPDATE</code> o un <code>DELETE</code> sin
+          <code>WHERE</code> tocan <strong>todas</strong> las filas. No es un error, es lo que
+          significan, y por eso conviene probarlos antes como un <code>SELECT</code> con el mismo
+          <code>WHERE</code>.</div>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Consultar</h3>
+        <pre><code>SELECT [DISTINCT] columnas
+  FROM tabla [alias]
+  [JOIN otra [alias] ON condición]
+  [WHERE condición]
+  [GROUP BY columnas]
+  [HAVING condición]
+  [ORDER BY columna [ASC|DESC], ...]
+  [LIMIT n [OFFSET m]]</code></pre>
+        <table>
+          <tr><th>En la condición</th><th>Qué hace</th></tr>
+          <tr><td><code>= &lt;&gt; &lt; &lt;= &gt; &gt;=</code></td><td>Comparar. En SQL el «igual que» es <code>=</code>, con un solo signo.</td></tr>
+          <tr><td><code>AND OR NOT</code></td><td>Combinar condiciones.</td></tr>
+          <tr><td><code>IS NULL</code> · <code>IS NOT NULL</code></td><td>Preguntar por el nulo. Ver <a href="#s-null">NULL</a>.</td></tr>
+          <tr><td><code>BETWEEN a AND b</code></td><td>Entre dos valores, incluidos los dos.</td></tr>
+          <tr><td><code>IN (a, b, c)</code></td><td>Si es alguno de esos.</td></tr>
+          <tr><td><code>LIKE 'p%'</code></td><td>Parecido: <code>%</code> es «cualquier cosa» y <code>_</code> es «una letra».</td></tr>
+        </table>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Funciones</h3>
+        <table>
+          <tr><th>Grupo</th><th>Funciones</th></tr>
+          <tr><td>De agregación</td>
+              <td><code>COUNT</code>, <code>SUM</code>, <code>AVG</code>, <code>MIN</code>,
+                  <code>MAX</code>. Aceptan <code>DISTINCT</code>:
+                  <code>COUNT(DISTINCT ciudad)</code>.</td></tr>
+          <tr><td>De texto</td>
+              <td><code>UPPER</code>, <code>LOWER</code>, <code>LENGTH</code>, <code>TRIM</code>,
+                  <code>SUBSTR(s, desde, cuantos)</code>. Para pegar textos está
+                  <code>||</code>.</td></tr>
+          <tr><td>De números</td><td><code>ABS</code>, <code>ROUND(n [, decimales])</code>.</td></tr>
+          <tr><td>Para el nulo</td><td><code>COALESCE(a, b, ...)</code>, <code>IFNULL(a, b)</code>.</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-diagrama" data-titulo="El diagrama de la base">
+      <h2>El diagrama de la base</h2>
+      <p class="sub">Verlo, bajarlo, y también dibujarlo primero.</p>
+
+      <div class="doc-bloque">
+        <h3>Ver el que ya está: <em>Base → Diagrama de la base</em></h3>
+        <p>Dibuja lo que hay en la base en este momento: una caja por tabla con sus columnas, la
+           llave 🔑 en la clave primaria, la flecha ↗ en cada clave foránea, y una línea de esa
+           columna a la tabla a la que apunta.</p>
+        <p>Las tablas se acomodan <strong>por capas</strong>: arriba las que no apuntan a nadie,
+           debajo las que las señalan. Ese es el mismo orden en el que hay que crearlas, así que el
+           dibujo también cuenta en qué orden va el código.</p>
+        <ul>
+          <li><strong>Guardar el dibujo</strong> baja un <code>.svg</code>. Es un archivo de
+              imagen que no se pixela y que entra en cualquier informe;</li>
+          <li><strong>Copiar la descripción</strong> copia el mismo diagrama contado en palabras
+              —cada tabla, cada columna, qué es clave y qué apunta a dónde—, que es lo que se pega
+              en un trabajo práctico cuando piden explicarlo.</li>
+        </ul>
+        <p class="nota">El dibujo sale del estado real de la base, no del texto del programa: si
+           una tabla se creó desde <em>SQL a mano</em> o importando un <code>.sql</code>, aparece
+           igual.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Dibujarlo primero: <em>Base → Dibujar el diagrama…</em></h3>
+        <p>Al revés: se arma el diagrama y <strong>el código sale solo</strong>, abajo, mientras se
+           dibuja. Se agregan tablas y columnas, se marca cuál es la clave, y para hacer una
+           relación se elige en la lista <em>a qué columna apunta</em>. Esa elección
+           <strong>es</strong> la flecha del diagrama: no hay dos cosas que mantener parecidas.</p>
+        <p>La lista solo ofrece columnas que pueden recibir una flecha —clave primaria o
+           <code>UNIQUE</code>—, porque apuntar a una columna que se repite no señalaría ninguna
+           fila en particular. Por eso no se puede dibujar un diagrama que después no compile.</p>
+        <p>Si algo no cierra —un nombre con espacios, dos columnas iguales, una tabla que apunta a
+           otra que apunta a la primera— se dice debajo del dibujo y el código no se genera hasta
+           que se arregle.</p>
+        <table>
+          <tr><th>Botón</th><th>Qué hace</th></tr>
+          <tr><td><em>Traer las de la base</em></td>
+              <td>Empieza el diagrama desde las tablas que ya existen, para seguir uno empezado.</td></tr>
+          <tr><td><em>Guardar el dibujo</em></td><td>Baja el <code>.svg</code> de lo que estás dibujando.</td></tr>
+          <tr><td><em>Copiar el código</em></td><td>Al portapapeles, para pegarlo donde sea.</td></tr>
+          <tr><td><em>Escribirlo en el programa</em></td>
+              <td>Reemplaza lo que hay en el editor por el programa que crea esas tablas.</td></tr>
+        </table>
+        <p>El código sale con las tablas <strong>en orden de creación</strong> y con las
+           <code>REFERENCES</code> puestas, así que se ejecuta tal cual:</p>
+        <pre><code>inicio
+   CREAR TABLA ciudades (
+      id     INTEGER PRIMARY KEY,
+      nombre TEXT NOT NULL
+   )
+
+   CREAR TABLA alumnos (
+      id     INTEGER PRIMARY KEY,
+      nombre TEXT NOT NULL,
+      ciudad INTEGER REFERENCES ciudades (id)
+   )
+fin</code></pre>
+        <div class="doc-nota">La vuelta completa está probada: base → diagrama → código → base
+          tiene que dar exactamente la misma estructura, y una segunda vuelta, el mismo código. Si
+          no, el diagrama estaría mintiendo, que es peor que no tenerlo.</div>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-null" data-titulo="NULL: lo que más cuesta">
+      <h2>NULL: lo que más cuesta</h2>
+      <p class="sub">No es cero, no es vacío, y no es igual a sí mismo.</p>
+
+      <div class="doc-bloque">
+        <p><code>NULL</code> quiere decir <strong>«no se sabe»</strong>. Y de ahí sale todo lo
+           demás: si no sabés la edad de Beto, tampoco podés decir si es igual a la de Ana. Por eso
+           <strong><code>NULL = NULL</code> no da verdadero</strong>: da <em>desconocido</em>, y una
+           fila con condición desconocida no entra en el resultado.</p>
+        <pre><code>-- No encuentra a nadie, ni siquiera a los que tienen la edad en NULL:
+SELECT nombre FROM gente WHERE edad = NULL
+
+-- Así sí:
+SELECT nombre FROM gente WHERE edad IS NULL</code></pre>
+        <p>Lo mismo con las cuentas: <code>edad + 1</code> sobre un <code>NULL</code> da
+           <code>NULL</code>, no 1.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Los agregados lo ignoran</h3>
+        <p><code>AVG(edad)</code> promedia solo las edades que hay: no cuenta los nulos como cero,
+           que daría un promedio más bajo y equivocado. Por eso <code>COUNT(edad)</code> y
+           <code>COUNT(*)</code> pueden dar distinto, y esa diferencia es exactamente la cantidad de
+           nulos.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Desde el programa: <code>hay_dato()</code></h3>
+        <p>En SL <strong>no existe el nulo</strong>: una variable de tipo cadena siempre tiene un
+           texto, aunque sea vacío. Entonces <code>dato()</code> devuelve la cadena vacía cuando el
+           valor era <code>NULL</code>… y eso se confundiría con un texto vacío de verdad. Para
+           distinguirlos está <code>hay_dato()</code>:</p>
+        <pre><code>   si (hay_dato (i, "edad"))
+   {
+      imprimir (dato (i, "edad"), "\n")
+   sino
+      imprimir ("no se sabe\n")
+   }</code></pre>
+        <p class="nota">En la tabla que dibuja <code>mostrar()</code>, y en el panel de resultados
+           de la página, un <code>NULL</code> se ve escrito como <em>NULL</em> en gris: si se viera
+           como un hueco no se distinguiría de una cadena vacía.</p>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-entorno" data-titulo="El entorno">
+      <h2>El entorno</h2>
+      <p class="sub">Qué hay en la pantalla de ESLE2 BD.</p>
+
+      <div class="doc-bloque">
+        <ul>
+          <li><b>El programa.</b> El editor de siempre, con los mismos colores y los mismos
+              atajos. Los programas se guardan como <code>.sldb</code>.</li>
+          <li><b>El autocompletado</b> (<kbd>Ctrl</kbd> + <kbd>Espacio</kbd>, o solo escribiendo)
+              acá sabe además de SQL: las palabras en español y en inglés, las subrutinas de la
+              base, y —lo que más sirve— <strong>los nombres de las tablas y de las columnas que
+              hay en la base en este momento</strong>, con su tipo y diciendo cuál es la clave y
+              cuál apunta a otra tabla. Esos son justo los nombres que no se pueden adivinar.</li>
+          <li><b>La base.</b> Las tablas que hay, con sus columnas, su tipo y la clave primaria
+              marcada. Se actualiza sola después de cada ejecución. <em>Ver las filas</em> muestra
+              el contenido sin que tengas que escribir el <code>SELECT</code>.</li>
+          <li><b>Salida.</b> Lo que imprime el programa y el resultado de cada consulta, dibujado
+              como tabla.</li>
+          <li><b>SQL a mano.</b> Para probar una consulta sin tocar el programa
+              (<kbd>Ctrl</kbd> + <kbd>Enter</kbd>). Es el mismo motor y la misma base.</li>
+          <li><b>Base → Datos de ejemplo</b> arma tres tablas —ciudades, alumnos y materias— con
+              datos para practicar consultas sin escribir los <code>INSERT</code>.</li>
+          <li><b>Base → Diagrama de la base</b> y <b>Base → Dibujar el diagrama…</b>: ver el
+              diagrama entidad-relación y bajarlo, o dibujarlo y que salga el código. Están
+              explicados en <a href="#s-diagrama">El diagrama de la base</a>.</li>
+          <li><b>Base → Vaciar</b> borra todo y empieza de nuevo. La base <strong>no</strong> se
+              vacía al ejecutar: si se vaciara, no podrías escribir un programa que consulta lo que
+              dejó otro, que es como se trabaja de verdad.</li>
+        </ul>
+        <div class="doc-nota">Están también el <strong>modo flexible</strong>, <strong>Ajustar
+          texto</strong> (<kbd>Alt</kbd> + <kbd>Z</kbd>), el <strong>depurador</strong>
+          (<kbd>F9</kbd>), los paneles que se arrastran, el buscador global, el modo presentación y
+          el tema claro y oscuro: es el mismo IDE.</div>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-exportar" data-titulo="Exportar la base">
+      <h2>Exportar la base</h2>
+      <p class="sub">A SQLite, MySQL y PostgreSQL.</p>
+
+      <div class="doc-bloque">
+        <p>El menú <strong>Exportar</strong> baja un archivo <code>.sql</code> con el
+           <code>CREATE TABLE</code> de cada tabla y los <code>INSERT</code> de sus filas, escrito
+           como lo escribe cada motor. Se abre en el motor de verdad y también se puede volver a
+           cargar acá con <em>Base → Importar .sql</em>.</p>
+        <table>
+          <tr><th>Motor</th><th>Para cargarlo</th></tr>
+          <tr><td>SQLite</td><td><code>sqlite3 base.db &lt; base.sqlite.sql</code></td></tr>
+          <tr><td>MySQL</td><td><code>mysql -u usuario -p base &lt; base.mysql.sql</code></td></tr>
+          <tr><td>PostgreSQL</td><td><code>psql -d base -f base.postgres.sql</code></td></tr>
+        </table>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Los tres no escriben igual, y eso se ve</h3>
+        <table>
+          <tr><th>Diferencia</th><th>SQLite</th><th>MySQL</th><th>PostgreSQL</th></tr>
+          <tr><td>Proteger un nombre</td><td><code>"tabla"</code></td><td><code>`tabla`</code></td><td><code>"tabla"</code></td></tr>
+          <tr><td>Un <code>DECIMAL(10,2)</code></td><td><code>REAL</code></td><td><code>DECIMAL(10,2)</code></td><td><code>NUMERIC(10,2)</code></td></tr>
+          <tr><td>Un <code>TEXT</code> que es clave</td><td><code>TEXT</code></td><td><code>VARCHAR(255)</code></td><td><code>TEXT</code></td></tr>
+          <tr><td>La barra invertida en un texto</td><td>tal cual</td><td>hay que escaparla</td><td>tal cual</td></tr>
+        </table>
+        <p class="nota">Sale un archivo de texto y no un <code>.sqlite</code> binario a propósito:
+           un archivo de texto se lee, se corrige y se entrega en un trabajo práctico.</p>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-limites" data-titulo="Lo que no hace">
+      <h2>Lo que no hace</h2>
+      <p class="sub">Dicho de frente, para que no sorprenda.</p>
+
+      <div class="doc-bloque">
+        <p>El motor cubre el SQL de una primera materia. Lo que <strong>no</strong> está:</p>
+        <ul>
+          <li>subconsultas (<code>SELECT</code> dentro de otro <code>SELECT</code>);</li>
+          <li><code>ON DELETE CASCADE</code> y <code>ON DELETE RESTRICT</code>. Las
+              <a href="#s-sql">claves foráneas</a> se controlan al insertar y al modificar, pero al
+              borrar una fila no se mira quién la señalaba: para eso habría que decir cuál de las
+              dos cosas hacer —borrar también lo que apunta, o negarse—, y elegir una por nuestra
+              cuenta sería hacer algo que el programa no pidió;</li>
+          <li>claves primarias y foráneas de <strong>varias columnas</strong>: acá son siempre de
+              una sola;</li>
+          <li>índices, vistas, disparadores, transacciones con <code>ROLLBACK</code>;</li>
+          <li><code>RIGHT JOIN</code> y <code>FULL JOIN</code> (sí están <code>JOIN</code> y
+              <code>LEFT JOIN</code>);</li>
+          <li>fechas como tipo propio: se guardan como texto <code>'2026-09-02'</code>, que ordena
+              bien porque el año va primero.</li>
+        </ul>
+        <p>Cuando algo de esto haga falta, el camino es exportar la base y seguir en SQLite,
+           MySQL o PostgreSQL, que es justamente para lo que está el menú
+           <a href="#s-exportar">Exportar</a>.</p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script src="js/doc.js"></script>
+<script src="js/indice.js"></script>
+<script src="js/buscador.js"></script>
+<script src="js/iconos.js"></script>
+<script src="js/menus.js"></script>
+<script src="js/instalar.js"></script>
+</body>
+</html>

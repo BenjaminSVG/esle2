@@ -1,0 +1,1498 @@
+/* ESLE2 — hoja de estilos compartida (IDE, curso y documentación).
+   Tema claro por defecto; el atributo data-tema="oscuro" en <html> lo invierte. */
+
+:root {
+  --fondo:      #f6f6f3;
+  --fondo-2:    #eeeeea;
+  --panel:      #ffffff;
+  --panel-2:    #f3f3ef;
+  --linea:      #dedcd4;
+  --linea-2:    #ebe9e2;
+  --texto:      #2c3038;
+  --texto-2:    #5b6472;
+  --tenue:      #646c7a;
+  --acento:     #3a6b8f;
+  --acento-sua: #eaf1f6;
+  --ok:         #356d4c;
+  --ok-sua:     #e8f2eb;
+  --aviso:      #8a5f1f;
+  --aviso-sua:  #f7f0e2;
+  --error:      #a8463c;
+  --error-sua:  #f8ebe9;
+  --sombra:     0 1px 2px rgba(30, 35, 45, .06);
+
+  /* resaltado de código — por defecto VS Code Light+.
+     La página Diseño reescribe estas variables en <html>. */
+  --cod-comentario:  #008000;
+  --cod-cadena:      #a31515;
+  --cod-numero:      #098658;
+  --cod-control:     #af00db;
+  --cod-declaracion: #0000ff;
+  --cod-tipo:        #0000ff;
+  --cod-clase:       #267f99;
+  --cod-funcion:     #795e26;
+  --cod-predefinida: #795e26;
+  --cod-variable:    #001080;
+  --cod-propiedad:   #001080;
+  --cod-parametro:   #001080;
+  --cod-constante:   #0070c1;
+  --cod-lenguaje:    #0000ff;
+  --cod-operador:    #000000;
+  --cod-puntuacion:  #3b3b3b;
+
+  --mono: "IBM Plex Mono", ui-monospace, Consolas, "Cascadia Mono", monospace;
+  --sans: "Source Sans 3", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --r: 7px;
+}
+
+html[data-tema="oscuro"] {
+  --fondo:      #1a1d22;
+  --fondo-2:    #21252b;
+  --panel:      #23272e;
+  --panel-2:    #282d35;
+  --linea:      #353b45;
+  --linea-2:    #2c313a;
+  --texto:      #d8dce3;
+  --texto-2:    #aab2be;
+  --tenue:      #8b94a1;
+  --acento:     #7fb0d4;
+  --acento-sua: #232f3a;
+  --ok:         #7fbf9a;
+  --ok-sua:     #22302a;
+  --aviso:      #d6ab6d;
+  --aviso-sua:  #322b1f;
+  --error:      #e08b83;
+  --error-sua:  #342422;
+  --sombra:     0 1px 2px rgba(0, 0, 0, .25);
+
+  /* resaltado — por defecto VS Code Dark+ */
+  --cod-comentario:  #6a9955;
+  --cod-cadena:      #ce9178;
+  --cod-numero:      #b5cea8;
+  --cod-control:     #c586c0;
+  --cod-declaracion: #569cd6;
+  --cod-tipo:        #569cd6;
+  --cod-clase:       #4ec9b0;
+  --cod-funcion:     #dcdcaa;
+  --cod-predefinida: #dcdcaa;
+  --cod-variable:    #9cdcfe;
+  --cod-propiedad:   #9cdcfe;
+  --cod-parametro:   #9cdcfe;
+  --cod-constante:   #4fc1ff;
+  --cod-lenguaje:    #569cd6;
+  --cod-operador:    #d4d4d4;
+  --cod-puntuacion:  #d4d4d4;
+}
+
+* { box-sizing: border-box; }
+:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--fondo);
+  color: var(--texto);
+  font-family: var(--sans);
+  font-size: 14.5px;
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+}
+body.app { overflow: hidden; }
+a { color: var(--acento); text-decoration: none; }
+/* Dentro de un texto, el enlace va subrayado: el color solo no alcanza. */
+p a, li a, figcaption a, .nota a, .vacio a,
+/* Subrayados: adentro de un párrafo o de una tabla el color solo no alcanza
+   para distinguir un enlace de su texto (WCAG 1.4.1). */
+.doc-nota a, .doc-cuidado a, .doc-bloque > a,
+.doc-bloque p a, .doc-bloque li a, .doc-bloque td a { text-decoration: underline; }
+a:hover { text-decoration: underline; }
+code, kbd { font-family: var(--mono); }
+h1, h2, h3, h4 { font-weight: 600; letter-spacing: -.01em; }
+
+.saltar {
+  position: absolute; left: 8px; top: -60px; z-index: 100;
+  background: var(--panel); color: var(--acento); border: 1px solid var(--acento);
+  border-radius: var(--r); padding: 8px 14px; transition: top .15s;
+}
+.saltar:focus { top: 8px; }
+
+/* ------------------------------- barra ------------------------------- */
+/* La cabecera es la misma en las seis páginas. Tres bloques: la marca a la
+   izquierda, las pestañas al medio-derecha y las acciones al final. Todo lo
+   que se pulsa mide lo mismo de alto (--alto-ctrl), que es lo que hace que una
+   fila con ocho controles distintos se lea como una sola cosa. */
+.barra {
+  --alto-ctrl: 32px;
+  display: flex; align-items: center; gap: 14px;
+  padding: 8px 18px; min-height: 52px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--linea);
+  flex: 0 0 auto;
+}
+.marca { display: flex; align-items: center; gap: 10px; text-decoration: none; color: inherit; flex: 0 0 auto; }
+.marca:hover { text-decoration: none; }
+.logo { width: 30px; height: 30px; display: block; }
+.marca h1 { margin: 0; font-size: 16px; line-height: 1.15; letter-spacing: .04em; white-space: nowrap; }
+.marca p  { margin: 0; font-size: 11px; line-height: 1.25; color: var(--tenue); white-space: nowrap; }
+
+/* Las pestañas se quedan con el lugar que sobre y, si no alcanza, se
+   desplazan de costado en vez de partirse en dos líneas. */
+.pestanas {
+  display: flex; gap: 2px; margin-left: auto; min-width: 0;
+  overflow-x: auto; overflow-y: hidden; scrollbar-width: none;
+}
+.pestanas::-webkit-scrollbar { display: none; }
+.pest {
+  font-family: var(--sans); font-size: 13.5px; color: var(--texto-2);
+  background: transparent; border: 1px solid transparent; border-radius: 7px;
+  padding: 0 12px; height: var(--alto-ctrl); cursor: pointer; text-decoration: none;
+  display: inline-flex; align-items: center; white-space: nowrap; flex: 0 0 auto;
+  transition: background .12s, color .12s, border-color .12s;
+}
+.pest:hover { background: var(--fondo-2); color: var(--texto); text-decoration: none; }
+.pest.activa { background: var(--acento-sua); color: var(--acento); border-color: var(--acento-sua); font-weight: 600; }
+.pest.destacada { color: var(--aviso); border-color: var(--aviso-sua); background: var(--aviso-sua); }
+.pest.destacada:hover { border-color: var(--aviso); color: var(--aviso); }
+.pest.tenue { color: var(--tenue); }
+.marca h1 .sufijo { color: var(--aviso); font-weight: 600; margin-left: .3em; }
+
+/* Las acciones de la derecha: van juntas y separadas de las pestañas por una
+   línea fina, para que se lea que son otra cosa. */
+.barra-acciones {
+  display: flex; align-items: center; gap: 6px; flex: 0 0 auto;
+  padding-left: 14px; border-left: 1px solid var(--linea-2);
+}
+
+/* ------------------------- página de Diseño -------------------------- */
+.disenio { flex: 1 1 auto; padding: 22px 24px 60px; max-width: 1240px; margin: 0 auto; width: 100%; }
+.disenio-intro { max-width: 78ch; margin-bottom: 20px; }
+.disenio-intro h2 { margin: 0 0 6px; font-size: 24px; }
+.disenio-cuerpo { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 24px; align-items: start; }
+.bloque-diseno {
+  background: var(--panel); border: 1px solid var(--linea); border-radius: var(--r);
+  padding: 16px 18px; margin-bottom: 16px; box-shadow: var(--sombra);
+}
+.bloque-diseno h3 { margin: 0 0 4px; font-size: 15px; }
+.bloque-diseno .nota { margin: 0 0 12px; font-size: 13px; }
+
+.muestras { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 9px; }
+.muestra {
+  display: flex; flex-direction: column; gap: 6px; align-items: stretch;
+  background: transparent; border: 1px solid var(--linea); border-radius: var(--r);
+  padding: 7px; cursor: pointer; font-family: var(--sans); color: var(--texto-2); font-size: 12.5px;
+}
+.muestra:hover { border-color: var(--acento); color: var(--texto); }
+.muestra.elegida { border-color: var(--acento); background: var(--acento-sua); color: var(--acento); font-weight: 600; }
+.muestra-nombre { text-align: left; }
+.mini-fondo {
+  display: flex; align-items: flex-end; gap: 3px; height: 40px; border-radius: 4px;
+  border: 1px solid; padding: 5px;
+}
+.mini-fondo i { display: block; flex: 1 1 auto; height: 60%; border-radius: 2px; }
+.mini-fondo i:last-child { flex: 0 0 22%; height: 30%; }
+.mini-paleta { display: flex; gap: 2px; height: 40px; border-radius: 4px; padding: 6px; align-items: stretch; }
+.mini-paleta i { display: block; flex: 1 1 auto; border-radius: 2px; }
+
+.categorias { display: grid; gap: 4px; }
+.categoria {
+  display: grid; grid-template-columns: 34px 1fr auto; gap: 10px; align-items: center;
+  padding: 4px 6px; border-radius: 5px; cursor: pointer;
+}
+.categoria:hover { background: var(--fondo-2); }
+.cat-nombre { font-size: 13.5px; }
+/* La muestra de cada color de la sintaxis va sobre el fondo del editor —el
+   que se le pinta desde app-diseno.js—, que es donde ese color se va a ver de
+   verdad. Mostrarla sobre el fondo de esta página engañaba: un color pensado
+   para un editor oscuro parecía ilegible sobre un panel claro, y al revés. */
+.cat-ejemplo {
+  font-family: var(--mono); font-size: 12px;
+  padding: 2px 7px; border-radius: 4px; border: 1px solid var(--linea);
+}
+input[type="color"] {
+  width: 34px; height: 26px; padding: 0; border: 1px solid var(--linea);
+  border-radius: 5px; background: transparent; cursor: pointer;
+}
+.fila-color { display: flex; gap: 10px; align-items: center; }
+
+.disenio-vista { position: sticky; top: 16px; }
+.vista-previa { height: 620px; }
+.vista-previa .CodeMirror { height: 100%; }
+.mini-select { padding: 2px 6px; font-size: 12px; }
+.firma { margin-top: 10px; max-width: 60ch; }
+@media (max-width: 980px) {
+  /* minmax(0, …) y no 1fr a secas: una columna «1fr» se estira hasta el
+     contenido más ancho, y las muestras de color desbordaban la página. */
+  .disenio-cuerpo { grid-template-columns: minmax(0, 1fr); }
+  .disenio-vista { position: static; }
+  .vista-previa { height: 460px; }
+}
+
+/* ------------------------ documentación de POO ----------------------- */
+.doc-figura {
+  margin: 18px 0; padding: 14px; border: 1px solid var(--linea); border-radius: var(--r);
+  background: #f6f6f3; text-align: center; max-width: 78ch;
+  /* Las ilustraciones tienen fondo claro fijo, así que los diagramas SVG de
+     adentro se pintan siempre con la paleta clara, también en modo oscuro. */
+  --panel: #ffffff; --panel-2: #eeeeea; --linea: #dedcd4;
+  --texto: #2c3038; --texto-2: #5b6472; --tenue: #858e9c;
+  --acento: #3a6b8f; --acento-sua: #eaf1f6;
+  --ok: #3d7c58; --ok-sua: #e8f2eb;
+  --aviso: #9a6b24; --aviso-sua: #f7f0e2;
+}
+.doc-figura img, .doc-figura svg { display: block; width: 100%; height: auto; max-width: 560px; margin: 0 auto; }
+.doc-figura.ancha img, .doc-figura.ancha svg { max-width: 100%; }
+.doc-figura figcaption {
+  margin-top: 10px; font-size: 13px; color: #5b6472; text-align: left;
+  border-top: 1px solid #dedcd4; padding-top: 9px;
+}
+.doc-figura figcaption b { color: #2c3038; }
+
+/* Las capturas de pantalla son distintas de los diagramas: no llevan adentro
+   un SVG que haya que forzar a la paleta clara, así que el marco sigue el tema
+   de la página en vez de imponer un fondo casi blanco alrededor de una
+   pantalla oscura. */
+.doc-figura.captura {
+  background: var(--panel-2); border-color: var(--linea); padding: 10px;
+}
+/* Una captura de la pantalla entera necesita todo el ancho de la columna. Aun
+   así, en un teléfono los números de las zonas quedan chicos, así que cada
+   captura es además un enlace a la imagen a tamaño completo. */
+.doc-figura.captura.ancha { max-width: 100%; }
+.doc-ampliar { display: block; cursor: zoom-in; }
+.doc-ampliar:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; }
+.doc-figura.captura img { border: 1px solid var(--linea); border-radius: 3px; }
+.doc-figura.captura figcaption { color: var(--texto-2); border-top-color: var(--linea); }
+.doc-figura.captura figcaption b { color: var(--texto); }
+
+/* La lista que explica las zonas numeradas de una captura. */
+.doc-zonas { margin: 14px 0 0; padding-left: 1.6em; }
+.doc-zonas li { margin: 9px 0; }
+.doc-zonas li b { color: var(--texto); }
+/* Clases compartidas por los diagramas SVG en línea de las dos documentaciones. */
+.dg-caja    { fill: var(--panel); stroke: var(--linea); stroke-width: 1.5; }
+.dg-caja-2  { fill: var(--panel-2); stroke: var(--linea); stroke-width: 1.5; }
+.dg-caja-ac { fill: var(--acento-sua); stroke: var(--acento); stroke-width: 1.5; }
+.dg-caja-ok { fill: var(--ok-sua); stroke: var(--ok); stroke-width: 1.5; }
+.dg-caja-av { fill: var(--aviso-sua); stroke: var(--aviso); stroke-width: 1.5; }
+.dg-t       { font: 600 13px var(--mono); fill: var(--texto); }
+.dg-c       { font: 12.5px var(--mono); fill: var(--texto-2); }
+.dg-cp      { font: 11px var(--mono); fill: var(--texto-2); }
+.dg-n       { font: 12px var(--sans); fill: var(--tenue); }
+.dg-tit     { font: 600 12px var(--sans); fill: var(--acento); letter-spacing: .05em; }
+.dg-l       { stroke: var(--linea); stroke-width: 1; fill: none; }
+.dg-fl      { stroke: var(--tenue); stroke-width: 1.4; fill: none; }
+.dg-punt    { stroke: var(--tenue); stroke-width: 1; stroke-dasharray: 3 3; fill: none; }
+.dg-flecha  { fill: var(--tenue); }
+
+.doc-pilares { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin: 16px 0; max-width: 78ch; }
+.doc-pilar { border: 1px solid var(--linea); border-radius: var(--r); padding: 12px 14px; background: var(--panel); }
+.doc-pilar h4 { margin: 0 0 4px; font-size: 14px; color: var(--acento); }
+.doc-pilar p { margin: 0; font-size: 13.5px; color: var(--texto-2); }
+.comparacion { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; max-width: 78ch; }
+.comparacion > div { min-width: 0; }
+.comparacion h4 { margin: 0 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: var(--tenue); }
+@media (max-width: 820px) { .comparacion { grid-template-columns: 1fr; } }
+
+/* El progreso va en una sola línea —«12 / 50» y la barrita al lado— en vez de
+   apilado: apilado quedaba más alto que todo lo demás de la fila. */
+.progreso-global {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 12px; color: var(--tenue); white-space: nowrap;
+}
+.progreso-global .barrita {
+  width: 54px; height: 5px; border-radius: 3px; background: var(--linea-2); overflow: hidden;
+}
+.progreso-global i { display: block; height: 100%; width: 0; background: var(--ok); transition: width .35s; }
+
+/* El botón cuadrado de un icono solo (tema, sonido). Mismo alto que el resto. */
+.btn-tema {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: var(--alto-ctrl, 32px); height: var(--alto-ctrl, 32px); padding: 0;
+  background: transparent; border: 1px solid var(--linea); border-radius: 7px;
+  color: var(--texto-2); cursor: pointer; font-size: 14px; line-height: 1;
+}
+.btn-tema:hover { background: var(--fondo-2); border-color: var(--acento); color: var(--texto); }
+
+/* ------------------------------- vistas ------------------------------ */
+.vista { display: none; flex: 1 1 auto; min-height: 0; flex-direction: column; }
+.vista.activa { display: flex; }
+.oculto { display: none !important; }
+
+/* ------------------------------ toolbar ------------------------------ */
+.herramientas {
+  display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
+  padding: 9px 20px; border-bottom: 1px solid var(--linea); background: var(--fondo-2);
+}
+.btn {
+  font-family: var(--sans); font-size: 13.5px;
+  background: var(--panel); color: var(--texto);
+  border: 1px solid var(--linea); border-radius: var(--r);
+  padding: 6px 13px; cursor: pointer; box-shadow: var(--sombra);
+}
+.btn:hover { background: var(--fondo-2); }
+/* Los iconos toman el color del texto del botón: un solo dibujo sirve para
+   los dos temas y para el botón primario, que es blanco sobre azul. */
+.btn, .btn-buscar, .btn-tema, .menu > summary {
+  display: inline-flex; align-items: center; gap: 7px;
+}
+.ic { flex: 0 0 auto; }
+
+/* ---------------------- menús de la barra ---------------------------- */
+.menu { position: relative; }
+.menu > summary { list-style: none; cursor: pointer; }
+.menu > summary::-webkit-details-marker { display: none; }
+/* La flechita dice que hay algo abajo, y gira al abrirse. */
+.menu > summary::after {
+  content: "⌄"; font-size: 13px; line-height: 1; margin-top: -4px; color: var(--tenue);
+  transition: transform .15s;
+}
+.menu[open] > summary::after { transform: rotate(180deg); margin-top: 2px; }
+.menu[open] > summary { background: var(--fondo-2); border-color: var(--acento); }
+.menu-caja {
+  position: absolute; z-index: 50; top: calc(100% + 5px); left: 0; min-width: 210px;
+  display: flex; flex-direction: column; gap: 4px; padding: 6px;
+  background: var(--panel); border: 1px solid var(--linea); border-radius: var(--r);
+  box-shadow: 0 12px 30px -14px rgba(20, 25, 35, .5);
+}
+.menu-caja .btn {
+  width: 100%; justify-content: flex-start; box-shadow: none; border-color: transparent;
+  background: transparent;
+}
+.menu-caja .btn:hover { background: var(--fondo-2); border-color: var(--linea); }
+.menu-campo {
+  display: flex; flex-direction: column; gap: 3px; padding: 5px 8px 3px;
+  font-size: 11.5px; color: var(--tenue); border-top: 1px solid var(--linea-2); margin-top: 2px;
+}
+.menu-campo .control { width: 100%; }
+.btn:disabled { opacity: .5; cursor: default; }
+.btn.primario { background: var(--acento); color: #fff; border-color: var(--acento); font-weight: 600; }
+html[data-tema="oscuro"] .btn.primario { color: #16202a; }
+.btn.primario:hover { filter: brightness(1.08); }
+.btn.peligro { background: var(--panel); color: var(--error); border-color: var(--error); }
+.btn-buscar {
+  display: inline-flex; align-items: center; gap: 7px; cursor: pointer;
+  font-family: var(--sans); font-size: 13px; color: var(--texto-2);
+  background: var(--fondo); border: 1px solid var(--linea); border-radius: 7px;
+  height: var(--alto-ctrl, 32px); padding: 0 10px; white-space: nowrap;
+}
+.btn-buscar:hover { color: var(--texto); border-color: var(--acento); background: var(--fondo-2); }
+.btn-buscar[aria-pressed="true"] { color: var(--acento); border-color: var(--acento); background: var(--acento-sua); }
+.btn-buscar kbd {
+  font-size: 11px; color: var(--tenue); border: 1px solid var(--linea);
+  border-radius: 4px; padding: 1px 5px; background: var(--panel);
+}
+@media (max-width: 860px) { .btn-buscar kbd { display: none; } }
+
+.racha {
+  display: inline-flex; align-items: center; height: var(--alto-ctrl, 32px);
+  font-size: 12.5px; color: var(--aviso); background: var(--aviso-sua);
+  border: 1px solid var(--aviso-sua); border-radius: 7px; padding: 0 9px; white-space: nowrap;
+}
+
+/* ---------------------- buscador global (Ctrl + K) -------------------- */
+.paleta {
+  position: fixed; inset: 0; z-index: 60; display: flex; justify-content: center;
+  align-items: flex-start; padding-top: 12vh; background: rgba(20, 24, 30, .38);
+}
+.paleta.oculto { display: none; }
+.paleta-caja {
+  width: min(620px, 92vw); background: var(--panel); border: 1px solid var(--linea);
+  border-radius: var(--r); box-shadow: 0 18px 44px rgba(20, 24, 30, .28); overflow: hidden;
+}
+.paleta-campo {
+  width: 100%; border: 0; border-bottom: 1px solid var(--linea); outline: none;
+  padding: 14px 16px; font-family: var(--sans); font-size: 16px;
+  background: var(--panel); color: var(--texto);
+}
+.paleta-campo::-webkit-search-cancel-button { display: none; }
+.paleta-lista { list-style: none; margin: 0; padding: 6px; max-height: 46vh; overflow: auto; }
+.paleta-lista li {
+  display: flex; align-items: baseline; gap: 12px; justify-content: space-between;
+  padding: 7px 10px; border-radius: 5px; cursor: pointer;
+}
+.paleta-lista li.sel { background: var(--acento-sua); }
+.paleta-lista .p-titulo { color: var(--texto); font-size: 14px; }
+.paleta-lista li.sel .p-titulo { color: var(--acento); font-weight: 600; }
+.paleta-lista .p-donde { color: var(--tenue); font-size: 12px; white-space: nowrap; }
+.paleta-pie {
+  margin: 0; padding: 8px 14px; border-top: 1px solid var(--linea);
+  background: var(--fondo-2); color: var(--tenue); font-size: 12px;
+}
+
+#btnMisEj { width: 100%; margin-top: 16px; box-shadow: none; }
+.acciones-progreso { display: flex; gap: 6px; margin-top: 6px; }
+
+/* ---------------------- traducción a JavaScript ---------------------- */
+.dlg.dlg-traduccion { max-width: 880px; }
+.traduccion {
+  max-height: 52vh; overflow: auto; margin: 10px 0 14px;
+  background: var(--fondo-2); border: 1px solid var(--linea); border-radius: var(--r);
+  padding: 12px 14px; font-family: var(--mono); font-size: 12.5px; line-height: 1.5;
+  white-space: pre; color: var(--texto);
+}
+
+/* --------------------------- repaso espaciado ------------------------ */
+.repaso {
+  background: var(--ok-sua); border: 1px solid var(--ok); border-radius: var(--r);
+  padding: 10px 12px; margin: 16px 0 0; font-size: 13px;
+}
+.repaso h3 { margin: 0 0 4px; font-size: 14px; color: var(--ok); }
+.repaso .nota { margin: 0 0 6px; }
+.repaso-lista { list-style: none; margin: 0; padding: 0; }
+.repaso-lista li { margin: 4px 0; }
+.repaso-item {
+  background: none; border: 0; padding: 0; cursor: pointer; font: inherit;
+  color: var(--texto); text-decoration: underline; text-align: left;
+}
+.repaso-item:hover { color: var(--ok); }
+
+/* --------------------------- modo presentación ----------------------- */
+:root { --zoom-pres: 1; }
+body.presentacion .pestanas,
+body.presentacion .progreso-global,
+body.presentacion .racha,
+body.presentacion #btnBuscar,
+body.presentacion #btnInstalar,
+body.presentacion .marca p { display: none; }
+body.presentacion .CodeMirror { font-size: calc(13.5px * var(--zoom-pres)); }
+body.presentacion .consola { font-size: calc(13px * var(--zoom-pres)); }
+body.presentacion .panel-cab { font-size: calc(11px * var(--zoom-pres)); }
+body.presentacion .herramientas .control,
+body.presentacion .herramientas .sep,
+body.presentacion #btnNuevo, body.presentacion #btnAbrir, body.presentacion #btnGuardar,
+body.presentacion #btnCompartir, body.presentacion #btnArchivos,
+body.presentacion #btnTraducir, body.presentacion #btnTraducirPy,
+body.presentacion #btnTraducirJava { display: none; }
+body.presentacion .herramientas .btn { font-size: calc(13.5px * min(var(--zoom-pres), 1.4)); }
+.barra-proyeccion {
+  position: fixed; right: 14px; bottom: 14px; z-index: 70;
+  display: flex; align-items: center; gap: 8px;
+  background: var(--panel); border: 1px solid var(--linea); border-radius: var(--r);
+  padding: 6px 10px; box-shadow: 0 6px 20px rgba(20, 25, 35, .18);
+}
+.barra-proyeccion .proy-zoom { font-family: var(--mono); font-size: 12px; color: var(--texto-2); min-width: 44px; text-align: center; }
+
+/* -------------------------- estadísticas ----------------------------- */
+.stats {
+  background: var(--panel); border: 1px solid var(--linea); border-radius: var(--r);
+  padding: 10px 12px; margin: 16px 0 0; font-size: 13px;
+}
+.stats h3 { margin: 0 0 6px; font-size: 14px; }
+.stats h4 { margin: 12px 0 4px; font-size: 13px; color: var(--texto-2); }
+.stats-niveles { list-style: none; display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 0 0 6px; padding: 0; font-size: 12.5px; }
+.stats-niveles b { color: var(--acento); font-weight: 600; }
+.stats-lista { margin: 0; padding-left: 16px; font-size: 12.5px; }
+.stats-lista li { margin: 2px 0; }
+.stats-atascado {
+  margin: 8px 0 0; font-size: 12.5px; background: var(--aviso-sua);
+  border-left: 3px solid var(--aviso); border-radius: 0 var(--r) var(--r) 0; padding: 7px 10px;
+}
+
+/* ----------------------------- modo examen --------------------------- */
+.banner.examen { border-left-color: var(--acento); background: var(--acento-sua); }
+.examen-chips { display: inline-flex; gap: 4px; margin-left: 10px; vertical-align: middle; }
+.examen-chips .chip { padding: 2px 8px; font-size: 12px; }
+.examen-reloj {
+  font-family: var(--mono); font-size: 16px; color: var(--acento);
+  background: var(--panel); border: 1px solid var(--linea); border-radius: var(--r); padding: 4px 10px;
+}
+.examen-reloj.poco { color: var(--error); border-color: var(--error); }
+.dlg.dlg-examen { max-width: 720px; }
+.examen-lista { list-style: none; margin: 6px 0 12px; padding: 0; max-height: 220px; overflow: auto; }
+.examen-lista li { padding: 3px 4px; border-bottom: 1px solid var(--linea-2); }
+.examen-lista label { display: flex; align-items: center; gap: 8px; font-size: 13.5px; cursor: pointer; }
+.examen-informe { border-top: 1px solid var(--linea); margin-top: 12px; padding-top: 10px; }
+.examen-informe h4 { margin: 0 0 4px; font-size: 15px; }
+.examen-informe table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.examen-tabla { overflow: auto; max-height: 320px; }
+.examen-tabla th { position: sticky; top: 0; background: var(--panel); }
+.examen-informe th, .examen-informe td { text-align: left; padding: 4px 6px; border-bottom: 1px solid var(--linea-2); }
+/* Durante el examen, el curso y las soluciones no están a mano. */
+body.en-examen .lista-ejercicios { opacity: .4; pointer-events: none; }
+
+/* ------------------------- mis ejercicios ---------------------------- */
+.dlg.dlg-mis { max-width: 780px; }
+.mis-lista { list-style: none; margin: 14px 0; padding: 0; max-height: 200px; overflow: auto; }
+.mis-lista li {
+  display: grid; grid-template-columns: 1fr auto auto auto; gap: 10px; align-items: center;
+  padding: 6px 8px; border-bottom: 1px solid var(--linea-2);
+}
+.mis-lista li.vacia { display: block; color: var(--tenue); font-size: 13px; border: 0; }
+.mis-tit { font-size: 14px; }
+.mis-acciones { display: flex; gap: 5px; }
+.mis-form { border-top: 1px solid var(--linea); padding-top: 12px; }
+.mis-form label { display: block; font-size: 13px; color: var(--texto-2); margin-bottom: 10px; }
+.mis-form label .nota { display: block; margin: 2px 0 0; font-size: 12.5px; }
+.mis-form input[type=text], .mis-form select, .mis-form textarea {
+  width: 100%; margin-top: 4px; font-family: var(--sans); font-size: 13.5px;
+  padding: 6px 8px; border: 1px solid var(--linea); border-radius: var(--r);
+  background: var(--fondo); color: var(--texto);
+}
+.mis-form textarea[data-campo=plantilla], .mis-form textarea[data-campo=casos] { font-family: var(--mono); }
+.mis-grilla { display: grid; grid-template-columns: 1fr 160px; gap: 12px; }
+.mis-error { color: var(--error); font-size: 13px; min-height: 18px; margin: 0 0 6px; }
+
+/* ------------------------ batallas de código -------------------------- */
+.duelo-barra {
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  padding: 8px 14px; border-bottom: 1px solid var(--linea);
+  background: var(--fondo-2); font-size: 13px;
+}
+.duelo-reloj { font-family: var(--mono); font-size: 17px; font-variant-numeric: tabular-nums; }
+/* Los últimos treinta segundos se ven, no solo se cuentan. */
+.duelo-reloj.poco { color: var(--error); }
+.duelo-perfil {
+  margin: 10px 0; padding: 8px 10px; border-radius: var(--r);
+  background: var(--fondo-2); border: 1px solid var(--linea);
+  font-size: 12.5px; color: var(--tenue);
+}
+
+/* ----------------------- cuando alguien se traba --------------------- */
+/* Va adentro de la salida, con el color de aviso y no el de error: no pasó
+   nada malo, es alguien trabado, que es lo más normal del mundo. */
+.animo {
+  margin: 10px 0; padding: 10px 12px; border-radius: var(--r);
+  border: 1px solid var(--aviso); background: var(--fondo-2);
+  font-family: var(--sans); font-size: 13px; white-space: normal;
+}
+.animo strong { display: block; margin-bottom: 4px; font-size: 14px; }
+.animo p { margin: 0 0 8px; }
+.animo-acciones { display: flex; gap: 8px; flex-wrap: wrap; }
+.animo-cuenta { color: var(--tenue); font-variant-numeric: tabular-nums; }
+
+/* --------------------- programar de a dos ---------------------------- */
+.juntos-gente { list-style: none; margin: 8px 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px; }
+.juntos-gente li { display: flex; gap: 6px; align-items: center; font-size: 13px; }
+.juntos-punto { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+/* El cursor y la selección de la otra persona, que dibuja y-codemirror. */
+.yRemoteSelection { background-color: rgba(120, 170, 210, .35); }
+.yRemoteSelectionHead { position: absolute; border-left: 2px solid; border-top: 2px solid; height: 100%; box-sizing: border-box; }
+.yRemoteSelectionHead::after {
+  position: absolute; content: attr(title); top: -1.05em; left: -2px;
+  padding: 1px 5px; border-radius: 4px 4px 4px 0;
+  font-size: 10.5px; font-family: var(--sans); white-space: nowrap; color: #fff;
+  background: inherit; border-color: inherit; background-color: currentColor;
+}
+.dlg-ayuda { margin: 6px 0 10px; font-size: 13px; }
+.dlg-ayuda summary { cursor: pointer; color: var(--acento); }
+.dlg-ayuda table { margin-top: 8px; }
+
+/* --------------------------- modo aula ------------------------------- */
+/* La lista con la que el profesor elige qué entra en la guía. */
+.aula-lista { list-style: none; margin: 10px 0; padding: 0; max-height: 260px; overflow: auto; }
+.aula-lista li { padding: 1px 0; }
+.aula-lista li.aula-nivel {
+  font-size: 11.5px; text-transform: uppercase; letter-spacing: .04em;
+  color: var(--tenue); margin: 10px 0 3px; font-weight: 600;
+}
+.aula-lista label { display: flex; gap: 8px; align-items: center; font-size: 13.5px; cursor: pointer; }
+.aula-lista label:hover { color: var(--acento); }
+.aula-lista .etq {
+  margin-left: auto; font-size: 10.5px; padding: 1px 7px; border-radius: 999px;
+  background: var(--fondo-2); color: var(--tenue); border: 1px solid var(--linea);
+}
+.dlg-mis textarea[data-campo=enlace] { font-family: var(--mono); font-size: 11.5px; }
+
+/* El cartel que ve el alumno arriba de la lista: de qué guía se trata. */
+.aula-banner {
+  border: 1px solid var(--acento); border-radius: var(--r);
+  background: var(--fondo-2); padding: 10px 12px; margin-bottom: 12px;
+}
+.aula-banner h2 { margin: 0 0 4px; font-size: 15px; }
+.aula-banner p { margin: 0 0 8px; font-size: 13px; color: var(--texto); white-space: pre-wrap; }
+.aula-banner .aula-faltan { color: var(--aviso); font-size: 12.5px; }
+.aula-banner .btn { box-shadow: none; }
+.acciones-progreso .btn { flex: 1 1 0; font-size: 12.5px; padding: 6px 8px; box-shadow: none; }
+.btn.borrar { width: 100%; margin-top: 8px; color: var(--tenue); box-shadow: none; }
+.btn.borrar:hover { color: var(--error); border-color: var(--error); }
+.mini-btn { padding: 2px 9px; font-size: 11.5px; box-shadow: none; }
+/* Un botón secundario, más chico que el normal: va adentro de una caja que ya
+   tiene su propio título, donde el tamaño completo pesaría demasiado. */
+.btn.chico { padding: 3px 10px; font-size: 12px; box-shadow: none; }
+/* Empuja lo que sigue al otro extremo de una fila. */
+.dlg-fila .crece, .crece { flex: 1 1 auto; }
+.control {
+  font-family: var(--sans); font-size: 13.5px;
+  background: var(--panel); color: var(--texto);
+  border: 1px solid var(--linea); border-radius: var(--r); padding: 6px 9px;
+}
+.sep { width: 1px; height: 20px; background: var(--linea); margin: 0 4px; }
+.estado { font-size: 12.5px; color: var(--tenue); }
+.estado.ok { color: var(--ok); }
+.estado.error { color: var(--error); }
+.estado.corriendo { color: var(--aviso); }
+
+/* ------------------------------- banner ------------------------------ */
+.banner {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;
+  padding: 9px 20px; background: var(--acento-sua); border-bottom: 1px solid var(--linea);
+}
+.banner-acciones { display: flex; gap: 7px; }
+
+/* -------------------------- área de trabajo -------------------------- */
+/* Los tamaños salen de dos variables que escribe js/disposicion.js; los
+   valores de reserva son la disposición original, para cuando no hay nada
+   guardado (o no corre el JavaScript). */
+.area {
+  flex: 1 1 auto; min-height: 0;
+  display: grid; grid-template-columns: var(--area-cols, 1.4fr 1fr);
+  gap: 5px; padding: 14px 20px 20px;
+}
+.columna { display: grid; grid-template-rows: var(--col-filas, 0.75fr 1.45fr); gap: 5px; min-height: 0; }
+
+/* ------------------------ explorador de archivos --------------------- */
+/* Viene apagado: sin la clase en el body el área sigue teniendo las dos
+   columnas de siempre y el panel ni siquiera es un elemento de la grilla. */
+@media (min-width: 1001px) {
+  body.con-explorador .area {
+    grid-template-columns: var(--exp-ancho, 232px) var(--area-cols, 1.4fr 1fr);
+  }
+}
+.panel.explorador { min-width: 0; }
+.exp-barra {
+  display: flex; gap: 6px; padding: 6px 8px; border-bottom: 1px solid var(--linea-2);
+}
+.exp-barra .btn { flex: 1 1 auto; justify-content: center; font-size: 11.5px; padding: 4px 6px; }
+.exp-cuerpo { flex: 1 1 auto; overflow: auto; padding: 4px 0 12px; font-size: 12.5px; }
+.exp-cuerpo .nota { padding: 8px 12px; }
+.exp-lista { list-style: none; margin: 0; padding: 0; }
+
+/* Cada nivel se corre a la derecha y deja la guía vertical del anterior,
+   igual que el árbol de un editor de escritorio. */
+.exp-carpeta > .exp-lista { margin-left: 9px; border-left: 1px solid var(--linea-2); }
+.exp-raiz > .exp-lista { margin-left: 6px; border-left: 0; }
+
+/* Filas: bajas, sin bordes y con el resaltado de lado a lado. */
+.exp-item { display: flex; align-items: center; }
+.exp-item:hover, .exp-carpeta > summary:hover { background: var(--fondo-2); }
+.exp-item.activo { background: var(--acento-sua); box-shadow: inset 2px 0 0 var(--acento); }
+.exp-archivo {
+  flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 6px;
+  background: transparent; border: 0; cursor: pointer; text-align: left;
+  padding: 3px 4px 3px 6px; font-family: var(--sans); font-size: 12.5px; color: var(--texto-2);
+}
+.exp-item.activo .exp-archivo { color: var(--texto); }
+.exp-nombre { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.exp-archivo .ic { width: 15px; height: 15px; }
+
+/* El color del icono dice de qué tipo es el archivo sin leer el nombre. */
+.exp-archivo.ext-sl   .ic { color: var(--acento); }
+.exp-archivo.ext-slp  .ic { color: var(--aviso); }
+.exp-archivo.ext-txt  .ic,
+.exp-archivo.ext-csv  .ic { color: var(--ok); }
+.exp-archivo.ext-json .ic,
+.exp-archivo.ext-md   .ic { color: var(--error); }
+.exp-archivo.ext-otro .ic { color: var(--tenue); }
+
+/* Carpetas: el triangulito a la izquierda, como en todos lados. */
+.exp-carpeta > summary {
+  display: flex; align-items: center; gap: 6px; cursor: pointer; list-style: none;
+  padding: 3px 4px 3px 4px; font-size: 12.5px; color: var(--texto-2);
+}
+.exp-carpeta > summary::-webkit-details-marker { display: none; }
+.exp-carpeta > summary::before {
+  content: ""; flex: 0 0 auto; width: 0; height: 0; margin-left: 3px; margin-right: 2px;
+  border-left: 4.5px solid currentColor; border-top: 3.5px solid transparent;
+  border-bottom: 3.5px solid transparent; transition: transform .12s;
+}
+.exp-carpeta[open] > summary::before { transform: rotate(90deg); }
+.exp-raiz > summary {
+  text-transform: uppercase; letter-spacing: .04em; font-weight: 600;
+  font-size: 11.5px; color: var(--texto);
+}
+
+.exp-acciones { display: flex; gap: 1px; padding-right: 4px; opacity: 0; transition: opacity .12s; }
+.exp-item:hover .exp-acciones,
+.exp-item:focus-within .exp-acciones { opacity: 1; }
+.exp-mini {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: transparent; border: 0; border-radius: 4px; cursor: pointer;
+  padding: 3px; color: var(--tenue);
+}
+.exp-mini:hover { background: var(--panel-2); color: var(--texto); }
+.exp-mini .ic { width: 14px; height: 14px; }
+/* Con el dedo no hay «pasar por encima»: los botones se ven siempre. */
+@media (pointer: coarse) {
+  .exp-acciones { opacity: 1; }
+  .exp-archivo { padding-top: 7px; padding-bottom: 7px; }
+  .exp-carpeta > summary { padding-top: 7px; padding-bottom: 7px; }
+}
+
+/* -------------------- barras para cambiar el tamaño ------------------- */
+.divisor { border-radius: 5px; background: transparent; transition: background .12s; }
+.divisor:hover, .divisor:focus-visible, .divisor.activa { background: var(--acento); }
+.divisor.vert  { cursor: col-resize; }
+.divisor.horiz { cursor: row-resize; }
+.mover-panel { padding: 0 6px; line-height: 1.4; }
+.panel-cab[draggable="true"] { cursor: grab; }
+.panel.moviendo { opacity: .55; }
+.panel.destino { outline: 2px dashed var(--acento); outline-offset: -2px; }
+.panel {
+  background: var(--panel); border: 1px solid var(--linea); border-radius: var(--r);
+  display: flex; flex-direction: column; min-height: 0; overflow: hidden; box-shadow: var(--sombra);
+}
+.panel-cab {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 7px 12px; background: var(--panel-2); border-bottom: 1px solid var(--linea);
+}
+.titulo-panel { font-size: 12.5px; font-weight: 600; color: var(--texto-2); }
+.mini { font-size: 11.5px; color: var(--tenue); }
+.mini code { font-size: 11px; }
+
+#entrada {
+  flex: 1 1 auto; resize: none; border: 0; outline: none; min-height: 0;
+  background: transparent; color: var(--texto);
+  font-family: var(--mono); font-size: 13px; line-height: 1.65; padding: 10px 12px;
+}
+.consola {
+  flex: 1 1 auto; overflow: auto; padding: 10px 12px;
+  font-family: var(--mono); font-size: 13px; line-height: 1.6;
+  white-space: pre-wrap; word-break: break-word;
+}
+/* El lienzo de dibujar_pixel() y compañía: 320×200, la resolución del viejo
+   modo gráfico de DOS, agrandada al doble sin difuminar (image-rendering)
+   para que un solo píxel se note. */
+.lienzo-cuerpo {
+  flex: 1 1 auto; overflow: auto; display: flex; align-items: center; justify-content: center;
+  padding: 10px; background: var(--fondo-2);
+}
+#lienzoCanvas {
+  width: 640px; height: 400px; max-width: 100%; background: #000000;
+  border: 1px solid var(--linea); border-radius: 4px;
+  image-rendering: pixelated; image-rendering: crisp-edges;
+}
+.consola .err { color: var(--error); }
+.consola .info { color: var(--tenue); }
+.consola .ok { color: var(--ok); }
+.consola .eco { color: var(--acento); }
+.consola .entrada-viva {
+  background: var(--acento-sua); border: 1px solid var(--linea); border-radius: 4px;
+  color: var(--texto); font-family: var(--mono); font-size: 13px; outline: none;
+  padding: 1px 6px; min-width: 190px;
+}
+.consola .entrada-viva:focus { border-color: var(--acento); }
+#pantalla { white-space: pre-wrap; }
+#pantalla span { border-radius: 2px; }
+
+/* --------------------- cómo instalar la aplicación -------------------- */
+.dlg.dlg-instalar { max-width: 560px; }
+.inst-bloque {
+  border: 1px solid var(--linea); border-radius: var(--r);
+  padding: 10px 14px; margin-bottom: 10px;
+}
+/* El del navegador que se está usando va primero y resaltado. */
+.inst-bloque.propio { border-color: var(--acento); background: var(--acento-sua); }
+.inst-bloque h4 { margin: 0 0 6px; font-size: 14px; }
+.inst-bloque ol { margin: 0; padding-left: 20px; }
+.inst-bloque li { margin: 3px 0; font-size: 13.5px; }
+.inst-bloque .nota { margin: 8px 0 0; }
+
+/* ------------------------ historial de versiones --------------------- */
+.dlg.dlg-historial { max-width: 1060px; }
+.his-cuerpo { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 16px; }
+.his-lista { list-style: none; margin: 0; padding: 0; overflow: auto; max-height: 56vh; }
+.his-item { margin-bottom: 6px; }
+.his-btn {
+  display: block; width: 100%; text-align: left; cursor: pointer;
+  background: var(--panel); color: var(--texto);
+  border: 1px solid var(--linea); border-radius: var(--r); padding: 7px 10px;
+  font-family: var(--sans); font-size: 13px;
+}
+.his-btn:hover { border-color: var(--acento); }
+.his-item.elegida .his-btn { border-color: var(--acento); background: var(--acento-sua); }
+.his-cab { display: flex; align-items: center; gap: 8px; }
+.his-fecha { font-family: var(--mono); font-size: 11.5px; color: var(--texto-2); }
+.his-tipo {
+  font-size: 10px; text-transform: uppercase; letter-spacing: .05em; font-weight: 600;
+  border-radius: 4px; padding: 1px 6px; color: var(--texto-2); background: var(--fondo-2);
+}
+.his-tipo.manual { color: var(--acento); background: var(--acento-sua); }
+.his-tipo.ejercicio { color: var(--ok); background: var(--ok-sua); }
+.his-tipo.restauracion, .his-tipo.previa { color: var(--aviso); background: var(--aviso-sua); }
+.his-mensaje { margin: 3px 0 1px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.his-mini { font-size: 11.5px; color: var(--tenue); }
+
+.his-lado { display: flex; flex-direction: column; min-height: 0; }
+.his-lado h4 { margin: 0 0 4px; font-size: 14px; }
+.his-lado .nota { margin: 0 0 8px; }
+.his-diff {
+  flex: 1 1 auto; overflow: auto; max-height: 44vh; padding: 8px 6px;
+  background: var(--fondo); border: 1px solid var(--linea); border-radius: var(--r);
+}
+.his-linea { display: grid; grid-template-columns: 3.2em 1em 1fr; gap: 6px; align-items: start; }
+.his-linea code { font-family: var(--mono); font-size: 12.5px; white-space: pre-wrap; word-break: break-word; }
+.his-num { font-family: var(--mono); font-size: 11px; color: var(--tenue); text-align: right; }
+.his-signo { font-family: var(--mono); font-size: 12.5px; font-weight: 600; }
+.his-linea.mas { background: var(--ok-sua); }
+.his-linea.mas .his-signo, .his-linea.mas code { color: var(--ok); }
+.his-linea.menos { background: var(--error-sua); }
+.his-linea.menos .his-signo, .his-linea.menos code { color: var(--error); }
+.his-linea.salto { color: var(--tenue); }
+.his-linea.salto .his-signo { color: var(--tenue); }
+#hisAcciones { margin: 12px 0 0; }
+
+@media (max-width: 900px) {
+  .his-cuerpo { grid-template-columns: 1fr; }
+  .his-lista { max-height: 26vh; }
+  .his-diff { max-height: 30vh; }
+}
+
+/* -------------------------- autocompletado --------------------------- */
+/* La lista la dibuja el addon show-hint de CodeMirror; acá se la viste con
+   los colores del tema elegido en la página Diseño. */
+.CodeMirror-hints {
+  z-index: 60; max-height: 19em; overflow-y: auto; padding: 4px;
+  background: var(--panel); border: 1px solid var(--linea); border-radius: var(--r);
+  box-shadow: 0 10px 30px -12px rgba(20, 25, 35, .45);
+  font-family: var(--sans); font-size: 13px;
+}
+/* El «li.» hace falta: la hoja del addon usa esa misma especificidad. */
+li.CodeMirror-hint {
+  display: grid; grid-template-columns: minmax(0, auto) auto; gap: 2px 10px;
+  padding: 4px 8px; border-radius: 5px; color: var(--texto); max-width: 40em;
+  border-left: 3px solid transparent;
+}
+li.CodeMirror-hint-active { background: var(--acento-sua); color: var(--texto); border-left-color: var(--acento); }
+.ac-firma { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ac-tipo { font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--tenue); justify-self: end; }
+.ac-ayuda { grid-column: 1 / -1; font-size: 11.5px; color: var(--texto-2); white-space: normal; }
+li.CodeMirror-hint-active .ac-tipo, li.CodeMirror-hint-active .ac-ayuda { color: var(--texto-2); }
+.ac-corrige .ac-firma { color: var(--aviso); font-weight: 600; }
+.ac-corrige .ac-ayuda { color: var(--aviso); }
+li.CodeMirror-hint-active.ac-corrige { background: var(--aviso-sua); border-left-color: var(--aviso); }
+
+/* ----------------------- simulador de memoria ------------------------ */
+.dlg.dlg-memoria { max-width: 1120px; }
+.mem-barra { display: flex; align-items: center; gap: 6px; margin: 12px 0 10px; }
+.mem-barra input[type="range"] { flex: 1 1 auto; min-width: 0; accent-color: var(--acento); }
+.mem-barra .mini { white-space: nowrap; }
+.mem-cuerpo { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 16px; }
+.mem-mapa {
+  overflow: auto; max-height: 58vh; padding: 12px;
+  background: var(--fondo); border: 1px solid var(--linea); border-radius: var(--r);
+}
+.mem-lado { overflow: auto; max-height: 58vh; }
+.mem-lado h4 { margin: 14px 0 6px; font-size: 13px; color: var(--texto-2); }
+.mem-linea { margin: 0; font-size: 13px; color: var(--texto-2); }
+.mem-linea code { color: var(--texto); }
+.mem-narra { margin: 0; padding-left: 20px; }
+.mem-narra li { margin: 4px 0; font-size: 13.5px; }
+
+.mem-zona { margin-bottom: 14px; }
+.mem-zona h4 {
+  display: flex; align-items: baseline; gap: 8px; margin: 0 0 7px;
+  font-size: 12.5px; color: var(--texto-2);
+}
+.mem-etiqueta {
+  font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; font-weight: 600;
+  color: var(--acento); background: var(--acento-sua); border-radius: 4px; padding: 1px 6px;
+}
+.mem-zona.pila .mem-etiqueta { color: var(--aviso); background: var(--aviso-sua); }
+.mem-zona.monton .mem-etiqueta { color: var(--ok); background: var(--ok-sua); }
+.mem-zona .nota { margin: 0 0 6px; }
+
+.mem-caja {
+  display: inline-block; vertical-align: top; min-width: 168px; max-width: 100%;
+  margin: 0 8px 8px 0; padding: 6px 9px 8px;
+  background: var(--panel); border: 1.5px solid var(--linea); border-radius: 6px;
+}
+.mem-caja.konst { border-style: dashed; }
+.mem-caja.nueva  { border-color: var(--ok);    background: var(--ok-sua); }
+.mem-caja.cambia { border-color: var(--aviso); background: var(--aviso-sua); }
+.mem-cab { display: flex; justify-content: space-between; gap: 12px; font-size: 10.5px; color: var(--tenue); }
+.mem-dir { font-family: var(--mono); }
+.mem-nombre { font-family: var(--mono); font-size: 13.5px; font-weight: 600; color: var(--texto); margin-top: 2px; }
+.mem-valor { font-family: var(--mono); font-size: 13px; color: var(--acento); word-break: break-word; }
+.mem-flecha { font-size: 11.5px; color: var(--ok); margin-top: 3px; }
+.mem-casillas { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 3px; }
+.mem-casilla {
+  display: flex; flex-direction: column; align-items: center; min-width: 30px;
+  border: 1px solid var(--linea); border-radius: 3px; padding: 1px 4px;
+  font-family: var(--mono); font-size: 11.5px; color: var(--acento);
+}
+.mem-casilla b { font-size: 9.5px; color: var(--tenue); font-weight: 500; }
+.mem-campos { margin-top: 3px; }
+.mem-campo {
+  display: flex; justify-content: space-between; gap: 10px;
+  font-family: var(--mono); font-size: 12px; color: var(--acento);
+}
+.mem-campo i { color: var(--texto-2); font-style: normal; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .mem-caja { transition: background .25s, border-color .25s; }
+}
+@media (max-width: 900px) {
+  .mem-cuerpo { grid-template-columns: 1fr; }
+  .mem-mapa, .mem-lado { max-height: 38vh; }
+}
+
+/* ------------------------ diagrama de flujo -------------------------- */
+/* El dibujo lo arma js/diagrama.js; los colores salen del tema, así que el
+   mismo SVG sirve en claro y en oscuro. */
+.dlg.dlg-diagrama { max-width: 1080px; }
+.df-cuerpo { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 16px; }
+.df-caja {
+  overflow: auto; max-height: 62vh; padding: 10px;
+  background: var(--fondo); border: 1px solid var(--linea); border-radius: var(--r);
+}
+.df-lado { overflow: auto; max-height: 62vh; }
+.df-lado h4 { margin: 0 0 8px; font-size: 13px; color: var(--texto-2); }
+.df-pasos, .df-pasos ol { margin: 0; padding-left: 20px; }
+.df-pasos li { margin: 2px 0; font-size: 13.5px; }
+.df-pasos ol { margin: 3px 0 6px; }
+.df-sel { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--texto-2); }
+
+.df text { font-family: var(--sans); font-size: 12.5px; fill: var(--texto); text-anchor: middle; }
+.df .df-r { font-size: 11.5px; font-weight: 600; fill: var(--texto-2); text-anchor: start; }
+.df .df-fin { text-anchor: end; }
+.df .df-l { fill: none; stroke: var(--tenue); stroke-width: 1.4; }
+.df marker path { fill: var(--tenue); stroke: none; }
+.df-proceso  rect    { fill: var(--panel);      stroke: var(--acento); stroke-width: 1.4; }
+.df-terminal rect    { fill: var(--acento-sua); stroke: var(--acento); stroke-width: 1.4; }
+.df-es       polygon { fill: var(--ok-sua);     stroke: var(--ok);     stroke-width: 1.4; }
+.df-decision polygon { fill: var(--aviso-sua);  stroke: var(--aviso);  stroke-width: 1.4; }
+
+@media (max-width: 900px) {
+  .df-cuerpo { grid-template-columns: 1fr; }
+  .df-caja, .df-lado { max-height: 40vh; }
+}
+
+/* La línea que el modo flexible marcó como rota. Se pinta el fondo entero
+   y no solo el texto porque la línea puede estar vacía —cuando lo que falta
+   es un símbolo, el renglón culpable a veces no tiene nada que subrayar. */
+.CodeMirror .linea-mal { background: var(--error-sua, rgba(200, 60, 60, .13)); }
+.CodeMirror .linea-mal .CodeMirror-linenumber { color: var(--error); font-weight: 600; }
+
+/* ---------------------- editor de diagramas ------------------------- */
+.dlg.dlg-editor-diagrama { max-width: 1180px; }
+.de-cuerpo { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+.de-izq, .de-der { min-width: 0; }
+.de-izq { max-height: 58vh; overflow: auto; padding-right: 4px; }
+.de-der h4 { margin: 0 0 6px; font-size: 13px; color: var(--tenue); text-transform: uppercase; letter-spacing: .05em; }
+.de-der h4 + * { margin-bottom: 12px; }
+.de-dibujo {
+  border: 1px solid var(--linea); border-radius: var(--r); background: var(--fondo-2);
+  padding: 10px; max-height: 30vh; overflow: auto;
+}
+.de-dibujo svg { max-width: 100%; height: auto; }
+.de-codigo {
+  margin: 0; border: 1px solid var(--linea); border-radius: var(--r); background: var(--fondo-2);
+  padding: 10px; max-height: 24vh; overflow: auto;
+  font-family: var(--mono); font-size: 12.5px; white-space: pre; color: var(--texto);
+}
+
+.de-cabecera { border: 1px solid var(--linea); border-radius: var(--r); padding: 10px; margin-bottom: 10px; }
+.de-var { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
+.de-var .control { flex: 1 1 auto; min-width: 0; }
+.de-var .mini-select { flex: 0 0 auto; }
+/* El botón de borrar no puede estirarse: es un icono, no un campo. */
+.de-var .btn { flex: 0 0 auto; }
+
+.de-bloque {
+  border: 1px solid var(--linea); border-left: 3px solid var(--acento);
+  border-radius: var(--r); padding: 8px 10px; margin-bottom: 8px; background: var(--panel);
+}
+.de-bloque.elegido { box-shadow: 0 0 0 2px var(--acento-sua); }
+/* Cada forma del diagrama tiene su color en el borde, el mismo criterio que
+   el dibujo: proceso, entrada/salida y decisión se distinguen de un vistazo. */
+.de-bloque.de-entrada, .de-bloque.de-salida { border-left-color: var(--ok); }
+.de-bloque.de-si, .de-bloque.de-mientras, .de-bloque.de-repetir, .de-bloque.de-desde { border-left-color: var(--aviso); }
+
+.de-cab { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.de-tipo { font-weight: 600; font-size: 12.5px; }
+.de-forma { font-size: 11.5px; color: var(--tenue); }
+.de-acciones { margin-left: auto; display: flex; gap: 3px; }
+.de-acciones .borrar:hover { color: var(--error); border-color: var(--error); }
+
+.de-campos { display: flex; flex-wrap: wrap; gap: 6px; }
+.de-campo { display: flex; flex-direction: column; gap: 2px; flex: 1 1 90px; min-width: 0; }
+.de-campo.largo { flex-basis: 100%; }
+.de-etq { font-size: 11px; color: var(--tenue); }
+.de-campo .control { font-family: var(--mono); font-size: 12.5px; }
+
+.de-rama { margin: 8px 0 0 10px; padding-left: 10px; border-left: 2px dashed var(--linea); }
+.de-rama-tit { font-size: 11.5px; color: var(--tenue); margin-bottom: 5px; }
+.de-agregar { display: flex; flex-wrap: wrap; gap: 4px; margin: 6px 0 10px; }
+.de-agregar .btn { font-size: 11.5px; }
+
+@media (max-width: 900px) {
+  .de-cuerpo { grid-template-columns: minmax(0, 1fr); }
+  .de-izq { max-height: none; }
+}
+
+/* --------------------- prueba de escritorio -------------------------- */
+.dlg.dlg-escritorio { max-width: 1180px; }
+.esc-cuerpo { overflow: auto; max-height: 62vh; border: 1px solid var(--linea); border-radius: var(--r); }
+.tabla-escritorio { border-collapse: separate; border-spacing: 0; font-size: 12.5px; width: 100%; }
+.tabla-escritorio th, .tabla-escritorio td {
+  padding: 4px 9px; border-bottom: 1px solid var(--linea-2); white-space: nowrap; text-align: left;
+}
+/* La cabecera y las dos primeras columnas quedan a la vista al desplazar: con
+   veinte pasos y seis variables, si no, uno pierde de vista de qué línea es la
+   fila que está mirando. */
+.tabla-escritorio thead th {
+  position: sticky; top: 0; z-index: 2; background: var(--panel);
+  border-bottom: 1px solid var(--linea); font-weight: 600;
+}
+.tabla-escritorio .col-paso { position: sticky; left: 0; z-index: 1; background: var(--panel); color: var(--tenue); }
+.tabla-escritorio thead .col-paso { z-index: 3; }
+.tabla-escritorio .col-linea { color: var(--tenue); font-family: var(--mono); }
+.tabla-escritorio .col-cod { font-family: var(--mono); color: var(--texto-2); max-width: 34ch; overflow: hidden; text-overflow: ellipsis; }
+.tabla-escritorio .col-var { font-family: var(--mono); text-align: right; color: var(--tenue); }
+.tabla-escritorio thead .col-var { text-align: right; color: var(--texto); }
+.tabla-escritorio thead .col-var.local { color: var(--acento); }
+/* Lo que cambió en este paso: es lo único que hay que seguir de arriba abajo. */
+.tabla-escritorio .col-var.cambia { background: var(--acento-sua); color: var(--texto); font-weight: 600; }
+.tabla-escritorio .col-var.muere { color: var(--tenue); opacity: .7; }
+.tabla-escritorio .col-salida { font-family: var(--mono); color: var(--ok); max-width: 26ch; overflow: hidden; text-overflow: ellipsis; }
+.tabla-escritorio tbody tr:hover td { background: var(--fondo-2); }
+.tabla-escritorio tbody tr:hover .col-var.cambia { background: var(--acento-sua); }
+.tabla-escritorio .fila-retorno td { border-bottom-color: var(--linea); }
+.tabla-escritorio .fila-retorno .col-cod::after { content: '  ← vuelve de la subrutina'; color: var(--tenue); }
+.tabla-escritorio .fila-fin td { color: var(--tenue); font-style: italic; }
+
+@media (max-width: 700px) {
+  .tabla-escritorio .col-cod { max-width: 18ch; }
+  .esc-cuerpo { max-height: 54vh; }
+}
+
+/* ------------------------------ diálogos ----------------------------- */
+.dlg {
+  border: 1px solid var(--linea); border-radius: var(--r); padding: 20px 22px;
+  background: var(--panel); color: var(--texto); max-width: 620px; width: 92vw;
+  box-shadow: 0 16px 48px -20px rgba(20, 25, 35, .5);
+}
+.dlg::backdrop { background: rgba(20, 25, 35, .45); }
+.dlg h3 { margin: 0 0 6px; font-size: 17px; }
+.dlg .nota { margin: 0 0 14px; }
+.dlg-fila { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
+.dlg-fila.derecha { justify-content: flex-end; margin: 14px 0 0; }
+.dlg-fila .control { flex: 1 1 auto; min-width: 0; }
+#contenidoArchivo {
+  width: 100%; height: 220px; resize: vertical;
+  font-family: var(--mono); font-size: 13px; line-height: 1.6; padding: 9px 11px;
+  background: var(--fondo); color: var(--texto);
+  border: 1px solid var(--linea); border-radius: var(--r); outline: none;
+}
+#contenidoArchivo:focus { border-color: var(--acento); }
+.mini-input { width: 130px; }
+
+/* bloques de diagnóstico dentro de la consola */
+.diag {
+  display: block; margin: 8px 0; padding: 10px 12px;
+  border-left: 3px solid var(--error); background: var(--error-sua); border-radius: 0 5px 5px 0;
+  font-family: var(--sans); white-space: normal;
+}
+.diag.aviso { border-left-color: var(--aviso); background: var(--aviso-sua); }
+.diag.estilo { border-left-color: var(--acento); background: var(--acento-sua); }
+.diag .diag-tit { font-weight: 600; display: block; margin-bottom: 3px; }
+.diag .diag-cod {
+  display: block; font-family: var(--mono); font-size: 12.5px; white-space: pre;
+  overflow-x: auto; margin: 6px 0; color: var(--texto-2);
+}
+.diag .diag-sug { display: block; font-size: 13px; color: var(--texto-2); white-space: pre-wrap; }
+.diag .diag-sug b { color: var(--texto); }
+
+/* ----------------------------- CodeMirror ---------------------------- */
+.CodeMirror {
+  flex: 1 1 auto; height: auto; min-height: 0;
+  background: var(--cod-fondo, var(--panel)); color: var(--cod-texto, var(--texto));
+  font-family: var(--mono); font-size: 13.5px; line-height: 1.65;
+}
+.CodeMirror-gutters { background: var(--cod-fondo, var(--panel-2)); border-right: 1px solid var(--cod-borde, var(--linea)); }
+.CodeMirror-linenumber { color: var(--cod-num-linea, var(--tenue)); }
+.CodeMirror-cursor { border-left: 2px solid var(--cod-texto, var(--acento)); }
+.CodeMirror-selected { background: var(--acento-sua) !important; }
+/* Categorías del resaltado (ver js/modo-sle2.js). Los colores salen de la
+   página Diseño, que escribe las variables --cod-* en <html>. */
+.cm-s-esle2 .cm-comentario  { color: var(--cod-comentario); font-style: italic; }
+.cm-s-esle2 .cm-cadena      { color: var(--cod-cadena); }
+.cm-s-esle2 .cm-numero      { color: var(--cod-numero); }
+.cm-s-esle2 .cm-control     { color: var(--cod-control); }
+.cm-s-esle2 .cm-declaracion { color: var(--cod-declaracion); }
+.cm-s-esle2 .cm-tipo        { color: var(--cod-tipo); }
+.cm-s-esle2 .cm-clase       { color: var(--cod-clase); }
+.cm-s-esle2 .cm-funcion     { color: var(--cod-funcion); }
+.cm-s-esle2 .cm-predefinida { color: var(--cod-predefinida); }
+.cm-s-esle2 .cm-variable    { color: var(--cod-variable); }
+.cm-s-esle2 .cm-propiedad   { color: var(--cod-propiedad); }
+.cm-s-esle2 .cm-parametro   { color: var(--cod-parametro); }
+.cm-s-esle2 .cm-constante   { color: var(--cod-constante); }
+.cm-s-esle2 .cm-lenguaje    { color: var(--cod-lenguaje); }
+.cm-s-esle2 .cm-operador    { color: var(--cod-operador); }
+.cm-s-esle2 .cm-puntuacion  { color: var(--cod-puntuacion); }
+.CodeMirror-matchingbracket { color: var(--acento) !important; border-bottom: 1px solid var(--acento); }
+.linea-error { background: var(--error-sua); }
+/* La línea que se está ejecutando (depurador y línea de tiempo).
+   Se marca con una barra al costado y NO pintando el fondo. El verde de los
+   números —#098658, el de VS Code Light+— tiene 4,60 de contraste contra el
+   blanco: le sobran seis centésimas. Cualquier tinte de fondo, por suave que
+   sea, lo baja de 4,5 y el código de la línea marcada —justo la que uno está
+   mirando— deja de cumplir. Medido: con el tinte viejo daba 4,03.
+   En tema oscuro el tinte sí cumple (8,03) y ahí sí se pinta. */
+.linea-actual { box-shadow: inset 3px 0 0 var(--acento); }
+html[data-tema="oscuro"] .linea-actual { background: var(--acento-sua); }
+
+/* ------------------------- depurador paso a paso ---------------------- */
+.columna.depurando { grid-template-rows: var(--col-filas, 0.6fr 1.2fr 1fr); }
+.panel.variables .vars { overflow: auto; padding: 8px 12px 12px; font-size: 13px; }
+.panel.variables h4 {
+  margin: 8px 0 4px; font-size: 11px; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--tenue); font-weight: 600;
+}
+.panel.variables h4:first-child { margin-top: 0; }
+.panel.variables table { width: 100%; border-collapse: collapse; }
+.panel.variables tr:nth-child(odd) { background: var(--fondo-2); }
+.panel.variables td { padding: 3px 6px; vertical-align: top; }
+.panel.variables .v-nombre { font-family: var(--mono); color: var(--texto); width: 38%; }
+.panel.variables .v-valor  { font-family: var(--mono); color: var(--acento); word-break: break-word; }
+.panel.variables .nota { margin: 2px 6px 6px; }
+
+/* Los valores compuestos se dibujan: vectores como casillas, registros como campos. */
+.v-vector { display: flex; flex-wrap: wrap; gap: 2px; }
+.v-casilla {
+  display: flex; flex-direction: column; align-items: center; min-width: 30px;
+  border: 1px solid var(--linea); border-radius: 4px; background: var(--panel);
+  padding: 1px 4px; font-family: var(--mono); font-size: 11.5px; color: var(--texto);
+}
+.v-casilla b { font-size: 9.5px; font-weight: 500; color: var(--tenue); }
+.v-mas { align-self: center; font-size: 11px; color: var(--tenue); padding-left: 3px; }
+.v-registro {
+  display: inline-block; border: 1px solid var(--linea); border-radius: 4px;
+  background: var(--panel); padding: 3px 6px; min-width: 0;
+}
+.v-clase { display: block; font-size: 11px; color: var(--acento); margin-bottom: 2px; }
+.v-campo { display: flex; gap: 6px; font-family: var(--mono); font-size: 11.5px; }
+.v-campo i { color: var(--tenue); font-style: normal; }
+.v-vector .v-vector { gap: 1px; }
+
+/* -------------------------------- curso ------------------------------ */
+.curso { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: 310px 1fr; gap: 18px; padding: 18px 20px; }
+.lista-ejercicios { overflow: auto; padding-right: 4px; }
+.filtros { display: flex; gap: 5px; margin-bottom: 11px; flex-wrap: wrap; }
+.chip {
+  font-family: var(--sans); font-size: 12.5px; cursor: pointer;
+  background: var(--panel); color: var(--texto-2);
+  border: 1px solid var(--linea); border-radius: 999px; padding: 4px 12px;
+}
+.chip:hover { background: var(--fondo-2); }
+.chip.activa { background: var(--acento-sua); color: var(--acento); border-color: var(--acento); font-weight: 600; }
+#listaEjercicios { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 5px; }
+#listaEjercicios li {
+  display: flex; align-items: center; gap: 9px;
+  background: var(--panel); border: 1px solid var(--linea);
+  border-radius: var(--r); padding: 9px 12px; cursor: pointer;
+}
+#listaEjercicios li:hover { background: var(--fondo-2); }
+#listaEjercicios li.sel { border-color: var(--acento); background: var(--acento-sua); }
+#listaEjercicios li.hecho .marca-ok { color: var(--ok); }
+#listaEjercicios .marca-ok { color: var(--linea); font-size: 13px; }
+#listaEjercicios .tit { flex: 1 1 auto; }
+.etq {
+  font-size: 10px; letter-spacing: .07em; text-transform: uppercase;
+  padding: 2px 7px; border-radius: 999px; border: 1px solid transparent; white-space: nowrap;
+}
+.etq.facil    { background: var(--ok-sua);    color: var(--ok); }
+.etq.medio    { background: var(--aviso-sua); color: var(--aviso); }
+.etq.avanzado { background: var(--error-sua); color: var(--error); }
+
+.detalle { overflow: auto; background: var(--panel); border: 1px solid var(--linea); border-radius: var(--r); padding: 26px 30px; box-shadow: var(--sombra); }
+.detalle h2 { margin: 6px 0 10px; font-size: 23px; }
+.detalle .vacio { max-width: 560px; color: var(--texto-2); }
+.detalle .enunciado { font-size: 15px; line-height: 1.75; max-width: 70ch; }
+.detalle .pista {
+  margin-top: 18px; padding: 11px 14px; border-radius: 0 5px 5px 0; max-width: 70ch;
+  background: var(--acento-sua); border-left: 3px solid var(--acento); color: var(--texto-2);
+}
+.detalle .acciones { margin-top: 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.detalle .casos { margin-top: 26px; }
+.detalle .casos h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--tenue); }
+.detalle .casos table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12.5px; }
+.detalle .casos th { text-align: left; color: var(--tenue); font-weight: 500; font-family: var(--sans); padding: 0 10px 6px; }
+.detalle .casos td { vertical-align: top; padding: 8px 10px; background: var(--panel-2); border: 1px solid var(--linea); white-space: pre-wrap; }
+.nota { color: var(--texto-2); font-size: 13.5px; }
+code.en-texto, .enunciado code, .pista code, .nota code {
+  background: var(--fondo-2); border: 1px solid var(--linea-2);
+  padding: 0 4px; border-radius: 4px; font-size: 12.5px;
+}
+
+/* ============================ documentación =========================== */
+.doc { flex: 1 1 auto; display: grid; grid-template-columns: 268px 1fr; gap: 0; min-height: 0; }
+
+.doc-lateral {
+  border-right: 1px solid var(--linea); background: var(--panel);
+  /* Sin 100vh: con la barra arriba el lateral desbordaba la página y
+     scrollIntoView() empujaba el encabezado fuera de la vista. */
+  padding: 18px 16px 40px; overflow: auto; min-height: 0;
+}
+.doc-buscador { position: relative; margin-bottom: 14px; }
+.doc-buscador input {
+  width: 100%; font-family: var(--sans); font-size: 14px;
+  padding: 9px 30px 9px 32px; border-radius: var(--r);
+  border: 1px solid var(--linea); background: var(--fondo); color: var(--texto); outline: none;
+}
+.doc-buscador input:focus { border-color: var(--acento); background: var(--panel); }
+.doc-buscador input::-webkit-search-cancel-button { display: none; }
+.doc-buscador .lupa { position: absolute; left: 10px; top: 9px; color: var(--tenue); font-size: 13px; }
+.doc-buscador .limpiar {
+  position: absolute; right: 6px; top: 6px; border: 0; background: transparent;
+  color: var(--tenue); cursor: pointer; font-size: 15px; line-height: 1; padding: 3px 6px;
+}
+#docResultados { font-size: 12.5px; color: var(--tenue); margin: -6px 0 12px; min-height: 18px; }
+.doc-indice { list-style: none; margin: 0; padding: 0; font-size: 14px; }
+.doc-indice a {
+  display: block; padding: 5px 10px; border-radius: 5px; color: var(--texto-2); border-left: 2px solid transparent;
+}
+.doc-indice a:hover { background: var(--fondo-2); text-decoration: none; color: var(--texto); }
+.doc-indice a.activo { color: var(--acento); border-left-color: var(--acento); background: var(--acento-sua); font-weight: 600; }
+.doc-indice li.oculto { display: none; }
+
+.doc-cuerpo { overflow: auto; padding: 30px 40px 90px; scroll-behavior: smooth; }
+.doc-cuerpo > .doc-intro { max-width: 78ch; margin-bottom: 10px; }
+.doc-cuerpo h1 { font-size: 30px; margin: 0 0 6px; }
+.doc-seccion { max-width: 82ch; padding-top: 26px; margin-top: 26px; border-top: 1px solid var(--linea); }
+.doc-seccion:first-of-type { border-top: 0; }
+.doc-seccion > h2 {
+  font-size: 21px; margin: 0 0 4px; scroll-margin-top: 20px;
+}
+.doc-seccion > .sub { color: var(--tenue); font-size: 13.5px; margin: 0 0 14px; }
+.doc-bloque { margin: 16px 0; }
+.doc-bloque > h3 { font-size: 15.5px; margin: 0 0 6px; color: var(--texto); }
+.doc-bloque p { margin: 6px 0; max-width: 78ch; }
+.doc-bloque ul, .doc-bloque ol { max-width: 78ch; margin: 6px 0; padding-left: 22px; }
+.doc-bloque li { margin: 3px 0; }
+.doc-cuerpo pre {
+  background: var(--panel); border: 1px solid var(--linea); border-radius: var(--r);
+  padding: 12px 14px; overflow-x: auto; font-size: 13px; line-height: 1.6; margin: 8px 0;
+}
+.doc-cuerpo pre code { color: var(--texto); }
+.doc-cuerpo p code, .doc-cuerpo li code, .doc-cuerpo td code, .doc-cuerpo th code {
+  background: var(--fondo-2); border: 1px solid var(--linea-2);
+  padding: 0 4px; border-radius: 4px; font-size: 12.5px;
+}
+.doc-cuerpo table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 13.5px; }
+.doc-cuerpo th, .doc-cuerpo td { border: 1px solid var(--linea); padding: 7px 10px; text-align: left; vertical-align: top; }
+.doc-cuerpo th { background: var(--panel-2); font-weight: 600; color: var(--texto-2); }
+.doc-cuerpo tr:nth-child(even) td { background: var(--panel-2); }
+.doc-nota, .doc-cuidado {
+  margin: 12px 0; padding: 10px 14px; border-left: 3px solid var(--acento);
+  background: var(--acento-sua); border-radius: 0 5px 5px 0; font-size: 13.5px; max-width: 78ch;
+}
+.doc-cuidado { border-left-color: var(--aviso); background: var(--aviso-sua); }
+.doc-bloque.oculto, .doc-seccion.oculto { display: none; }
+mark { background: #ffe9a8; color: inherit; padding: 0 1px; border-radius: 2px; }
+html[data-tema="oscuro"] mark { background: #5c4b21; color: #f2e6cd; }
+.sin-resultados { padding: 30px 0; color: var(--texto-2); }
+
+/* ------------------------------ responsive --------------------------- */
+@media (max-width: 1000px) {
+  body.app { overflow: auto; }
+  .area { grid-template-columns: 1fr; }
+  .columna, .columna.depurando { grid-template-rows: auto auto auto; }
+  .divisor { display: none; }
+  .panel.variables { min-height: 200px; }
+  .panel.editor { min-height: 400px; }
+  .panel.salida { min-height: 240px; }
+  .panel.entrada { min-height: 130px; }
+  /* Apilado, el explorador necesita alto propio o la lista queda en nada. */
+  .panel.explorador { min-height: 190px; max-height: 40vh; }
+  .curso { grid-template-columns: 1fr; }
+  .barra { flex-wrap: wrap; gap: 10px; }
+  .pestanas { margin-left: 0; }
+  .doc { grid-template-columns: 1fr; }
+  .doc-lateral { height: auto; border-right: 0; border-bottom: 1px solid var(--linea); }
+  .doc-cuerpo { padding: 22px 18px 60px; }
+}
+
+/* --------------------------- teléfonos ------------------------------- */
+/* En una pantalla de 360 px la barra de arriba y la de herramientas se comían
+   dos tercios del alto. Acá se aprietan las dos: los nombres largos se van, y
+   lo que no entra se desliza de costado en vez de apilarse en cinco filas. */
+@media (max-width: 640px) {
+  body { font-size: 14px; }
+
+  .barra { gap: 8px; padding: 7px 12px; flex-wrap: wrap; }
+  .marca { gap: 8px; flex: 1 1 auto; }
+  .marca p { display: none; }
+  .logo { width: 28px; height: 28px; }
+  .marca h1 { font-size: 15px; }
+  /* Arriba solo el logo y los botones, en icono; navegar es más importante que
+     leer «Instalar», así que las pestañas se llevan una fila entera. */
+  .btn-buscar .etiqueta { display: none; }
+
+  .pestanas {
+    order: 5; flex: 1 0 100%; margin: 0; overflow-x: auto; overflow-y: hidden;
+    flex-wrap: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none;
+  }
+  .pestanas::-webkit-scrollbar { display: none; }
+  .pest { padding: 7px 10px; font-size: 13.5px; white-space: nowrap; }
+
+  .progreso-global { display: none; }
+  #btnProyectar { display: none; }        /* proyectar es para el aula, no para el bolsillo */
+  .btn-buscar kbd { display: none; }
+  .btn-buscar { padding: 6px 9px; gap: 5px; }
+  .racha { font-size: 12px; }
+
+  .herramientas {
+    flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; gap: 6px;
+    padding: 7px 12px; -webkit-overflow-scrolling: touch; scrollbar-width: none;
+  }
+  .herramientas::-webkit-scrollbar { display: none; }
+  .herramientas > * { flex: 0 0 auto; }
+  /* El menú se sale de la barra que se desliza: se fija a la pantalla. */
+  .menu-caja {
+    position: fixed; top: var(--menu-top, 110px); left: 10px; right: 10px;
+    min-width: 0; max-height: 62vh; overflow: auto;
+  }
+  .herramientas .sep { display: none; }
+  .mini-input { width: 108px; }
+  .estado { white-space: nowrap; }
+
+  .area { padding: 10px 12px 16px; gap: 8px; }
+  .columna { gap: 8px; }
+  .panel.editor { min-height: 52vh; }
+  .panel.salida { min-height: 34vh; }
+  .panel.entrada { min-height: 110px; }
+  .panel.explorador { min-height: 170px; max-height: 32vh; }
+  .panel-cab { padding: 6px 10px; }
+  .panel-cab .mini { display: none; }
+  /* Acá los paneles van uno debajo del otro y no hay barras: mover uno de
+     lugar no significa nada, así que el botón sobra. */
+  .mover-panel { display: none; }
+
+  .banner { padding: 8px 12px; gap: 8px; }
+  .curso { padding: 12px; gap: 12px; }
+  /* El índice de la documentación es largo: se vuelve una caja con su propio
+     scroll para no empujar el texto media pantalla hacia abajo. */
+  .doc-lateral { max-height: 38vh; overflow: auto; padding: 12px 14px 16px; }
+  .doc-cuerpo { padding: 18px 14px 50px; }
+
+  .dlg { width: 96vw; padding: 16px 14px; max-height: 88vh; max-height: 88dvh; overflow: auto; }
+  .dlg h3 { font-size: 16px; }
+  .dlg-fila { flex-wrap: wrap; }
+  .dlg-fila .btn { flex: 1 1 auto; }
+  #contenidoArchivo { height: 150px; }
+  .df-caja, .df-lado, .mem-mapa, .mem-lado, .his-lista, .his-diff { max-height: 34vh; }
+  .traduccion { max-height: 46vh; }
+}
+
+/* ------------------ dedos en vez de puntero fino --------------------- */
+/* Un botón de 26 px se falla al tocarlo. Donde no hay mouse, todo lo que se
+   pulsa llega a 40 px de alto. */
+@media (pointer: coarse) {
+  .btn, .pest, .btn-buscar, .btn-tema, .chip, .control, select.control {
+    min-height: 40px;
+  }
+  .btn, .chip { padding-top: 9px; padding-bottom: 9px; }
+  .mini-btn { min-height: 32px; padding: 5px 10px; }
+  .his-btn { padding: 9px 10px; }
+  .doc-lateral a, .doc-lateral button { display: block; padding: 7px 4px; }
+}
+
+::-webkit-scrollbar { width: 11px; height: 11px; }
+::-webkit-scrollbar-thumb { background: var(--linea); border-radius: 6px; border: 3px solid var(--fondo); }
+::-webkit-scrollbar-thumb:hover { background: var(--tenue); }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* ------------------------------ modo enfoque -------------------------- */
+/* Un solo panel, el programa, y una barra chica abajo. Todo lo que se saca
+   se saca con display:none y se devuelve solo cuando hace falta: no hay
+   animación de por medio porque entrar y salir tiene que ser instantáneo. */
+.visualmente-oculto {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0;
+}
+
+body.enfoque > .barra .pestanas,
+body.enfoque > .barra .barra-acciones,
+body.enfoque .banner,
+body.enfoque .herramientas .menu,
+body.enfoque .herramientas #btnCompilar,
+body.enfoque .herramientas .estado,
+body.enfoque .divisor { display: none; }
+
+/* La cabecera queda como una línea fina con el nombre del sitio y nada más.
+   No se apaga con opacity: bajarle el contraste a un control para que
+   «moleste menos» es justo lo que lo vuelve ilegible para quien menos ve. */
+body.enfoque > .barra { padding-top: 6px; padding-bottom: 6px; }
+body.enfoque .marca p { display: none; }
+body.enfoque .herramientas { padding-top: 8px; }
+
+body.enfoque .area { grid-template-columns: 1fr; padding: 6px 8vw 64px; }
+body.enfoque .columna { display: none; }
+body.enfoque .panel.explorador { display: none; }
+
+body.enfoque .CodeMirror { font-size: 15px; line-height: 1.65; }
+
+/* La pantalla del programa vuelve mientras corre —y mientras esté fijada—.
+   Un modo sin distracciones que esconde el resultado de lo que uno acaba de
+   ejecutar no es concentración, es un IDE roto. */
+@media (min-width: 1001px) {
+  body.enfoque.enfoque-salida .area { grid-template-columns: var(--area-cols, 1.4fr 1fr); }
+}
+body.enfoque.enfoque-salida .columna { display: grid; }
+
+.barra-enfoque {
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: 14px; z-index: 70;
+  display: flex; align-items: center; gap: 10px;
+  background: var(--panel); border: 1px solid var(--linea); border-radius: 999px;
+  padding: 6px 14px; box-shadow: 0 6px 22px rgba(20, 25, 35, .20);
+}
+.barra-enfoque .nota { margin: 0; }
+.barra-enfoque .enfoque-vol { display: flex; align-items: center; }
+.barra-enfoque .enfoque-vol.apagada { opacity: .45; }
+.barra-enfoque input[type="range"] { width: 92px; accent-color: var(--acento); }
+
+@media (max-width: 640px) {
+  body.enfoque .area { padding: 6px 10px 64px; }
+  .barra-enfoque { gap: 6px; padding: 5px 10px; }
+  .barra-enfoque input[type="range"] { width: 62px; }
+}
+
+/* --------------------------- viajar en el tiempo ---------------------- */
+.viaje {
+  display: grid; align-items: center; gap: 10px;
+  grid-template-columns: auto 1fr auto auto;
+  background: var(--panel); border: 1px solid var(--linea); border-radius: var(--r);
+  margin: 0 20px 14px; padding: 8px 12px;
+}
+.viaje-mandos { display: flex; gap: 4px; }
+.viaje-mandos .btn { min-width: 30px; justify-content: center; }
+.viaje-barra { width: 100%; accent-color: var(--acento); }
+.viaje-donde {
+  font-family: var(--mono); font-size: 12px; color: var(--texto-2);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 38ch;
+}
+.viaje-nota { grid-column: 1 / -1; margin: 0; font-size: 12px; color: var(--texto-2); }
+.viaje-nota.aviso { color: var(--aviso, var(--error)); }
+
+/* La variable que se movió en este paso. Es lo que se fue a mirar. */
+.vars tr.cambio .v-nombre { color: var(--ok); font-weight: 600; }
+.vars tr.cambio .v-valor { background: color-mix(in srgb, var(--ok) 14%, transparent); border-radius: 4px; }
+
+@media (max-width: 760px) {
+  .viaje { grid-template-columns: 1fr; gap: 6px; margin: 0 10px 10px; }
+  .viaje-donde { max-width: none; white-space: normal; }
+}
+
+/* --------------------------- transmisión en vivo ---------------------- */
+.vivo-cab {
+  display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
+  padding: 16px 20px 0;
+}
+.vivo-cab h2 { margin: 0; font-size: 18px; }
+.vivo-area { grid-template-columns: 1fr; }
+.vivo-area .panel.editor { min-height: 60vh; }
+.vivo-aclaracion { margin: 0 20px 20px; }
+.vivo-gente { margin: 6px 0 0; font-size: 13px; color: var(--texto-2); }
+
+@media (max-width: 640px) {
+  .vivo-cab { padding: 12px 12px 0; }
+  .vivo-aclaracion { margin: 0 12px 14px; }
+}
+
+/* El título de cada ámbito, ahora adentro de su tabla. */
+.vars table caption {
+  text-align: left; font-weight: 600; font-size: 12px;
+  color: var(--texto-2); padding: 8px 0 4px;
+}

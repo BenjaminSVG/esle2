@@ -1,0 +1,30 @@
+# Configuración del servidor de señas en Cloudflare Workers.
+#
+#   npx wrangler deploy          publica
+#   npx wrangler dev             lo corre en tu máquina, en localhost:8787
+#
+# El plan gratuito alcanza de sobra: lo único que pasa por acá es el saludo
+# entre dos computadoras, y en cuanto se encontraron el programa viaja directo
+# entre ellas.
+
+name = "esle2-senas"
+main = "src/servidor.js"
+compatibility_date = "2026-01-01"
+
+[[durable_objects.bindings]]
+name = "SENAS"
+class_name = "Senas"
+
+# El objeto no guarda nada —no se escribe una sola fila— pero la plataforma
+# igual pide decir qué almacenamiento usa. «sqlite» es el que Cloudflare
+# recomienda para todo lo nuevo y el que está en el plan gratuito.
+[exports.Senas]
+type = "durable-object"
+storage = "sqlite"
+
+# Si tu wrangler es viejo y no entiende [exports], borrá ese bloque y usá esto
+# en su lugar; hace lo mismo:
+#
+# [[migrations]]
+# tag = "v1"
+# new_sqlite_classes = ["Senas"]

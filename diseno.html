@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diseño — colores de ESLE2</title>
+<meta name="description" content="Elegí el color de fondo y los colores de la sintaxis de ESLE2. Los cambios se guardan y se aplican en todo el sitio.">
+<link rel="icon" href="img/logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="vendor/codemirror/codemirror.min.css">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#3a6b8f" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1a1d22" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ESLE2">
+<link rel="apple-touch-icon" href="img/icono-180.png">
+<link rel="stylesheet" href="css/estilo.css">
+<script src="js/tema.js"></script>
+<script src="js/diseno.js"></script>
+</head>
+<body>
+
+<a class="saltar" href="#contenido">Saltar al contenido</a>
+
+<header class="barra">
+  <a class="marca" href="index.html">
+    <img class="logo" src="img/logo.svg" alt="" width="30" height="30">
+    <div>
+      <h1>ESLE2</h1>
+      <p>El lenguaje SLE2 en el navegador</p>
+    </div>
+  </a>
+  <nav class="pestanas">
+    <a class="pest" href="index.html">IDE</a>
+    <a class="pest" href="index.html#curso">Curso</a>
+    <a class="pest" href="documentacion.html">Documentación</a>
+    <a class="pest destacada" href="poo.html">ESLE2 POO</a>
+    <a class="pest destacada" href="visual.html" title="Ventanas, controles y dibujo">ESLE2 Visual</a>
+    <a class="pest activa" href="diseno.html">Diseño</a>
+    <a class="pest destacada" href="bd.html" title="Bases de datos y SQL">ESLE2 BD</a>
+  </nav>
+
+  <div class="barra-acciones">
+    <button class="btn-buscar oculto" id="btnInstalar" type="button" data-ic="instalar" aria-label="Instalar ESLE2 como aplicación"
+            title="Instalar ESLE2 como aplicación"><span class="etiqueta">Instalar</span></button>
+    <button class="btn-buscar" id="btnBuscar" type="button" data-ic="buscar" aria-label="Buscar en todo ESLE2"
+            title="Buscar en todo ESLE2 (Ctrl + K)"><span class="etiqueta">Buscar</span><kbd>Ctrl K</kbd></button>
+    <button class="btn-tema" id="btnTema" type="button">☾</button>
+  </div>
+</header>
+
+<main class="disenio" id="contenido" tabindex="-1">
+  <div class="disenio-intro">
+    <h2>Diseño</h2>
+    <p class="nota">Elegí cómo querés ver ESLE2. Los cambios se aplican al instante, se guardan en
+       una cookie de este navegador y valen para el IDE, el curso, la documentación y ESLE2 POO.
+       Hay una configuración para el modo claro y otra para el oscuro: estás editando la del
+       <strong id="modoActual">claro</strong> (cambialo con el botón ☾ / ☀ de arriba).</p>
+  </div>
+
+  <div class="disenio-cuerpo">
+    <section class="disenio-controles">
+      <div class="bloque-diseno">
+        <h3>Color de fondo</h3>
+        <p class="nota">Define el fondo de las páginas y de los paneles.</p>
+        <div class="muestras" id="listaFondos"></div>
+      </div>
+
+      <div class="bloque-diseno">
+        <h3>Colores de la sintaxis</h3>
+        <p class="nota">Empezá por una paleta lista y, si querés, retocá cada categoría.</p>
+        <div class="muestras paletas" id="listaSintaxis"></div>
+      </div>
+
+      <div class="bloque-diseno">
+        <h3>Fondo del editor</h3>
+        <p class="nota">Algunas paletas traen el suyo. Podés elegir otro o dejar el del fondo general.</p>
+        <div class="fila-color">
+          <input type="color" id="colorEditor" aria-label="Fondo del editor">
+          <button class="btn" id="btnEditorAuto">Usar el del fondo general</button>
+        </div>
+      </div>
+
+      <div class="bloque-diseno">
+        <h3>Cada categoría</h3>
+        <p class="nota">Estas son las categorías que reconoce el resaltado. Tocá un color para cambiarlo.</p>
+        <div class="categorias" id="listaCategorias"></div>
+      </div>
+
+      <div class="bloque-diseno">
+        <button class="btn" id="btnRestaurar">Restaurar el diseño por defecto</button>
+      </div>
+    </section>
+
+    <section class="disenio-vista">
+      <div class="panel vista-previa">
+        <div class="panel-cab">
+          <span class="titulo-panel">vista previa</span>
+          <select id="selEjemploPrevio" class="control mini-select" aria-label="Programa de ejemplo">
+            <option value="clasico">ESLE2 clásico</option>
+            <option value="poo">ESLE2 POO</option>
+          </select>
+        </div>
+        <textarea id="previo"></textarea>
+      </div>
+      <p class="nota firma">El resaltado distingue el contexto: un nombre después de <code>clase</code>
+         se pinta como clase, uno seguido de <code>(</code> como función, uno después de un punto como
+         atributo, y los parámetros se separan de las variables. Igual que en Visual Studio Code.</p>
+    </section>
+  </div>
+</main>
+
+<script src="vendor/codemirror/codemirror.min.js"></script>
+<script src="js/modo-sle2.js"></script>
+<script src="js/app-diseno.js"></script>
+<script src="js/indice.js"></script>
+<script src="js/buscador.js"></script>
+<script src="js/iconos.js"></script>
+<script src="js/menus.js"></script>
+<script src="js/instalar.js"></script>
+</body>
+</html>

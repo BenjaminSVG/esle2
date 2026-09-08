@@ -1,0 +1,9 @@
+# Nada de esto es del proyecto: se regenera o es de la máquina.
+node_modules/
+.vercel/
+*.log
+
+# Windows / macOS
+Thumbs.db
+desktop.ini
+.DS_Store

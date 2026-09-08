@@ -1,0 +1,127 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "SLE2",
+  "scopeName": "source.sle2",
+  "patterns": [
+    {
+      "include": "#comentarios"
+    },
+    {
+      "include": "#textos"
+    },
+    {
+      "include": "#numeros"
+    },
+    {
+      "include": "#control"
+    },
+    {
+      "include": "#declaracion"
+    },
+    {
+      "include": "#tipos"
+    },
+    {
+      "include": "#constantes"
+    },
+    {
+      "include": "#predefinidas"
+    },
+    {
+      "include": "#subrutinas"
+    },
+    {
+      "include": "#operadores"
+    }
+  ],
+  "repository": {
+    "comentarios": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.sle2",
+          "match": "//.*$"
+        },
+        {
+          "name": "comment.block.sle2",
+          "begin": "/\\*",
+          "end": "\\*/"
+        }
+      ]
+    },
+    "textos": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.sle2",
+          "begin": "\"",
+          "end": "[\"”]",
+          "patterns": [
+            {
+              "name": "constant.character.escape.sle2",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.single.sle2",
+          "begin": "'",
+          "end": "['’]",
+          "patterns": [
+            {
+              "name": "constant.character.escape.sle2",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.double.sle2",
+          "begin": "“",
+          "end": "[\"”]"
+        }
+      ]
+    },
+    "numeros": {
+      "name": "constant.numeric.sle2",
+      "match": "\\b\\d+(?:\\.\\d+)?(?:[eE][-+]?\\d+)?\\b"
+    },
+    "control": {
+      "name": "keyword.control.sle2",
+      "match": "\\b(?:si|sino|mientras|repetir|hasta|desde|paso|eval|caso|retorna|and|or|not)\\b"
+    },
+    "declaracion": {
+      "name": "keyword.other.sle2",
+      "match": "\\b(?:archivo|const|constantes|fin|inicio|lib|libext|programa|ref|sub|subrutina|tipos|var|variables)\\b"
+    },
+    "tipos": {
+      "name": "storage.type.sle2",
+      "match": "\\b(?:numerico|cadena|logico|vector|matriz|registro)\\b"
+    },
+    "constantes": {
+      "name": "constant.language.sle2",
+      "match": "\\b(?:TRUE|FALSE|SI|NO)\\b"
+    },
+    "predefinidas": {
+      "name": "support.function.sle2",
+      "match": "\\b(?:abs|alen|arctan|ascii|beep|cls|cos|dec|dibujar_circulo|dibujar_linea|dibujar_pixel|dibujar_rectangulo|dim|eof|exp|get_color|get_curpos|get_ifs|get_ofs|get_scrsize|ifval|imprimir|inc|int|intercambiar|leer|lienzo_alto|lienzo_ancho|limpiar_lienzo|log|lower|max|mem|min|ord|paramval|pcount|pos|random|readkey|runcmd|sec|set_color|set_curpos|set_ifs|set_ofs|set_stdin|set_stdout|sin|sqrt|str|strdup|strlen|substr|swap|tan|terminar|upper|val)\\b(?=\\s*\\()"
+    },
+    "subrutinas": {
+      "name": "entity.name.function.sle2",
+      "match": "\\b[A-Za-z_ñÑ][A-Za-z0-9_ñÑ]*(?=\\s*\\()"
+    },
+    "operadores": {
+      "patterns": [
+        {
+          "name": "keyword.operator.comparison.sle2",
+          "match": "==|<>|!=|<=|>=|<|>"
+        },
+        {
+          "name": "keyword.operator.assignment.sle2",
+          "match": "="
+        },
+        {
+          "name": "keyword.operator.arithmetic.sle2",
+          "match": "\\+|-|\\*|/|%|\\^"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Documentación de ESLE2 Visual — ventanas, controles y dibujo</title>
+<meta name="description" content="Cómo hacer ventanas, botones, cajas de texto, listas y dibujos con el lenguaje SLE2: la referencia completa de ESLE2 Visual.">
+<link rel="icon" href="img/logo.svg" type="image/svg+xml">
+<link rel="alternate icon" href="img/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#3a6b8f" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1a1d22" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ESLE2">
+<link rel="apple-touch-icon" href="img/icono-180.png">
+<link rel="stylesheet" href="css/estilo.css">
+<script src="js/tema.js"></script>
+<script src="js/diseno.js"></script>
+</head>
+<body class="app">
+
+<a class="saltar" href="#docCuerpo">Saltar al contenido</a>
+
+<header class="barra">
+  <a class="marca" href="index.html">
+    <img class="logo" src="img/logo.svg" alt="" width="30" height="30">
+    <div>
+      <h1>ESLE2 <span class="sufijo">Visual</span></h1>
+      <p>Ventanas, controles y dibujo</p>
+    </div>
+  </a>
+  <nav class="pestanas">
+    <a class="pest" href="index.html">IDE</a>
+    <a class="pest" href="index.html#curso">Curso</a>
+    <a class="pest" href="documentacion.html">Documentación</a>
+    <a class="pest" href="poo.html">ESLE2 POO</a>
+    <a class="pest destacada" href="visual.html" title="El entorno visual">ESLE2 Visual</a>
+    <a class="pest activa" href="visual-documentacion.html">Docs Visual</a>
+    <a class="pest destacada" href="bd.html" title="Bases de datos y SQL">ESLE2 BD</a>
+    <a class="pest" href="bd-documentacion.html">Docs BD</a>
+  </nav>
+
+  <div class="barra-acciones">
+    <button class="btn-buscar oculto" id="btnInstalar" type="button" data-ic="instalar" aria-label="Instalar ESLE2 como aplicación"
+            title="Instalar ESLE2 como aplicación"><span class="etiqueta">Instalar</span></button>
+    <button class="btn-buscar" id="btnBuscar" type="button" data-ic="buscar" aria-label="Buscar en todo ESLE2"
+            title="Buscar en todo ESLE2 (Ctrl + K)"><span class="etiqueta">Buscar</span><kbd>Ctrl K</kbd></button>
+    <button class="btn-tema" id="btnTema" type="button">☾</button>
+  </div>
+</header>
+
+<div class="doc">
+  <aside class="doc-lateral">
+    <div class="doc-buscador">
+      <span class="lupa">⌕</span>
+      <input type="search" id="docBuscar" placeholder="Buscar en la documentación…"
+             autocomplete="off" spellcheck="false" aria-label="Buscar en la documentación">
+      <button class="limpiar oculto" id="docLimpiar" title="Limpiar búsqueda" aria-label="Limpiar búsqueda">×</button>
+    </div>
+    <p id="docResultados"></p>
+    <ul class="doc-indice" id="docIndice"></ul>
+  </aside>
+
+  <main class="doc-cuerpo" id="docCuerpo" tabindex="-1">
+    <div class="doc-intro">
+      <h2>Documentación de ESLE2 Visual</h2>
+      <p>Cómo hacer una ventana con botones, cajas de texto, listas y dibujos usando
+         <strong>el mismo lenguaje SLE2</strong> del curso. Escribí en el buscador del índice para
+         filtrar: se ocultan los apartados que no tengan que ver con lo que buscás.</p>
+      <p class="nota">El entorno está en <a href="visual.html">ESLE2 Visual</a>. Los programas se
+         guardan con extensión <code>.slv</code>. Si es la primera vez, empezá por
+         <a href="#s-entorno">El entorno, zona por zona</a>: está toda la pantalla explicada con
+         capturas.</p>
+    </div>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-que-es" data-titulo="Qué es ESLE2 Visual">
+      <h2>Qué es ESLE2 Visual</h2>
+      <p class="sub">El lenguaje de siempre, con una biblioteca para la pantalla.</p>
+
+      <div class="doc-bloque">
+        <h3>No es otro lenguaje</h3>
+        <p>ESLE2 Visual <strong>no agrega ni una palabra reservada</strong>. No hay sentencias
+           nuevas, ni tipos nuevos, ni una sintaxis nueva que aprender: todo lo visual son
+           <em>subrutinas predefinidas</em>, igual que <code>imprimir()</code> o
+           <code>substr()</code>.</p>
+        <p>Eso quiere decir que lo que ya sabés sigue valiendo tal cual: <code>si</code>,
+           <code>mientras</code>, <code>desde</code>, los vectores, los registros y tus propias
+           subrutinas funcionan exactamente igual. Lo único que cambia es que ahora hay unas
+           subrutinas más, y que en vez de escribir en la pantalla de texto, dibujan una ventana.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Qué se puede hacer</h3>
+        <ul>
+          <li>Ventanas con <strong>etiquetas, botones, cajas de texto, casillas, listas y
+              deslizadores</strong>.</li>
+          <li><strong>Responder</strong> a lo que hace la persona: un clic, un cambio, una tecla.</li>
+          <li><strong>Dibujar</strong> en un lienzo: líneas, rectángulos, círculos, elipses, puntos
+              y texto, con color y grosor.</li>
+        </ul>
+      </div>
+
+      <div class="doc-nota">Si buscás la pantalla de texto de siempre —<code>imprimir()</code>,
+        <code>leer()</code>, colores y cursor— eso está en el
+        <a href="index.html">IDE clásico</a> y su <a href="documentacion.html">documentación</a>.
+        Las dos cosas usan el mismo lenguaje.</div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-forma" data-titulo="La forma de un programa visual">
+      <h2>La forma de un programa visual</h2>
+      <p class="sub">Siempre los mismos cuatro pasos.</p>
+
+      <div class="doc-bloque">
+        <h3>Los cuatro pasos</h3>
+        <pre><code>var
+   b : numerico
+inicio
+   ventana ("Saludos", 380, 200)          <span class="cm">// 1. abrir la ventana</span>
+   b = boton ("Saludar", 30, 60, 120, 34) <span class="cm">// 2. crear los controles</span>
+   al_hacer_clic (b, "saludar")           <span class="cm">// 3. quién atiende cada cosa</span>
+   esperar_eventos ()                     <span class="cm">// 4. quedarse esperando</span>
+fin
+
+subrutina saludar (id : numerico)
+inicio
+   mensaje ("¡Hola!")
+fin</code></pre>
+        <ol>
+          <li><strong>La ventana</strong> se abre una sola vez, al principio.</li>
+          <li><strong>Los controles</strong> se crean con una subrutina que <em>devuelve un
+              número</em>: ese número es el control, y hay que guardarlo en una variable para
+              poder usarlo después.</li>
+          <li><strong>Los eventos</strong> se conectan a una subrutina tuya, por su nombre y entre
+              comillas.</li>
+          <li><strong><code>esperar_eventos()</code></strong> deja el programa esperando.</li>
+        </ol>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Por qué hace falta <code>esperar_eventos()</code></h3>
+        <p>Un programa de consola empieza, hace lo suyo y termina. Uno con ventana no puede
+           terminar: si terminara, la ventana se cerraría al instante y nadie llegaría a tocar
+           nada. Por eso el programa se queda <em>esperando</em>, y cada vez que pasa algo el
+           entorno llama a la subrutina que registraste, la ejecuta entera y vuelve a esperar.</p>
+        <p>Es exactamente lo que hace un entorno de escritorio cuando escribís
+           <code>Application.Run(...)</code>, con un nombre que se puede leer.</p>
+        <div class="doc-cuidado">Si te olvidás de <code>esperar_eventos()</code>, la ventana
+          aparece y desaparece: el programa llegó al <code>fin</code> y terminó. Es el error más
+          común al empezar.</div>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>El número del control</h3>
+        <p>Cada control que se crea devuelve un número, que se van dando en orden: el primero es
+           el 1, el segundo el 2, y así. Guardalo siempre en una variable con un nombre que se
+           entienda; usar el número a mano funciona, pero se rompe apenas agregás un control
+           antes.</p>
+        <pre><code>var
+   nombre, aceptar : numerico
+inicio
+   ventana ("Datos", 400, 200)
+   nombre = caja (20, 20, 200, 26)      <span class="cm">// nombre vale 1</span>
+   aceptar = boton ("Listo", 20, 60)    <span class="cm">// aceptar vale 2</span>
+   ...</code></pre>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-disenador" data-titulo="Diseñar la ventana arrastrando">
+  <h2>Diseñar la ventana arrastrando</h2>
+  <p>El botón <strong>Diseñar</strong> de la barra de herramientas
+     (<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>D</kbd>) abre tu ventana a tamaño real y te deja
+     acomodar los controles con el mouse, en vez de ir probando números hasta que queden
+     derechos.</p>
+  <p><strong>Lo que arrastrás cambia tu propio programa.</strong> No hay un archivo de diseño
+     aparte: mover un botón cambia los dos números de su línea, y nada más de esa línea. Tus
+     comentarios y tu sangría quedan como estaban, y con <kbd>Ctrl</kbd> + <kbd>Z</kbd> deshacés
+     el arrastre entero de una.</p>
+  <p>Hay controles que se ven pero no se mueven, y están rayados: son los que tienen una variable
+     o una cuenta en lugar de un número, como
+     <code>boton ("Ok", x, y + 10, 100, 30)</code>. Moverlos querría decir cambiar esa variable,
+     que puede estar usada en otras diez líneas, así que el diseñador no la toca y te lo explica.
+     Lo mismo con los controles que se crean adentro de un ciclo o de una subrutina: no tienen un
+     lugar fijo hasta que el programa pasa por ahí.</p>
+  <p>Cuando agregás un control desde el cuadro de la izquierda, se escribe su línea antes de
+     <code>esperar_eventos ()</code> y se le declara una variable, para que puedas atenderle el
+     clic con <code>al_hacer_clic ()</code>. Y si borrás uno, se van también las líneas que le
+     registraban eventos: si quedaran, el programa reventaría apuntando a un control que ya no
+     existe.</p>
+  <p><strong>Se usa sin mouse.</strong> Con <kbd>Tab</kbd> recorrés los controles —cada uno dice
+     qué es, qué dice y dónde está—, las flechas lo mueven de a un píxel, con <kbd>Shift</kbd> de
+     a diez, <kbd>Alt</kbd> + flechas lo estiran y <kbd>Supr</kbd> lo borra. También podés escribir
+     los números a mano en el panel de la derecha.</p>
+</section>
+
+<section class="doc-seccion" id="s-ventana" data-titulo="La ventana">
+      <h2>La ventana</h2>
+      <p class="sub">Dónde viven los controles.</p>
+      <div class="doc-bloque">
+        <table>
+          <tr><th>Subrutina</th><th>Qué hace</th></tr>
+          <tr><td><code>ventana (titulo, ancho, alto)</code></td>
+              <td>Abre la ventana. El ancho y el alto son del área de adentro, en píxeles; si no
+                  se ponen, son 480 × 320. El mínimo es 120 × 90.</td></tr>
+          <tr><td><code>esperar_eventos ()</code></td>
+              <td>Deja el programa esperando: de acá no sigue hasta que se cierre la ventana. Va
+                  siempre al final del programa principal.</td></tr>
+          <tr><td><code>titulo_ventana (t)</code></td>
+              <td>Cambia el título mientras el programa corre.</td></tr>
+          <tr><td><code>cerrar_ventana ()</code></td>
+              <td>Cierra la ventana y termina el programa.</td></tr>
+          <tr><td><code>mensaje (texto)</code></td>
+              <td>Muestra un cartel con un texto y un botón para cerrarlo.</td></tr>
+        </table>
+        <p>Las posiciones de los controles se cuentan desde la <strong>esquina de arriba a la
+           izquierda</strong> del área de la ventana: <code>x</code> hacia la derecha,
+           <code>y</code> hacia abajo.</p>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-controles" data-titulo="Los controles">
+      <h2>Los controles</h2>
+      <p class="sub">Los siete que hay, y cómo se crean.</p>
+
+      <div class="doc-bloque">
+        <h3>Crearlos</h3>
+        <p>Todos devuelven el número del control. El ancho y el alto se pueden omitir: cada uno
+           tiene el suyo de fábrica.</p>
+        <table>
+          <tr><th>Subrutina</th><th>Qué es</th></tr>
+          <tr><td><code>etiqueta (texto, x, y [, ancho, alto])</code></td><td>Un texto fijo.</td></tr>
+          <tr><td><code>boton (texto, x, y [, ancho, alto])</code></td><td>Un botón para tocar.</td></tr>
+          <tr><td><code>caja (x, y [, ancho, alto])</code></td><td>Una caja de texto, vacía al principio.</td></tr>
+          <tr><td><code>casilla (texto, x, y [, ancho, alto])</code></td><td>Una casilla que se marca y se desmarca.</td></tr>
+          <tr><td><code>lista (x, y [, ancho, alto])</code></td><td>Una lista de opciones.</td></tr>
+          <tr><td><code>deslizador (x, y [, ancho, alto])</code></td><td>Una barra para elegir un número de 0 a 100.</td></tr>
+          <tr><td><code>lienzo (x, y [, ancho, alto])</code></td><td>Un rectángulo en blanco para dibujar.</td></tr>
+        </table>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Leerlos y cambiarlos</h3>
+        <table>
+          <tr><th>Subrutina</th><th>Qué hace</th></tr>
+          <tr><td><code>poner_texto (c, texto)</code></td><td>Cambia el texto de una etiqueta, un botón o una caja.</td></tr>
+          <tr><td><code>leer_texto (c)</code></td><td>Devuelve el texto que tiene (lo que escribió la persona, si es una caja).</td></tr>
+          <tr><td><code>poner_valor (c, n)</code> / <code>leer_valor (c)</code></td><td>El número de un deslizador.</td></tr>
+          <tr><td><code>marcar (c, TRUE)</code> / <code>marcado (c)</code></td><td>Marcar una casilla y preguntar si está marcada.</td></tr>
+          <tr><td><code>agregar_item (c, texto)</code></td><td>Agrega una opción a una lista.</td></tr>
+          <tr><td><code>limpiar_items (c)</code></td><td>Vacía la lista.</td></tr>
+          <tr><td><code>item_elegido (c)</code></td><td>El texto de la opción elegida.</td></tr>
+          <tr><td><code>mover (c, x, y)</code></td><td>Lo cambia de lugar.</td></tr>
+          <tr><td><code>redimensionar (c, ancho, alto)</code></td><td>Le cambia el tamaño.</td></tr>
+          <tr><td><code>visible (c, TRUE/FALSE)</code></td><td>Lo muestra o lo esconde.</td></tr>
+          <tr><td><code>habilitar (c, TRUE/FALSE)</code></td><td>Lo deja usable o apagado.</td></tr>
+          <tr><td><code>color_fondo (c, r, g, b)</code> · <code>color_texto (c, r, g, b)</code></td>
+              <td>Colores, de 0 a 255 cada uno.</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-eventos" data-titulo="Los eventos">
+      <h2>Los eventos</h2>
+      <p class="sub">Qué hacer cuando la persona toca algo.</p>
+
+      <div class="doc-bloque">
+        <h3>Conectar un control con una subrutina</h3>
+        <table>
+          <tr><th>Subrutina</th><th>Cuándo se dispara</th></tr>
+          <tr><td><code>al_hacer_clic (c, "sub")</code></td><td>Al tocar un botón, una casilla, una etiqueta o el lienzo.</td></tr>
+          <tr><td><code>al_cambiar (c, "sub")</code></td><td>Al mover un deslizador, elegir en una lista o marcar una casilla.</td></tr>
+          <tr><td><code>al_escribir (c, "sub")</code></td><td>Cada vez que se escribe una tecla en una caja de texto.</td></tr>
+        </table>
+        <p>La subrutina recibe <strong>el número del control</strong> que provocó el evento, así
+           que una sola puede atender a varios:</p>
+        <pre><code>   al_hacer_clic (mas, "mover")
+   al_hacer_clic (menos, "mover")
+   ...
+subrutina mover (id : numerico)
+inicio
+   si ( id == 1 )
+   {
+      cuenta = cuenta + 1
+   sino
+      cuenta = cuenta - 1
+   }
+   poner_texto (3, str (cuenta, 0, 0))
+fin</code></pre>
+        <p>Si tu subrutina no necesita el número, podés declararla <strong>sin parámetros</strong>
+           y funciona igual.</p>
+        <div class="doc-cuidado">El nombre va <strong>entre comillas</strong> y tiene que existir:
+          <code>al_hacer_clic (b, "saludar")</code>, no <code>al_hacer_clic (b, saludar)</code>.
+          Si el nombre no existe, ESLE2 te lo dice al ejecutar y te sugiere el parecido.</div>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Los eventos se atienden de a uno</h3>
+        <p>Mientras corre una subrutina de evento, los demás clics esperan su turno. No hay dos
+           partes del programa corriendo a la vez, así que no hace falta pensar en eso.</p>
+        <p>Si adentro de un evento hay un error —una división por cero, un control que no
+           existe—, el error se muestra en la ventana de salida y el programa se cierra, igual que
+           en el IDE clásico.</p>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-lienzo" data-titulo="Dibujar en el lienzo">
+      <h2>Dibujar en el lienzo</h2>
+      <p class="sub">Líneas, figuras y texto con coordenadas.</p>
+
+      <div class="doc-bloque">
+        <h3>Las órdenes</h3>
+        <p>Todas reciben primero el número del lienzo. Las coordenadas se cuentan desde la esquina
+           de arriba a la izquierda <em>del lienzo</em>, no de la ventana.</p>
+        <table>
+          <tr><th>Subrutina</th><th>Qué dibuja</th></tr>
+          <tr><td><code>pluma (l, r, g, b)</code></td><td>El color de las líneas y los bordes.</td></tr>
+          <tr><td><code>relleno (l, r, g, b)</code></td><td>El color con que se rellenan las figuras.</td></tr>
+          <tr><td><code>grosor (l, n)</code></td><td>El grosor de la línea, en píxeles.</td></tr>
+          <tr><td><code>linea (l, x1, y1, x2, y2)</code></td><td>Una línea de un punto al otro.</td></tr>
+          <tr><td><code>rectangulo (l, x, y, ancho, alto)</code></td><td>Un rectángulo.</td></tr>
+          <tr><td><code>circulo (l, x, y, radio)</code></td><td>Un círculo con centro en <code>(x, y)</code>.</td></tr>
+          <tr><td><code>elipse (l, x, y, ancho, alto)</code></td><td>Una elipse con centro en <code>(x, y)</code>.</td></tr>
+          <tr><td><code>punto (l, x, y)</code></td><td>Un punto suelto.</td></tr>
+          <tr><td><code>texto_en (l, x, y, texto)</code></td><td>Escribe un texto adentro del dibujo.</td></tr>
+          <tr><td><code>borrar_lienzo (l)</code></td><td>Deja el lienzo en blanco.</td></tr>
+          <tr><td><code>raton_x ()</code> · <code>raton_y ()</code></td><td>Dónde se tocó por última vez, dentro del control.</td></tr>
+        </table>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Un dibujo es una lista de órdenes</h3>
+        <p>No hay más secreto: se elige un color de relleno, se dibuja una figura, se elige otro,
+           se dibuja otra. El color queda puesto hasta que lo cambies, como si apoyaras y
+           levantaras el pincel. Esta casa son doce órdenes y un <code>desde</code> para las
+           ventanas.</p>
+        <figure class="doc-figura captura">
+          <a class="doc-ampliar" href="img/visual/lienzo.png" target="_blank" rel="noopener" title="Ver la captura a tamaño completo"><img src="img/visual/lienzo.png" width="513" height="440" loading="lazy"
+               alt="Una ventana llamada La casa con un dibujo: cielo celeste, sol amarillo, una
+                    casa con techo a dos aguas, puerta marrón y tres ventanas blancas hechas con
+                    un ciclo."></a>
+          <figcaption>Rectángulos, un círculo, dos líneas y un ciclo.</figcaption>
+        </figure>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Dibujar con ciclos</h3>
+        <p>Acá se ve para qué sirve lo que ya sabías: un <code>desde</code> dibuja cincuenta
+           líneas sin escribirlas cincuenta veces.</p>
+        <pre><code>var
+   l, i : numerico
+inicio
+   ventana ("Abanico", 360, 300)
+   l = lienzo (10, 10, 320, 240)
+   pluma (l, 60, 110, 190)
+   desde i = 0 hasta 20
+   {
+      linea (l, 10, 230, 10 + i * 15, 10)
+   }
+   esperar_eventos ()
+fin</code></pre>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Dibujar cuando pasa algo</h3>
+        <p>El lienzo también recibe clics: conectalo con <code>al_hacer_clic</code> y usá
+           <code>raton_x()</code> y <code>raton_y()</code> para saber dónde tocó la persona.</p>
+        <pre><code>   al_hacer_clic (l, "pintar")
+   ...
+subrutina pintar (id : numerico)
+inicio
+   relleno (id, 220, 80, 60)
+   circulo (id, raton_x (), raton_y (), 10)
+fin</code></pre>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-entorno" data-titulo="El entorno, zona por zona">
+      <h2>El entorno, zona por zona</h2>
+      <p class="sub">Qué es cada cosa de la pantalla y para qué sirve.</p>
+
+      <div class="doc-bloque">
+        <p>ESLE2 Visual <strong>es el mismo IDE</strong> que ya conocés: la misma cabecera, la
+           misma barra de herramientas, los mismos paneles que se arrastran y se agrandan, el mismo
+           curso. Lo distinto son tres cosas: el botón <em>Ventana</em>, que abre la ventana que
+           construye tu programa; el panel <em>Controles</em>; y el menú <em>Insertar</em>.</p>
+        <figure class="doc-figura captura ancha">
+          <a class="doc-ampliar" href="img/visual/entorno.png" target="_blank" rel="noopener" title="Ver la captura a tamaño completo">
+          <img src="img/visual/entorno.png" width="2010" height="1290" loading="lazy"
+               alt="La pantalla de ESLE2 Visual con seis zonas numeradas: la cabecera del sitio, la
+                    barra de herramientas, el botón Ventana con su pastilla de dos controles, el
+                    panel del programa, el panel Controles y el panel Salida."></a>
+          <figcaption>La pantalla completa, con el programa ya corriendo. Los números están
+            explicados abajo, y <b>tocando cualquier captura</b> de esta documentación se abre a
+            tamaño completo.</figcaption>
+        </figure>
+
+        <ol class="doc-zonas">
+          <li><b>Cabecera del sitio.</b> La misma de todas las páginas. A la izquierda, las dos
+              mitades de esta: <strong>Diseñador</strong> (acá se programa) y <strong>Curso</strong>
+              (los 50 ejercicios), y los enlaces al resto del sitio. A la derecha, tu racha, el
+              progreso del curso, el buscador global (<kbd>Ctrl</kbd> + <kbd>K</kbd>), el modo
+              presentación, los sonidos y el tema claro u oscuro.</li>
+          <li><b>Barra de herramientas.</b> <strong>Ejecutar</strong>
+              (<kbd>Ctrl</kbd> + <kbd>Enter</kbd>) arranca el programa —y si ya había una ventana
+              abierta, la cierra y vuelve a arrancar—; <strong>Detener</strong> (<kbd>Esc</kbd>) la
+              cierra; <strong>Revisar</strong> busca errores y malas costumbres sin ejecutar nada;
+              <strong>Depurar</strong> (<kbd>F9</kbd>) lo corre paso a paso. Y tres menús:
+              <strong>Archivo</strong>, <strong>Insertar</strong> y <strong>Ver</strong> —donde
+              está <strong>Ajustar texto</strong> (<kbd>Alt</kbd> + <kbd>Z</kbd>), que corta las
+              líneas largas al ancho del panel sin perder la sangría.</li>
+          <li><b>Ventana</b> (<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>V</kbd>). El botón que abre
+              la ventana de tu programa. Se abre <strong>sola</strong> la primera vez que el
+              programa dibuja algo, y de ahí en adelante mandás vos. La pastilla dice cuántos
+              controles hay adentro, así que se sabe que la ventana tiene algo sin abrirla, y el
+              botón se enciende mientras el programa está vivo.</li>
+          <li><b>El programa.</b> El editor de siempre: colores, paréntesis emparejados,
+              autocompletado y el número de línea y columna del cursor arriba a la derecha. Ahora
+              se lleva la pantalla entera, que es donde se pasa el tiempo.</li>
+          <li><b>Controles.</b> A la izquierda, todo lo que el programa creó, en orden, con el
+              número que le tocó a cada uno y su icono; tocá uno para seleccionarlo. A la derecha,
+              su texto, su posición y su tamaño, que se pueden tocar para probar cómo queda: eso
+              vale <strong>hasta la próxima ejecución</strong>. Para que quede, cambialo en el
+              código.</li>
+          <li><b>Salida.</b> Lo que imprime el programa, los avisos, los errores y el resultado de
+              verificar un ejercicio.</li>
+        </ol>
+        <div class="doc-nota">Los paneles se pueden <strong>agrandar</strong> arrastrando la barra
+          que los separa (o con las flechas del teclado) y <strong>cambiar de lugar</strong> con el
+          botón ⇅ de su encabezado. <em>Ver → Restablecer los paneles</em> los devuelve a su sitio.</div>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>La ventana del programa</h3>
+        <p>El botón <strong>Ventana</strong> abre esto: la ventana <strong>de verdad</strong> que
+           construye tu programa, sobre el fondo a cuadros que se lee como superficie de diseño.
+           Los botones se tocan, las cajas se escriben, las listas se eligen y el programa
+           responde, igual que una aplicación de escritorio.</p>
+        <figure class="doc-figura captura ancha">
+          <a class="doc-ampliar" href="img/visual/ventana.png" target="_blank" rel="noopener" title="Ver la captura a tamaño completo">
+          <img src="img/visual/ventana.png" width="1140" height="687" loading="lazy"
+               alt="La pantalla de la ventana: una ventana llamada Saludos con su barra de título,
+                    una etiqueta que dice «Tocá el botón:» y un botón Saludar, sobre el fondo a
+                    cuadros, con el botón Cerrar abajo a la derecha."></a>
+          <figcaption>La ventana de <code>ventana ("Saludos", 380, 200)</code>: el ancho y el alto
+            son los del área gris de adentro, sin contar la barra de título.</figcaption>
+        </figure>
+        <p><strong>Cerrar esta pantalla no corta el programa.</strong> La ventana sigue abierta
+           —el estado dice <em>esperando eventos</em>, que es exactamente lo que hace
+           <code>esperar_eventos()</code>— y volvés cuando quieras con el mismo botón. Para cortar
+           el programa está <strong>Detener</strong>, o la <strong>✕</strong> de la barra de título
+           de la ventana.</p>
+        <p>La ventana <strong>no se achica</strong> aunque la pantalla sea chica: mantiene el
+           tamaño que le pediste y se puede desplazar. Es a propósito, porque las coordenadas de
+           los controles son en píxeles y si cambiara de escala el dibujo dejaría de coincidir con
+           el programa. En un teléfono es justamente por eso que conviene esta pantalla y no un
+           panel: la ventana se ve entera en vez de espiada por una rendija.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>El menú Insertar</h3>
+        <p>Dos grupos: los <strong>controles</strong>, que crean algo en la ventana, y el
+           <strong>dibujo</strong>, que son órdenes sueltas sobre un lienzo que ya exista. Al tocar
+           uno, ESLE2 busca un nombre de variable que no estés usando (<code>b</code>,
+           <code>b2</code>, <code>b3</code>…) y pega la línea completa donde tenés el cursor.</p>
+        <figure class="doc-figura captura ancha">
+          <a class="doc-ampliar" href="img/visual/insertar.png" target="_blank" rel="noopener" title="Ver la captura a tamaño completo">
+          <img src="img/visual/insertar.png" width="1350" height="930" loading="lazy"
+               alt="El menú Insertar abierto, con los siete controles —etiqueta, botón, caja,
+                    casilla, lista, deslizador y lienzo— y las diez órdenes de dibujo, cada uno con
+                    su icono dibujado."></a>
+          <figcaption>Siete controles y diez órdenes de dibujo. Cada icono se dibuja con el color
+            del texto, así que sigue al tema claro u oscuro.</figcaption>
+        </figure>
+        <div class="doc-nota">No hay un diseñador que arrastre controles y reescriba el programa
+          por atrás: <strong>el código manda</strong>. El menú pega código, nada más; después el
+          botón <em>Ventana</em> muestra lo que ese código construye.</div>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>El panel Controles</h3>
+        <figure class="doc-figura captura">
+          <a class="doc-ampliar" href="img/visual/propiedades.png" target="_blank" rel="noopener" title="Ver la captura a tamaño completo">
+          <img src="img/visual/propiedades.png" width="896" height="503" loading="lazy"
+               alt="El panel Controles: a la izquierda la lista con una etiqueta y un botón, cada
+                    uno con su icono, y a la derecha las propiedades texto, x, y, ancho y alto del
+                    botón elegido."></a>
+          <figcaption>El botón elegido, con sus propiedades editables.</figcaption>
+        </figure>
+        <p>Sirve para entender <strong>qué número le tocó a cada control</strong>, que es lo que
+           más cuesta al principio: la lista los muestra en el mismo orden en que los creó tu
+           programa, y se puede mirar sin abrir la ventana.</p>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Depurar paso a paso</h3>
+        <p><strong>Depurar</strong> (<kbd>F9</kbd>) marca la línea que se va a ejecutar y abre el
+           panel <em>Variables</em>. <strong>Paso</strong> (<kbd>F10</kbd>) ejecuta esa línea;
+           <strong>Continuar</strong> (<kbd>F8</kbd>) sigue sin pausas. Anda también
+           <em>adentro de un evento</em>: se ve la subrutina del clic línea por línea, que es
+           donde más cuesta entender qué pasó.</p>
+        <figure class="doc-figura captura ancha">
+          <a class="doc-ampliar" href="img/visual/depurador.png" target="_blank" rel="noopener" title="Ver la captura a tamaño completo">
+          <img src="img/visual/depurador.png" width="2010" height="1290" loading="lazy"
+               alt="El depurador en pausa: la línea actual marcada en el editor y el panel
+                    Variables mostrando el valor de n."></a>
+          <figcaption>En pausa, con las variables vivas a la derecha.</figcaption>
+        </figure>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>La salida cuando algo sale mal</h3>
+        <p>Los errores salen con el número de línea, qué pasó y —cuando ESLE2 puede adivinarlo—
+           cómo se arregla. El cursor se va solo a la línea del problema.</p>
+        <figure class="doc-figura captura">
+          <a class="doc-ampliar" href="img/visual/salida-error.png" target="_blank" rel="noopener" title="Ver la captura a tamaño completo">
+          <img src="img/visual/salida-error.png" width="896" height="554" loading="lazy"
+               alt="El panel Salida mostrando un error: todavía no hay ninguna ventana, con la
+                    sugerencia de llamar antes a ventana()."></a>
+          <figcaption>Crear un control antes de abrir la ventana: el error más común, con su
+            arreglo al lado.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="doc-seccion" id="s-curso" data-titulo="El curso de 50 ejercicios">
+      <h2>El curso de 50 ejercicios</h2>
+      <p class="sub">Cómo se corrige solo un programa que no imprime nada.</p>
+
+      <div class="doc-bloque">
+        <h3>Dónde está</h3>
+        <p>En la pestaña <strong>Curso</strong>, arriba. Son 50 ejercicios en tres niveles, que van
+           desde abrir una ventana vacía hasta un mini paint. Cada uno se abre en el diseñador con
+           una plantilla para arrancar.</p>
+        <figure class="doc-figura captura ancha">
+          <a class="doc-ampliar" href="img/visual/curso.png" target="_blank" rel="noopener" title="Ver la captura a tamaño completo"><img src="img/visual/curso.png" width="2010" height="1290" loading="lazy"
+               alt="La pestaña Curso: a la izquierda la lista de ejercicios con su nivel, a la
+                    derecha el enunciado de «Contador de clics», la pista, el botón Abrir en el
+                    diseñador y la tabla que explica cómo se corrige."></a>
+          <figcaption>La lista con los filtros por nivel, el enunciado, la pista y la tabla de
+            casos.</figcaption>
+        </figure>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Cómo se corrige</h3>
+        <p>El curso de ESLE2 clásico compara lo que imprime tu programa con lo que se esperaba.
+           Acá no hay texto que comparar: lo que hay es una ventana. Así que la corrección
+           <strong>abre tu programa y lo usa</strong>.</p>
+        <ol>
+          <li>Ejecuta tu programa hasta que llega a <code>esperar_eventos()</code>.</li>
+          <li>Le da los toques que daría una persona: <em>clic en el primer botón</em>,
+              <em>escribir «Ana» en la primera caja</em>, <em>poner el primer deslizador en 42</em>.</li>
+          <li>Después revisa qué quedó: qué controles hay, qué dicen, dónde están, qué se dibujó,
+              qué mensajes salieron.</li>
+        </ol>
+        <p>Esas tres cosas son las tres columnas de la tabla <strong>Cómo se corrige</strong> que
+           está en cada ejercicio: podés leer <em>antes de escribir una línea</em> exactamente qué
+           se te va a pedir.</p>
+        <div class="doc-nota">Los controles se cuentan <strong>por tipo y por orden de creación</strong>
+          («el segundo botón»), nunca por el número interno. Si tu solución crea los mismos
+          controles en otro orden de líneas, vale igual.</div>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Lo que ves al verificar</h3>
+        <p>Caso por caso, con el nombre del caso y —si falló— qué se esperaba y qué encontró.</p>
+        <figure class="doc-figura captura ancha">
+          <a class="doc-ampliar" href="img/visual/verificacion.png" target="_blank" rel="noopener" title="Ver la captura a tamaño completo"><img src="img/visual/verificacion.png" width="896" height="512" loading="lazy"
+               alt="La salida después de verificar: el caso 1 correcto y los casos 2 y 3
+                    incorrectos, cada uno explicando que la primera etiqueta dice 0 cuando se
+                    esperaba 1 y 5."></a>
+          <figcaption>Un contador al que le falta actualizar la etiqueta: el caso 1 pasa y los
+            otros dos dicen exactamente qué esperaban.</figcaption>
+        </figure>
+        <p>Cuando pasan todos, el ejercicio queda marcado, suma a la barra de progreso de arriba y
+           cuenta para tu racha de días. El avance se guarda en este navegador; con
+           <strong>Archivo → Exportar mi progreso</strong> te lo llevás a otra máquina, y ese
+           archivo trae los tres cursos juntos (clásico, POO y Visual).</p>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-mismo-que-esle2" data-titulo="Todo lo demás de ESLE2">
+      <h2>Todo lo demás de ESLE2</h2>
+      <p class="sub">Lo que ya conocés del IDE clásico también está acá.</p>
+      <div class="doc-bloque">
+        <table>
+          <tr><th>Qué</th><th>Dónde</th></tr>
+          <tr><td><strong>Buscador global</strong> en todo el sitio</td>
+              <td><strong>Buscar</strong>, arriba a la derecha, o <kbd>Ctrl</kbd> + <kbd>K</kbd>.</td></tr>
+          <tr><td><strong>Depurar paso a paso</strong></td>
+              <td>En la barra de acciones o <kbd>F9</kbd>. <strong>Paso</strong> (<kbd>F10</kbd>)
+                  ejecuta la sentencia marcada y <strong>Continuar</strong> (<kbd>F8</kbd>) sigue
+                  sin pausas. Las variables vivas aparecen a la derecha. Sirve también
+                  <em>adentro de un evento</em>: se ve la subrutina del clic línea por línea.</td></tr>
+          <tr><td><strong>Simulador de memoria</strong></td>
+              <td><em>Ver → Simulador de memoria</em>. Graba hasta que la ventana queda esperando:
+                  de ahí en adelante el programa ya no avanza solo.</td></tr>
+          <tr><td><strong>Explorador de archivos</strong></td>
+              <td><em>Ver → Explorador de archivos</em>. Viene apagado; encendido, trabajás con
+                  varios <code>.slv</code> a la vez, en carpetas.</td></tr>
+          <tr><td><strong>Entrada de datos</strong> y <strong>argumentos</strong></td>
+              <td>La pestaña de al lado de <em>Salida</em>, abajo. Un programa visual puede seguir
+                  usando <code>leer()</code>, <code>paramval()</code> y <code>pcount()</code>.</td></tr>
+          <tr><td><strong>Archivos en memoria</strong></td>
+              <td><em>Archivo → Archivos en memoria…</em>, para <code>set_stdin()</code> y
+                  <code>set_stdout()</code>.</td></tr>
+          <tr><td><strong>Cómo venís</strong> y <strong>repaso espaciado</strong></td>
+              <td>Debajo de la lista de ejercicios, en la pestaña Curso.</td></tr>
+          <tr><td><strong>Autocompletado</strong> mientras escribís</td>
+              <td>Solo, en el editor. Conoce las subrutinas visuales además de las del
+                  lenguaje.</td></tr>
+          <tr><td><strong>Revisar</strong> sin ejecutar</td>
+              <td>En la barra de acciones. No te avisa que «la subrutina nunca se llama» cuando la
+                  llama un evento: eso sería mentira en un programa visual.</td></tr>
+          <tr><td><strong>Diagrama de flujo</strong></td>
+              <td><em>Ver → Diagrama de flujo</em>. Elegí una rutina: cada evento es su propio
+                  diagrama.</td></tr>
+          <tr><td><strong>Historial de versiones</strong></td>
+              <td><em>Ver → Historial</em>. Guarda solo antes de cada ejecución y antes de
+                  cualquier cosa que pise el editor.</td></tr>
+          <tr><td><strong>Modo presentación</strong></td>
+              <td><em>Ver → Modo presentación</em> o <kbd>Ctrl</kbd> + <kbd>⇧</kbd> +
+                  <kbd>P</kbd>. Agranda la letra y saca los paneles laterales.</td></tr>
+          <tr><td><strong>Tema claro y oscuro</strong> · <strong>sonidos</strong></td>
+              <td>Los dos botones de la derecha de la barra de menú.</td></tr>
+          <tr><td><strong>Compartir el programa</strong></td>
+              <td><em>Archivo → Copiar enlace</em>: el programa entero viaja adentro del enlace, sin
+                  servidor.</td></tr>
+          <tr><td><strong>Instalar como aplicación</strong></td>
+              <td><strong>Instalar</strong>, arriba a la derecha, donde el navegador lo permita.
+                  Después anda sin internet.</td></tr>
+        </table>
+        <div class="doc-nota">Dos cosas del IDE clásico <strong>no están</strong> acá, y es a
+          propósito. <strong>Traducir a JavaScript o Python</strong>: esos lenguajes no tienen
+          <code>ventana()</code> ni <code>al_hacer_clic()</code>, así que la traducción sería una
+          mentira. Y el <strong>modo examen</strong> con <strong>mis ejercicios</strong>: se corrigen
+          comparando la salida de texto, y acá lo que hay que comparar es una ventana. El curso
+          Visual trae su propia corrección, explicada más arriba.</div>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>En el teléfono</h3>
+        <p>La misma página, apilada: primero el programa y su ventana, y debajo el cuadro de
+           herramientas, el explorador y la salida. Los botones crecen hasta poder tocarse con el
+           dedo.</p>
+        <figure class="doc-figura captura">
+          <a class="doc-ampliar" href="img/visual/telefono.png" target="_blank" rel="noopener" title="Ver la captura a tamaño completo"><img src="img/visual/telefono.png" width="760" height="1520" loading="lazy"
+               alt="ESLE2 Visual en un teléfono: la barra de menú en una sola fila, las pestañas
+                    del documento, la ventana del programa y, más abajo, el cuadro de herramientas
+                    en dos columnas."></a>
+          <figcaption>La misma pantalla en 380 píxeles de ancho.</figcaption>
+        </figure>
+        <p>La ventana que dibuja tu programa <strong>no se achica</strong>: mantiene el tamaño que
+           le pediste y se puede desplazar. Es a propósito, porque las coordenadas de los controles
+           son en píxeles y si cambiaran de escala el dibujo dejaría de coincidir con el
+           programa.</p>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-errores" data-titulo="Errores frecuentes">
+      <h2>Errores frecuentes</h2>
+      <p class="sub">Lo que más pasa las primeras veces.</p>
+      <div class="doc-bloque">
+        <table>
+          <tr><th>Qué pasa</th><th>Por qué</th></tr>
+          <tr><td>La ventana aparece y desaparece</td>
+              <td>Falta <code>esperar_eventos()</code> al final del programa principal.</td></tr>
+          <tr><td><em>todavía no hay ninguna ventana</em></td>
+              <td>Se creó un control antes de llamar a <code>ventana()</code>.</td></tr>
+          <tr><td><em>no hay ningún control con el número N</em></td>
+              <td>Se usó una variable que no guarda ningún control, o el número a mano está
+                  corrido porque se agregó un control antes.</td></tr>
+          <tr><td><em>no hay ninguna subrutina que se llame …</em></td>
+              <td>El nombre del evento está mal escrito o la subrutina no existe todavía.</td></tr>
+          <tr><td>El botón no hace nada</td>
+              <td>Falta el <code>al_hacer_clic</code>, o se conectó a otro control.</td></tr>
+          <tr><td>Los controles se pisan</td>
+              <td>Dos controles con la misma <code>y</code>: acordate de que el alto por omisión de
+                  un botón es 32 y el de una etiqueta 22.</td></tr>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script src="js/doc.js"></script>
+<script src="js/indice.js"></script>
+<script src="js/buscador.js"></script>
+<script src="js/iconos.js"></script>
+<script src="js/menus.js"></script>
+<script src="js/instalar.js"></script>
+</body>
+</html>

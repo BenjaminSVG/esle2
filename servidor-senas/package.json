@@ -1,0 +1,17 @@
+{
+  "name": "esle2-senas",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Servidor de señas para el multijugador de ESLE2. Presenta a dos computadoras y se va.",
+  "main": "servidor.js",
+  "scripts": {
+    "start": "node servidor.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}
