@@ -552,6 +552,19 @@ y una cookie corrupta.
 
 ## Modo examen
 
+Está en el IDE, en POO y en **ESLE2 Visual**. Si la evaluación de la materia incluye la unidad de
+interfaces, ahí se toma. Cada dialecto trae sus propias plantillas —*Primer parcial: ventana y
+controles*, *Parcial de eventos y datos*, *Práctica rápida*— y el examen en curso se guarda con
+**una clave distinta por dialecto**: antes había una sola, así que un alumno a mitad de examen en el
+IDE que abriera Visual se encontraba ese mismo examen, con ejercicios que Visual no tiene y sin
+forma de salir.
+
+En Visual la corrección al entregar es la misma que la del botón *Verificar* —se ejecuta el programa
+y se mira lo que dibujó en la ventana—, sin abrir nada en pantalla. `test/test-examen.js` comprueba
+que los ejercicios que nombra cada plantilla existan de verdad en su curso: un id viejo no rompe
+nada, arma un examen más corto y nadie se entera hasta que un alumno rinde cuatro ejercicios donde
+decía cinco.
+
 **Modo examen…**, en la vista Curso, sirve de los dos lados:
 
 - **El profesor** elige los ejercicios (los del curso y los suyos), pone los minutos y baja un

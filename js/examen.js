@@ -31,6 +31,14 @@
         ids: ['m3', 'm4', 'a4', 'a10', 'a16'] },
       { id: 'rapida', nombre: 'Práctica rápida', minutos: 20, ids: ['f1', 'f4', 'f9'] }
     ],
+    'ESLE2 Visual': [
+      { id: 'vis-basico', nombre: 'Primer parcial: ventana y controles', minutos: 60,
+        ids: ['v2', 'v5', 'v8', 'v12', 'v16'] },
+      { id: 'vis-eventos', nombre: 'Parcial de eventos y datos', minutos: 75,
+        ids: ['v21', 'v23', 'v27', 'v30', 'v33'] },
+      { id: 'vis-rapida', nombre: 'Práctica rápida de interfaces', minutos: 20,
+        ids: ['v2', 'v5', 'v8'] }
+    ],
     'ESLE2 POO': [
       { id: 'poo-basico', nombre: 'Primer parcial de objetos', minutos: 60,
         ids: ['p1', 'p2', 'p9', 'p12', 'p14'] },
@@ -80,7 +88,14 @@
       })).map(escapar).join(','));
     return [cabecera].concat(filas).join('\n');
   }
-  const CLAVE_ESTADO = 'esle2_examen_en_curso';
+  /* Una clave por dialecto: un examen del IDE y uno de Visual no son el mismo
+     examen, y con una sola clave el segundo que se abría pisaba al primero. */
+  const CLAVES = {
+    SLE2: 'esle2_examen_en_curso',
+    'ESLE2 POO': 'esle2poo_examen_en_curso',
+    'ESLE2 Visual': 'esle2vis_examen_en_curso'
+  };
+  const claveDe = lenguaje => CLAVES[lenguaje] || 'esle2_examen_en_curso';
 
   /* ------------------------------------------------------------------ */
   /* Funciones puras (las prueba test/test-examen.js)                    */
@@ -140,6 +155,7 @@
     let cronometro = null;
 
     /* ------------------------------ estado ----------------------------- */
+    const CLAVE_ESTADO = claveDe(cfg.lenguaje);
     const guardar = () => localStorage.setItem(CLAVE_ESTADO, JSON.stringify(estado));
     function recuperar() {
       try {

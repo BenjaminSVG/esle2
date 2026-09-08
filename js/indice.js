@@ -171,6 +171,7 @@ window.ESLE2Indice = [
   ["Los cuatro pasos","Documentación Visual · La forma de un programa visual","visual-documentacion.html#s-forma",""],
   ["Por qué hace falta esperar_eventos()","Documentación Visual · La forma de un programa visual","visual-documentacion.html#s-forma",""],
   ["El número del control","Documentación Visual · La forma de un programa visual","visual-documentacion.html#s-forma",""],
+  ["Modo examen","Documentación Visual","visual-documentacion.html#s-examen",""],
   ["Modo aula: repartir una guía","Documentación Visual","visual-documentacion.html#s-aula",""],
   ["Diseñar la ventana arrastrando","Documentación Visual","visual-documentacion.html#s-disenador",""],
   ["La ventana","Documentación Visual","visual-documentacion.html#s-ventana","Dónde viven los controles."],

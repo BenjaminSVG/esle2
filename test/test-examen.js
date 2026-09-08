@@ -75,9 +75,11 @@ comprobar('sin ejercicios no divide por cero', Examen.resumir(vacia).nota, 0);
 {
   require(path.join(__dirname, '..', 'js', 'ejercicios.js'));
   require(path.join(__dirname, '..', 'js', 'ejercicios-poo.js'));
+  require(path.join(__dirname, '..', 'js', 'ejercicios-visual.js'));
   const cursos = {
     SLE2: global.CURSO.EJERCICIOS,
-    'ESLE2 POO': global.CURSO_POO.EJERCICIOS
+    'ESLE2 POO': global.CURSO_POO.EJERCICIOS,
+    'ESLE2 Visual': global.CURSO_VISUAL.EJERCICIOS
   };
   for (const [lenguaje, lista] of Object.entries(cursos)) {
     const plantillas = Examen.plantillasDe(lenguaje);
@@ -87,6 +89,12 @@ comprobar('sin ejercicios no divide por cero', Examen.resumir(vacia).nota, 0);
       if (faltan.length) falla(`plantilla «${p.nombre}»`, 'ejercicios que no existen: ' + faltan.join(', '));
       else if (!(p.minutos > 0)) falla(`plantilla «${p.nombre}»`, 'sin duración');
       else ok++;
+    }
+  }
+  for (const lenguaje of Object.keys(cursos)) {
+    for (const t of Examen.plantillasDe(lenguaje)) {
+      comprobar('«' + t.nombre + '» no repite ejercicios',
+        new Set(t.ids).size === t.ids.length, true);
     }
   }
   comprobar('un lenguaje desconocido no tiene plantillas', Examen.plantillasDe('COBOL'), []);

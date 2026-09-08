@@ -1163,6 +1163,55 @@
     if (ev.key === 'F8' && depurador.activo) { ev.preventDefault(); $('#btnContinuar').click(); }
   });
 
+  /* ---------------------------- modo examen ---------------------------- */
+  /* Corrige un ejercicio sin escribir nada en pantalla ni abrir la ventana:
+     lo usa la corrección automática al entregar. Es la misma verificación que
+     el botón «Verificar», sin la parte que informa. */
+  async function evaluarEnSilencio(codigo, pruebas) {
+    try { SLE2VIS.compilar(codigo); }
+    catch (e) { return { pasadas: 0, total: pruebas.length, error: e.message }; }
+
+    let pasadas = 0;
+    for (const prueba of pruebas) {
+      try {
+        const r = await VerificarVisual.correr(codigo, prueba);
+        if (r.ok) pasadas++;
+      } catch (e) { /* ese caso queda como no pasado */ }
+    }
+    return { pasadas, total: pruebas.length };
+  }
+
+  const examen = window.Examen ? Examen.crear({
+    lenguaje: 'ESLE2 Visual',
+    ejercicios: () => EJERCICIOS,
+    codigoActual: () => editor.getValue(),
+    evaluar: evaluarEnSilencio,
+    abrirEjercicio(e, codigo) {
+      ejercicioActivo = e;
+      editor.setValue(codigo);
+      $('#bannerTitulo').textContent = e.titulo + ' (examen)';
+      $('#bannerEjercicio').classList.remove('oculto');
+      limpiarSalida();
+      estado('en examen');
+      irA('ide');
+      editor.refresh();
+      editor.focus();
+    },
+    alCambiarModo(activo) {
+      document.body.classList.toggle('en-examen', activo);
+      /* Durante el examen no se ofrecen ni el curso ni las soluciones. */
+      document.querySelectorAll('.pest[data-vista="curso"]')
+        .forEach(x => x.classList.toggle('oculto', activo));
+      if (!activo) { salirDeEjercicio(); irA('curso'); }
+    }
+  }) : null;
+
+  if (examen && $('#btnExamen')) {
+    $('#btnExamen').addEventListener('click', () => examen.abrir());
+    /* Lo escrito se anota al cambiar de ejercicio y también al cerrar. */
+    window.addEventListener('beforeunload', () => examen.anotarActual());
+  }
+
   /* ------------------------------ modo aula ---------------------------- */
   /* Una guía repartida por enlace, igual que en el IDE. Del lado del profesor
      es el diálogo que arma el enlace; del lado del alumno, la lista del curso
@@ -1187,6 +1236,7 @@
     /* Dentro de una guía los filtros por nivel no vienen al caso: la lista no
        es el curso, son los ejercicios que mandó el profesor. */
     $('#filtros').classList.toggle('oculto', !!guiaAula);
+    if ($('#btnExamen')) $('#btnExamen').classList.toggle('oculto', !!guiaAula);
   }
 
   function salirDelAula() {
