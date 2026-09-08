@@ -813,6 +813,11 @@ nada.
 
 ## Modo aula: una guía repartida por enlace
 
+**También en ESLE2 Visual.** La unidad de interfaces es justo donde un profesor más necesita
+repartir una consigna paso a paso, y era la única parte del curso donde no se podía. El diálogo, el
+enlace y el cartel son los mismos: `js/aula.js` nunca supo de qué dialecto son los ejercicios que
+le pasan.
+
 **Modo aula…**, en la vista Curso, arma una **guía**: se marcan los ejercicios que entran —del
 curso, o propios con sus casos de prueba—, se le pone un título y un mensaje para la clase, y sale
 un enlace. Quien lo abre ve esa guía y nada más: la lista son esos ejercicios, arriba está el

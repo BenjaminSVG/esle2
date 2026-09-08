@@ -14,7 +14,25 @@
 
   const $ = s => document.querySelector(s);
   const CTRL = SLE2VIS.CONTROLES;
-  const EJERCICIOS = (window.CURSO_VISUAL || { EJERCICIOS: [] }).EJERCICIOS;
+  const CATALOGO = (window.CURSO_VISUAL || { EJERCICIOS: [] }).EJERCICIOS;
+
+  /* La lista del curso, salvo que se haya entrado por el enlace de una guía:
+     ahí la lista es esa guía y nada más, que es de lo que se trata el modo
+     aula. Es la misma mecánica que en el IDE (js/app.js). */
+  let EJERCICIOS = CATALOGO;
+  let guiaAula = null;          // la guía abierta por enlace, o null
+  let faltanDeLaGuia = [];      // los que ya no están en el curso
+
+  function recargarEjercicios() {
+    if (guiaAula && window.Aula) {
+      const r = window.Aula.resolver(guiaAula, CATALOGO);
+      EJERCICIOS = r.ejercicios;
+      faltanDeLaGuia = r.faltan;
+      return;
+    }
+    EJERCICIOS = CATALOGO;
+    faltanDeLaGuia = [];
+  }
 
   /* =================================================================== */
   /* Progreso en cookies                                                 */
@@ -1144,6 +1162,59 @@
     if (ev.key === 'F10' && depurador.enPausa) { ev.preventDefault(); depurador.paso(); }
     if (ev.key === 'F8' && depurador.activo) { ev.preventDefault(); $('#btnContinuar').click(); }
   });
+
+  /* ------------------------------ modo aula ---------------------------- */
+  /* Una guía repartida por enlace, igual que en el IDE. Del lado del profesor
+     es el diálogo que arma el enlace; del lado del alumno, la lista del curso
+     pasa a ser esa guía hasta que decida salir.
+
+     En Visual esto pesa más que en el IDE: la unidad de interfaces es donde el
+     profesor más necesita repartir una consigna paso a paso, y hasta ahora era
+     la única parte del curso donde no se podía. */
+  const aulaUI = window.AulaUI ? AulaUI.crear({
+    lenguaje: 'ESLE2 Visual',
+    catalogo: () => CATALOGO,
+    propios: () => []        // «Mis ejercicios» todavía no está en Visual
+  }) : null;
+
+  if (aulaUI && $('#btnAula')) {
+    $('#btnAula').addEventListener('click', () => aulaUI.abrir());
+  }
+
+  function pintarAula() {
+    if (!aulaUI) return;
+    aulaUI.banner(guiaAula, faltanDeLaGuia, $('.lista-ejercicios'), salirDelAula);
+    /* Dentro de una guía los filtros por nivel no vienen al caso: la lista no
+       es el curso, son los ejercicios que mandó el profesor. */
+    $('#filtros').classList.toggle('oculto', !!guiaAula);
+  }
+
+  function salirDelAula() {
+    guiaAula = null;
+    faltanDeLaGuia = [];
+    seleccionado = null;
+    history.replaceState(null, '', location.pathname);
+    recargarEjercicios();
+    pintarAula();
+    pintarLista();
+    pintarEstadisticas();
+    pintarRepaso();
+    estado('saliste de la guía');
+  }
+
+  /* El enlace de una guía manda sobre todo lo demás: se lee al arrancar y
+     abre el curso ya puesto en esa guía. */
+  (async function entrarSiHayGuia() {
+    if (!window.Aula) return;
+    const g = await Aula.leerUrl();
+    if (!g) return;
+    guiaAula = g;
+    recargarEjercicios();
+    pintarAula();
+    pintarLista();
+    irA('curso');
+    estado('guía: ' + g.n, 'ok');
+  })();
 
   estado('listo');
 })();

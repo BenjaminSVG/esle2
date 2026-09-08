@@ -34,24 +34,36 @@ const correr = (script, args = []) =>
 paso('índice del buscador', () => correr('generar-indice.js'));
 paso('caché sin agujeros', () => correr('revisar-cache.js'));
 
-/* VERSION nueva. sw.js tiene que quedar tocado después que todo lo que guarda:
-   si alguien cambió un archivo y no subió VERSION, el service worker sigue
-   sirviendo la copia vieja y el cambio no llega a nadie.
-   ponytail: se mira la fecha del archivo, no el sitio publicado. Con git
-   bastaría comparar contra la última publicación; esto anda desde hoy. */
+/* VERSION nueva. Si alguien cambia un archivo y no sube VERSION, el service
+   worker sigue sirviendo la copia vieja y el cambio no llega a nadie.
+   Se compara contra la última publicación —tools/publicado.json, escrito al
+   final de este mismo script— y no contra la fecha de sw.js: el índice del
+   buscador se regenera unos renglones más arriba, así que sw.js casi nunca es
+   el archivo más nuevo aunque VERSION esté perfecta. */
+const REGISTRO = path.join(__dirname, 'publicado.json');
+
+function versionActual() {
+  return (fs.readFileSync(SW, 'utf8').match(/const VERSION = '([^']+)'/) || [])[1];
+}
+
 paso('VERSION al día', () => {
-  const texto = fs.readFileSync(SW, 'utf8');
-  const version = (texto.match(/const VERSION = '([^']+)'/) || [])[1];
-  const cuando = fs.statSync(SW).mtimeMs;
-  const nuevos = (texto.match(/const ARCHIVOS = \[([\s\S]*?)\n\];/)[1].match(/'[^']+'/g) || [])
+  const version = versionActual();
+  if (!fs.existsSync(REGISTRO)) return version + ' (primera publicación con esto)';
+
+  const ultima = JSON.parse(fs.readFileSync(REGISTRO, 'utf8'));
+  if (version !== ultima.version) return version + ' (era ' + ultima.version + ')';
+
+  const cambiados = (fs.readFileSync(SW, 'utf8')
+    .match(/const ARCHIVOS = \[([\s\S]*?)\n\];/)[1].match(/'[^']+'/g) || [])
     .map(s => s.slice(1, -1))
     .filter(u => u !== './' && fs.existsSync(path.join(RAIZ, u)))
-    .filter(u => fs.statSync(path.join(RAIZ, u)).mtimeMs > cuando);
-  if (nuevos.length) {
-    throw new Error('cambiaron después de la última VERSION (' + version + '):\n  '
-      + nuevos.join('\n  ') + '\nsubí VERSION en sw.js');
+    .filter(u => fs.statSync(path.join(RAIZ, u)).mtimeMs > ultima.cuando);
+
+  if (cambiados.length) {
+    throw new Error('cambiaron desde que se publicó ' + version + ':\n  '
+      + cambiados.join('\n  ') + '\nsubí VERSION en sw.js');
   }
-  return version;
+  return version + ' (nada cambió desde la última publicación)';
 });
 
 paso('las pruebas', () => correr('probar.js'));
@@ -69,4 +81,9 @@ if (!publicar) {
 
 console.log('\npublicando…');
 const r = spawnSync('vercel', ['--prod', '--yes'], { cwd: RAIZ, stdio: 'inherit', shell: true });
+if (!r.status) {
+  fs.writeFileSync(REGISTRO, JSON.stringify(
+    { version: versionActual(), cuando: Date.now(), fecha: new Date().toISOString() }, null, 2) + '\n');
+  console.log('\npublicado ' + versionActual());
+}
 process.exit(r.status || 0);
