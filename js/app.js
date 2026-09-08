@@ -1183,10 +1183,49 @@ fin
   /* Una guía repartida por enlace. Del lado del profesor es el diálogo que
      arma ese enlace; del lado del alumno, la lista del curso pasa a ser la
      guía hasta que decida salir de ella. */
+  /* Entregar la guía: junta lo que el alumno escribió en cada ejercicio, lo
+     corrige acá mismo con los casos de cada uno, y baja el archivo para el
+     profesor. Mismo formato que una entrega de examen, así se abren las dos en
+     el mismo visor y sale la misma planilla. */
+  async function entregarLaGuia(alumno) {
+    if (!guiaAula) throw new Error('no hay ninguna guía abierta');
+    const abierto = ejercicioActivo;
+    if (abierto) localStorage.setItem('esle2_ej_' + abierto.id, editor.getValue());
+
+    const hechos = [];
+    for (const e of EJERCICIOS) {
+      const codigo = localStorage.getItem('esle2_ej_' + e.id) || '';
+      let r = { pasadas: 0, total: (e.pruebas || []).length };
+      /* Sin nada escrito no se corre nada: correr la plantilla vacía tarda y
+         da lo mismo que no haberla corrido. */
+      if (codigo.trim()) {
+        try { r = await evaluarEnSilencio(codigo, e.pruebas || []); }
+        catch (err) { r = { pasadas: 0, total: (e.pruebas || []).length, error: String(err.message || err) }; }
+      }
+      hechos.push(Object.assign({ id: e.id, titulo: e.titulo, nivel: e.nivel, codigo }, r));
+    }
+
+    const entrega = Aula.armarEntrega({ guia: guiaAula, alumno, ejercicios: hechos });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(entrega, null, 2)],
+      { type: 'application/json' }));
+    a.download = Aula.nombreDeEntrega(guiaAula, alumno);
+    a.click();
+    URL.revokeObjectURL(a.href);
+
+    const resueltos = hechos.filter(x => x.total > 0 && x.pasadas === x.total).length;
+    estado('guía entregada: ' + resueltos + ' de ' + hechos.length + ' resueltos', 'ok');
+    alert('Guía entregada.\n\n' + resueltos + ' de ' + hechos.length +
+      ' ejercicios resueltos.\n\nSe bajó el archivo: mandáselo a tu profesor.');
+    return entrega;
+  }
+
   const aulaUI = AulaUI.crear({
     lenguaje: 'SLE2',
     catalogo: () => window.CURSO.EJERCICIOS,
-    propios: () => (window.MisEjercicios ? misEjercicios.cargar() : [])
+    propios: () => (window.MisEjercicios ? misEjercicios.cargar() : []),
+    entregar: alumno => entregarLaGuia(alumno),
+    verEntregas: () => examen.verEntregas()
   });
   $('#btnAula').addEventListener('click', () => aulaUI.abrir());
 

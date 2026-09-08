@@ -31,6 +31,8 @@
  *   Aula.resolver(guia, catalogo)   -> { ejercicios, faltan }
  *   Aula.problemas(guia)            -> [mensaje, …]
  *   Aula.desdeEjercicios(nombre, mensaje, lenguaje, elegidos, propios)
+ *   Aula.armarEntrega({guia, alumno, ejercicios}) -> entrega (formato esle2-entrega)
+ *   Aula.nombreDeEntrega(guia, alumno)  -> nombre de archivo
  */
 (function (global) {
   'use strict';
@@ -183,8 +185,59 @@
     return malos;
   }
 
+  /* ------------------------------------------------------------------ */
+  /* Entregar la guía                                                    */
+  /* ------------------------------------------------------------------ */
+
+  /* Una guía se repartía y no volvía nada: el profesor veía el trabajo de a
+     uno, mirando por encima del hombro. Esto arma el camino de vuelta.
+
+     A propósito usa el MISMO formato que una entrega de examen
+     («esle2-entrega»), así el profesor las abre en el mismo lugar y saca la
+     misma planilla. Un segundo formato sería un segundo visor que mantener.
+
+     No hay cronómetro: una guía es tarea para casa, no un parcial. Por eso
+     los minutos van en cero y la planilla los muestra como lo que son. */
+  function armarEntrega({ guia, alumno, ejercicios, entregado }) {
+    const nombre = String(alumno || '').trim();
+    if (!nombre) throw new Error('la entrega necesita tu nombre');
+    if (!guia || !guia.n) throw new Error('no hay ninguna guía abierta');
+    if (!Array.isArray(ejercicios) || !ejercicios.length) {
+      throw new Error('la entrega no tiene ningún ejercicio');
+    }
+    return {
+      formato: 'esle2-entrega', version: 1,
+      titulo: guia.n,
+      alumno: nombre,
+      lenguaje: guia.l || 'SLE2',
+      origen: 'aula',                 // para distinguirla de un examen rendido
+      entregado: entregado || new Date().toISOString(),
+      motivo: 'el alumno entregó la guía',
+      ejercicios: ejercicios.map(e => ({
+        id: e.id,
+        titulo: e.titulo || e.id,
+        nivel: e.nivel || 'facil',
+        codigo: String(e.codigo || ''),
+        pasadas: Number(e.pasadas) || 0,
+        total: Number(e.total) || 0,
+        minutos: 0,
+        error: e.error || null
+      }))
+    };
+  }
+
+  /* Nombre de archivo estable: dos alumnos distintos no lo pisan, y el mismo
+     alumno que entrega dos veces sí, que es lo que se quiere. */
+  function nombreDeEntrega(guia, alumno) {
+    const limpio = t => String(t || '')
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
+    return 'guia-' + (limpio(guia && guia.n) || 'sin-titulo')
+      + '-' + (limpio(alumno) || 'alumno') + '.json';
+  }
+
   global.Aula = {
-    codificar, decodificar, enlace, leerUrl, resolver, problemas,
+    codificar, decodificar, enlace, leerUrl, resolver, problemas, armarEntrega, nombreDeEntrega,
     desdeEjercicios, huella, VERSION
   };
 })(typeof window !== 'undefined' ? window : globalThis);

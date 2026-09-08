@@ -856,6 +856,25 @@ nunca los mismos.
 
 Está en **SLE2** y en **ESLE2 POO**.
 
+### El camino de vuelta
+
+Una guía se repartía y no volvía nada: el profesor veía el trabajo de a uno, mirando por encima del
+hombro. Ahora el cartel de la guía tiene **Entregar la guía**: el alumno pone su nombre, el navegador
+corrige ahí mismo cada ejercicio con sus casos, y baja un archivo.
+
+Ese archivo es **el mismo formato que una entrega de examen** (`esle2-entrega`), a propósito. Así el
+profesor abre las 30 entregas en el mismo visor —*Ver entregas…*, en el diálogo de modo aula— y saca
+la misma planilla del curso: una fila por alumno, una columna por ejercicio, promedio, y un `.csv`
+para abrirlo con una planilla de cálculo. Un segundo formato habría sido un segundo visor que
+mantener.
+
+Corregir 30 entregas a mano es una tarde. Esto es un minuto, y sigue sin haber servidor: el enlace va
+por WhatsApp y las entregas vuelven por WhatsApp.
+
+Diferencia con un examen: una guía es tarea para casa, así que **no hay cronómetro**. Los minutos van
+en cero y la planilla los muestra como lo que son, en vez de inventar un tiempo que nadie midió. Y lo
+que el alumno no tocó viaja vacío y en cero: correr una plantilla en blanco tarda y da lo mismo.
+
 ## Mis ejercicios: dar clase con ESLE2
 
 **Mis ejercicios…**, en la vista Curso, abre un editor de consignas propias: título, nivel,

@@ -153,6 +153,88 @@ const PROPIO = {
       Aula.problemas(sinConsigna).some(p => /consigna/.test(p)));
   }
 
+  seccion('Entregar la guía');
+  /* Una entrega de guía tiene que ser indistinguible de una de examen para el
+     visor del profesor: si no, la planilla del curso no la toma y el camino de
+     vuelta no sirve para nada. Por eso se prueba contra el propio examen.js. */
+  {
+    global.document = global.document || { addEventListener() {} };
+    require(path.join(RAIZ, 'js', 'examen.js'));
+    const { Examen } = global;
+
+    const guia = Aula.desdeEjercicios('Práctica 3', 'Para el viernes', 'SLE2',
+      [CATALOGO[0], CATALOGO[2]], CATALOGO);
+
+    const hechos = [
+      { id: 'f1', titulo: 'Hola, mundo', nivel: 'facil', codigo: 'inicio\nfin', pasadas: 1, total: 1 },
+      { id: 'm1', titulo: 'Factorial', nivel: 'medio', codigo: '', pasadas: 0, total: 2 }
+    ];
+    const entrega = Aula.armarEntrega({ guia, alumno: '  Ana  ', ejercicios: hechos,
+      entregado: '2026-09-07T10:00:00Z' });
+
+    comprobar('el visor de examen la reconoce como entrega', Examen.esEntrega(entrega));
+    comprobar('lleva el título de la guía', entrega.titulo === 'Práctica 3', entrega.titulo);
+    comprobar('el nombre va sin espacios de más', entrega.alumno === 'Ana', entrega.alumno);
+    comprobar('se sabe que viene de una guía', entrega.origen === 'aula', entrega.origen);
+    comprobar('lleva el lenguaje de la guía', entrega.lenguaje === 'SLE2', entrega.lenguaje);
+    comprobar('y la fecha que se le pasó', entrega.entregado === '2026-09-07T10:00:00Z');
+
+    const r = Examen.resumir(entrega);
+    comprobar('resumen: uno resuelto de dos', r.resueltos === 1 && r.total === 2,
+      r.resueltos + '/' + r.total);
+    comprobar('resumen: la nota', r.nota === 50, r.nota);
+    comprobar('resumen: los casos', r.casos === 1 && r.casosTotales === 3,
+      r.casos + '/' + r.casosTotales);
+
+    /* La planilla del curso, que es para lo que existe todo esto. */
+    const otra = Aula.armarEntrega({ guia, alumno: 'Beto', ejercicios: [
+      { id: 'f1', titulo: 'Hola, mundo', nivel: 'facil', codigo: 'x', pasadas: 1, total: 1 },
+      { id: 'm1', titulo: 'Factorial', nivel: 'medio', codigo: 'y', pasadas: 2, total: 2 }
+    ] });
+    const planilla = Examen.planilla([entrega, otra]);
+    comprobar('la planilla toma las dos', planilla.filas.length === 2);
+    comprobar('ordenadas por nota',
+      planilla.filas.map(f => f.alumno).join() === 'Beto,Ana', planilla.filas.map(f => f.alumno));
+    comprobar('una columna por ejercicio',
+      planilla.columnas.map(c => c.id).join() === 'f1,m1', planilla.columnas.map(c => c.id));
+    comprobar('y sale el CSV', Examen.planillaCSV(planilla).split('\n').length === 3);
+
+    /* Una guía es tarea para casa, no un parcial: no hay cronómetro. Que la
+       planilla no invente tiempos que nadie midió. */
+    comprobar('sin minutos inventados', planilla.filas.every(f => f.minutos === 0));
+
+    /* Lo que falta, dicho antes de bajar un archivo inservible. */
+    const debeFallar = (que, fn, fragmento) => {
+      try { fn(); comprobar(que, false, 'no protestó'); }
+      catch (e) { comprobar(que, e.message.includes(fragmento), e.message); }
+    };
+    debeFallar('sin nombre no se entrega',
+      () => Aula.armarEntrega({ guia, alumno: '   ', ejercicios: hechos }), 'nombre');
+    debeFallar('sin guía abierta tampoco',
+      () => Aula.armarEntrega({ guia: null, alumno: 'Ana', ejercicios: hechos }), 'guía');
+    debeFallar('ni sin ejercicios',
+      () => Aula.armarEntrega({ guia, alumno: 'Ana', ejercicios: [] }), 'ningún ejercicio');
+
+    /* Campos rotos: la entrega se arma igual, con ceros, en vez de meter un NaN
+       adentro de la planilla del profesor. */
+    const rara = Aula.armarEntrega({ guia, alumno: 'Ana',
+      ejercicios: [{ id: 'f1', pasadas: 'x', total: undefined }] });
+    comprobar('los números rotos quedan en cero',
+      rara.ejercicios[0].pasadas === 0 && rara.ejercicios[0].total === 0);
+    comprobar('sin título se usa el id', rara.ejercicios[0].titulo === 'f1');
+    comprobar('y el código siempre es texto', rara.ejercicios[0].codigo === '');
+
+    /* El nombre del archivo: dos alumnos no se pisan. */
+    comprobar('nombre de archivo sin acentos ni espacios',
+      Aula.nombreDeEntrega(guia, 'Ana María Gómez') === 'guia-practica-3-ana-maria-gomez.json',
+      Aula.nombreDeEntrega(guia, 'Ana María Gómez'));
+    comprobar('sin datos igual sale un nombre',
+      Aula.nombreDeEntrega({ n: '' }, '') === 'guia-sin-titulo-alumno.json',
+      Aula.nombreDeEntrega({ n: '' }, ''));
+    comprobar('dos alumnos, dos archivos',
+      Aula.nombreDeEntrega(guia, 'Ana') !== Aula.nombreDeEntrega(guia, 'Beto'));
+  }
+
   console.log(`\n${ok} verificaciones correctas, ${fallos} fallos.`);
   assert.strictEqual(fallos, 0, 'el modo aula tiene fallos');
 })();

@@ -15,7 +15,7 @@
  * Toda la lógica —armar la guía, meterla en el enlace, sacarla— está en
  * js/aula.js. Acá solo hay DOM.
  *
- * API:  AulaUI.crear({ lenguaje, catalogo, propios, enAula, alSalir })
+ * API:  AulaUI.crear({ lenguaje, catalogo, propios, entregar, verEntregas })
  *         -> { abrir(), banner(guia, faltan, destino) }
  */
 (function (global) {
@@ -55,6 +55,7 @@
         <div class="dlg-fila">
           <strong data-campo="cuenta">Ningún ejercicio elegido</strong>
           <span class="crece"></span>
+          <button class="btn" data-accion="entregas">Ver entregas…</button>
           <button class="btn" data-accion="ninguno">Desmarcar todos</button>
         </div>
         <ul class="aula-lista" data-campo="lista"></ul>
@@ -83,6 +84,7 @@
         else if (a === 'ninguno') { marcados.clear(); pintar(); }
         else if (a === 'copiar') copiar();
         else if (a === 'probar') probar();
+        else if (a === 'entregas' && cfg.verEntregas) { dlg.close(); cfg.verEntregas(); }
       });
 
       dlg.addEventListener('change', ev => {
@@ -91,6 +93,10 @@
         if (c.checked) marcados.add(c.dataset.id); else marcados.delete(c.dataset.id);
         refrescar();
       });
+
+      /* Sin visor de entregas no se ofrece el botón: un botón que no hace
+         nada es peor que no tenerlo. */
+      if (!cfg.verEntregas) dlg.querySelector('[data-accion="entregas"]').remove();
 
       $$('nombre').addEventListener('input', refrescar);
       $$('mensaje').addEventListener('input', refrescar);
@@ -220,6 +226,31 @@
           ? 'Un ejercicio de la guía ya no está en el curso y no se puede mostrar.'
           : faltan.length + ' ejercicios de la guía ya no están en el curso y no se pueden mostrar.';
         caja.appendChild(p);
+      }
+
+      /* Entregar: junta lo que el alumno escribió en cada ejercicio de la
+         guía, lo corrige acá mismo y baja un archivo para el profesor. Es el
+         camino de vuelta que a la guía le faltaba. */
+      if (cfg.entregar) {
+        const ent = document.createElement('button');
+        ent.type = 'button';
+        ent.className = 'btn chico primario';
+        ent.textContent = 'Entregar la guía';
+        ent.title = 'Corregir lo que hiciste y bajar el archivo para tu profesor';
+        ent.addEventListener('click', async () => {
+          const nombre = prompt('¿Cómo te llamás? Va en la entrega, para que tu profesor sepa de quién es.',
+            localStorage.getItem('esle2_alumno') || '');
+          if (nombre === null) return;
+          if (!nombre.trim()) { alert('Sin tu nombre la entrega no sirve: el profesor no sabría de quién es.'); return; }
+          localStorage.setItem('esle2_alumno', nombre.trim());
+          ent.disabled = true;
+          const antes = ent.textContent;
+          ent.textContent = 'corrigiendo…';
+          try { await cfg.entregar(nombre.trim()); }
+          catch (e) { alert('No se pudo entregar: ' + (e.message || e)); }
+          finally { ent.disabled = false; ent.textContent = antes; }
+        });
+        caja.appendChild(ent);
       }
 
       const b = document.createElement('button');

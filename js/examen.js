@@ -482,6 +482,14 @@
 
     return {
       abrir() { if (!dlg) construir(); dlg.showModal(); },
+      /* El visor de entregas, directo. Lo usa el modo aula: una guía entregada
+         es una entrega igual que la de un examen, y merece la misma planilla. */
+      verEntregas() {
+        if (!dlg) construir();
+        dlg.showModal();
+        dlg._modo = 'ver';
+        dlg.querySelector('[data-campo="archivo"]').click();
+      },
       get enExamen() { return !!estado; },
       anotarActual,
       empezar,
