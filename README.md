@@ -1329,6 +1329,26 @@ Tres niveles, siempre con una recomendación concreta:
 Cada diagnóstico muestra el tipo, la línea, el código señalado (marcado también en el editor)
 y cómo resolverlo.
 
+## Publicar una versión
+
+```
+npm test          las 43 suites, con un resumen por línea
+npm run revisar   lo mismo, más las cuatro cosas que hay que revisar antes de publicar
+npm run soltar    revisa y, si todo está bien, publica
+```
+
+Antes esos cuatro pasos se hacían de memoria: regenerar `js/indice.js`, revisar que la caché no
+tenga agujeros, subir `VERSION` en `sw.js` y correr las pruebas de a una.
+
+El que más importa es el de la caché, porque es el único que **no se nota**. Si un archivo nuevo no
+entra en la lista `ARCHIVOS` del service worker, el sitio anda perfecto mientras haya internet y
+falla recién en la máquina de alguien que lo abrió sin conexión — que es justo cuando nadie puede
+avisar. La primera vez que corrió, `tools/revisar-cache.js` encontró seis: los diagramas de la
+documentación de POO, que hacía rato no se veían sin internet.
+
+Lo mismo con `VERSION`: si alguien cambia un archivo y no la sube, el service worker sigue sirviendo
+la copia vieja y el cambio no llega a nadie. `npm run revisar` compara las fechas y no deja publicar.
+
 ## Archivos
 
 | Archivo | Qué hace |
@@ -1371,6 +1391,7 @@ y cómo resolverlo.
 | `visual-documentacion.html` · `img/visual/` | La referencia de ESLE2 Visual y las capturas de la interfaz que la ilustran. |
 | `js/proyecto.js` · `js/proyecto-ui.js` | Explorador de archivos: el proyecto y su barra lateral. |
 | `js/disenador.js` · `js/disenador-ui.js` | Diseñar la ventana arrastrando, reescribiendo los números del programa. |
+| `tools/soltar.js` · `tools/probar.js` · `tools/revisar-cache.js` | Publicar: pruebas, índice, caché y `VERSION` en un comando. |
 | `js/iconos.js` · `js/menus.js` | Iconos de la interfaz y los menús de la barra de herramientas. |
 | `js/flexible.js` · `js/flexible-ui.js` | Modo flexible: compilar con errores y verlos todos juntos. |
 | `js/escritorio.js` · `js/escritorio-ui.js` | Prueba de escritorio: el programa seguido en una tabla. |
@@ -1423,6 +1444,7 @@ y cómo resolverlo.
 | `test/test-vivo.js` | El nombre que entra en la dirección y la sala que sale de él (34). |
 | `test/test-senas.js` | Que el servidor de señas **reenvíe**, no que conecte. Las dos versiones (22). |
 | `test/test-disenador.js` | Que arrastrar cambie dos números y NADA más, y que siga compilando (71). |
+| `test/test-cache.js` | Que todo lo que piden las páginas se guarde para usar sin internet (18). |
 | `test/test-vscode.js` | Que la extensión use el mismo compilador, byte por byte (61). |
 | `test/test-estadisticas.js` | Las cuentas del panel «Cómo venís» (9). |
 | `test/test-visual.js` | Ventanas, controles, eventos y dibujo de ESLE2 Visual (46). |
