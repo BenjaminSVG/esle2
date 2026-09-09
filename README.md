@@ -1341,6 +1341,37 @@ El avance de los cursos vive en cookies de un navegador. Los botones **Exportar 
 `esle2-progreso.json` y lo vuelven a cargar en otra máquina. El archivo lleva **los dos cursos**,
 se exporte desde donde se exporte, e importar **suma**: nunca borra lo que ya estaba resuelto.
 
+## Qué corrió y qué no
+
+«No funciona y no sé por qué» casi siempre es lo mismo: el `si` nunca entró, el `mientras` no dio ni
+una vuelta, la subrutina no se llamó nunca. El alumno mira una línea que está perfectamente escrita y
+no se le ocurre que el programa jamás pasó por ahí, porque nada en la pantalla se lo dice.
+
+Después de cada ejecución, las líneas por las que el programa no pasó quedan **marcadas al costado** y
+la consola lo dice en una frase: *«Nunca se ejecutaron 3 líneas: 8, 12, 15.»*
+
+Tres decisiones que hacen que sirva:
+
+* **va en todas las ejecuciones**, no en un modo aparte que haya que acordarse de prender. Contar es
+  una suma por sentencia con el mismo gancho que usa el depurador: no se nota al lado de lo que cuesta
+  ejecutar la sentencia;
+* **cuando corre todo, no dice nada.** Felicitar por lo normal es ruido, y quien recibe un cartel
+  después de cada ejecución deja de leerlos;
+* **las líneas que “podrían” correr no se adivinan mirando el texto**, se sacan del árbol que armó el
+  compilador. Un comentario, una línea en blanco, un `var`, un `inicio` o una llave nunca se cuentan
+  como línea muerta. Si se contaran, cualquier programa parecería tener media docena y el aviso
+  dejaría de significar algo.
+
+Y una que la prueba encontró: **la línea de un ciclo no se marca nunca**. El intérprete llama al
+gancho en esa línea *una vez por vuelta*, así que un `mientras` cuya condición da falsa la primera vez
+no aparece en las cuentas — pero su condición **sí** se evaluó, y marcarlo mandaría al alumno a buscar
+un problema que no existe. Lo que se marca es el **cuerpo** del ciclo, que es la información que
+sirve: *acá adentro no entró nunca*.
+
+Está en el IDE y en POO. En ESLE2 Visual no: ahí el programa termina en `esperar_eventos()` y las
+líneas corren después, cuando alguien toca un botón, así que todo lo que atiende un clic figuraría
+como muerto.
+
 ## Depurador paso a paso
 
 El botón **Depurar** (`F9`) corre el programa deteniéndolo antes de cada sentencia. En cada parada:
@@ -1519,6 +1550,7 @@ la copia vieja y el cambio no llega a nadie. `npm run revisar` compara las fecha
 | `tools/soltar.js` · `tools/probar.js` · `tools/revisar-cache.js` | Publicar: pruebas, índice, caché y `VERSION` en un comando. |
 | `js/perfil.js` · `js/perfil-ui.js` | Un cajón por alumno en las máquinas compartidas. |
 | `js/bienvenida.js` | Los cuatro carteles de la primera visita. |
+| `js/cobertura.js` | Qué líneas corrieron y cuáles no, con el gancho del depurador. |
 | `js/iconos.js` · `js/menus.js` | Iconos de la interfaz y los menús de la barra de herramientas. |
 | `js/flexible.js` · `js/flexible-ui.js` | Modo flexible: compilar con errores y verlos todos juntos. |
 | `js/escritorio.js` · `js/escritorio-ui.js` | Prueba de escritorio: el programa seguido en una tabla. |
@@ -1574,6 +1606,7 @@ la copia vieja y el cambio no llega a nadie. `npm run revisar` compara las fecha
 | `test/test-cache.js` | Que todo lo que piden las páginas se guarde para usar sin internet (18). |
 | `test/test-perfil.js` | Que el trabajo de un alumno no aparezca en la sesión del otro (45). |
 | `test/test-bienvenida.js` | Sobre todo, a quién NO tiene que aparecerle el recorrido (19). |
+| `test/test-cobertura.js` | Que no mienta en ninguna de las dos direcciones (31). |
 | `test/test-vscode.js` | Que la extensión use el mismo compilador, byte por byte (61). |
 | `test/test-estadisticas.js` | Las cuentas del panel «Cómo venís» (9). |
 | `test/test-visual.js` | Ventanas, controles, eventos y dibujo de ESLE2 Visual (46). |

@@ -1544,3 +1544,11 @@ body.enfoque.enfoque-salida .columna { display: grid; }
   .bienvenida { animation: bienvenida-entra .18s ease-out; }
   @keyframes bienvenida-entra { from { opacity: 0; transform: translateY(4px); } }
 }
+
+/* ------------------------- lo que no se ejecutó ------------------------- */
+/* Una barra al costado, del color de los avisos, y el texto un poco apagado.
+   NO se pinta el fondo: el verde de los números —#098658, el de VS Code
+   Light+— tiene 4,60 de contraste contra el blanco y cualquier tinte lo baja
+   de 4,5. Es la misma razón por la que la línea del depurador se marca así. */
+.linea-muerta { box-shadow: inset 3px 0 0 var(--aviso, #b58900); }
+.linea-muerta .CodeMirror-linenumber { font-weight: 700; }

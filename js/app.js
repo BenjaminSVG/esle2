@@ -153,6 +153,23 @@ fin
     editor.removeLineClass(marcaLinea, 'background', 'linea-error');
     marcaLinea = null;
   }
+  /* Las líneas que el programa no pisó. Se marcan al costado y no pintando
+     el fondo: encima del código, cualquier tinte le baja el contraste a los
+     números y a las palabras clave. */
+  let sinCorrer = [];
+  function limpiarSinCorrer() {
+    for (const l of sinCorrer) editor.removeLineClass(l, 'wrap', 'linea-muerta');
+    sinCorrer = [];
+  }
+  function marcarSinCorrer(lineas) {
+    limpiarSinCorrer();
+    for (const l of lineas) {
+      if (l >= 1 && l <= editor.lineCount()) {
+        sinCorrer.push(editor.addLineClass(l - 1, 'wrap', 'linea-muerta'));
+      }
+    }
+  }
+
   function marcarLinea(l) {
     limpiarMarca();
     if (l >= 1 && l <= editor.lineCount()) marcaLinea = editor.addLineClass(l - 1, 'background', 'linea-error');
@@ -456,6 +473,7 @@ fin
   function revisarCodigo() {
     limpiarConsola();
     limpiarMarca();
+    limpiarSinCorrer();
     let ast;
     try {
       ast = compilar();
@@ -489,6 +507,20 @@ fin
      avisa antes de cada sentencia y el objeto io queda envuelto para anotar
      lo que se le pide a la pantalla. Un segundo camino de ejecución sería un
      segundo lugar donde los errores se comportan distinto. */
+  /* «No funciona y no sé por qué» casi siempre es que el «si» nunca entró o
+     que el ciclo no dio ni una vuelta. El alumno mira una línea bien escrita
+     sin sospechar que el programa jamás pasó por ahí, porque nada se lo dice.
+     Solo se habla cuando hay algo que decir: felicitar por lo normal es ruido. */
+  function avisarCobertura(ast, contador) {
+    let r;
+    try { r = Cobertura.resumir(contador.cuentas(), Cobertura.lineasDeSentencias(ast)); }
+    catch (e) { return; }
+    const frase = Cobertura.frase(r);
+    if (!frase) return;
+    marcarSinCorrer(r.nunca);
+    escribir('\n' + frase + ' Están marcadas al costado.\n', 'aviso');
+  }
+
   async function ejecutar(paso_a_paso, grabando) {
     if (control) return;
     limpiarConsola();
@@ -511,6 +543,11 @@ fin
     $('#btnEjecutar').disabled = true;
     control = {};
     const grabadora = grabando ? Viaje.crearGrabadora({ control }) : null;
+    /* Contar qué líneas corren es una suma por sentencia: no se nota al lado
+       de lo que cuesta ejecutarla, así que va siempre y no en un modo aparte
+       que haya que acordarse de prender. */
+    const contador = window.Cobertura && !paso_a_paso && !grabando
+      ? Cobertura.crearContador() : null;
     const t0 = performance.now();
     let fallo = null, interp = null;
     try {
@@ -521,7 +558,10 @@ fin
       interp = await SLE2.ejecutar(ast, grabadora ? grabadora.envolverIO(io) : io,
         grabadora
           ? { control, depurador: grabadora.hook, alRetornar: grabadora.alRetornar }
-          : { control, depurador: depurador.hook });
+          : { control, depurador: contador
+              ? (l, i) => { contador.hook(l); return depurador.hook(l, i); }
+              : depurador.hook });
+      if (contador) avisarCobertura(ast, contador);
       const ms = Math.round(performance.now() - t0);
       escribir(`\n[programa terminado en ${ms} ms]\n`, 'info');
       estado('terminado', 'ok');
