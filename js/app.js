@@ -1300,6 +1300,11 @@ fin
   pintarRepaso();
   pintarProgreso();
   refrescarArchivos();
+  /* --------------------------- los primeros pasos ---------------------- */
+  /* Cuatro carteles, una sola vez, para quien abre esto por primera vez. Va
+     al final de todo: recién acá la pantalla es la que la persona va a ver. */
+  if (window.Bienvenida) Bienvenida.iniciar();
+
   estado('listo');
 
   /* Enlaces directos: #curso abre el curso y #ej=f13 abre ese ejercicio

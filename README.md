@@ -14,6 +14,32 @@ El intérprete es una reimplementación en JavaScript del lenguaje descrito en:
 
 Ambos PDF están convertidos a Markdown en la carpeta `documentos sle2/`.
 
+## Los primeros cinco minutos
+
+Alguien entra por primera vez y se encuentra un IDE completo: dos pestañas, veinte botones, un
+editor, una pantalla, una entrada de datos y un lienzo. Nosotros sabemos que todo eso es bueno; él ve
+una cabina de avión.
+
+La primera vez —y **solo** la primera— aparecen cuatro carteles: el programa que ya está escrito, el
+botón de ejecutar, dónde sale el resultado, y que existe un curso. Nada más; el resto se descubre
+solo, que es como se descubre todo acá.
+
+Tres reglas que se cumplen a rajatabla:
+
+* **no es modal y no hay telón negro.** El cartel señala con un borde y se corre a un costado: la
+  persona tiene que poder mirar —y tocar— lo que le estamos mostrando. Un recorrido que secuestra la
+  pantalla enseña a saltearse los recorridos;
+* **no le aparece a quien no está empezando.** Se muestra solo si nunca lo vio *y* no hay nada
+  escrito. Quien abrió un programa compartido, o venía usando ESLE2, no ve nada: un cartel de
+  bienvenida a alguien que ya sabe usar el programa es peor que no tenerlo;
+* **se sale en un clic** —*Ya sé usarlo*, o `Escape`— y no vuelve nunca. Se recorre entero con el
+  teclado, y al terminar el foco vuelve al editor y no al principio de la página.
+
+El último paso del recorrido es el que importa: se toca *Ejecutar*, el programa pregunta el nombre en
+la pantalla, se lo escribe y saluda. En cinco minutos alguien que nunca programó vio un programa
+correr y contestarle. `test/test-bienvenida.js` prueba sobre todo lo contrario —a quién **no** tiene
+que aparecerle—, y la verificación en el navegador hace esa vuelta completa hasta el saludo.
+
 ## Modo flexible: compilar con errores
 
 El compilador es estricto a propósito: al primer error para y lo cuenta bien. Eso está perfecto
@@ -1463,6 +1489,8 @@ la copia vieja y el cambio no llega a nadie. `npm run revisar` compara las fecha
 | `js/proyecto.js` · `js/proyecto-ui.js` | Explorador de archivos: el proyecto y su barra lateral. |
 | `js/disenador.js` · `js/disenador-ui.js` | Diseñar la ventana arrastrando, reescribiendo los números del programa. |
 | `tools/soltar.js` · `tools/probar.js` · `tools/revisar-cache.js` | Publicar: pruebas, índice, caché y `VERSION` en un comando. |
+| `js/perfil.js` · `js/perfil-ui.js` | Un cajón por alumno en las máquinas compartidas. |
+| `js/bienvenida.js` | Los cuatro carteles de la primera visita. |
 | `js/iconos.js` · `js/menus.js` | Iconos de la interfaz y los menús de la barra de herramientas. |
 | `js/flexible.js` · `js/flexible-ui.js` | Modo flexible: compilar con errores y verlos todos juntos. |
 | `js/escritorio.js` · `js/escritorio-ui.js` | Prueba de escritorio: el programa seguido en una tabla. |
@@ -1517,6 +1545,7 @@ la copia vieja y el cambio no llega a nadie. `npm run revisar` compara las fecha
 | `test/test-disenador.js` | Que arrastrar cambie dos números y NADA más, y que siga compilando (71). |
 | `test/test-cache.js` | Que todo lo que piden las páginas se guarde para usar sin internet (18). |
 | `test/test-perfil.js` | Que el trabajo de un alumno no aparezca en la sesión del otro (45). |
+| `test/test-bienvenida.js` | Sobre todo, a quién NO tiene que aparecerle el recorrido (19). |
 | `test/test-vscode.js` | Que la extensión use el mismo compilador, byte por byte (61). |
 | `test/test-estadisticas.js` | Las cuentas del panel «Cómo venís» (9). |
 | `test/test-visual.js` | Ventanas, controles, eventos y dibujo de ESLE2 Visual (46). |

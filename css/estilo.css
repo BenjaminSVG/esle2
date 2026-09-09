@@ -1515,3 +1515,32 @@ body.enfoque.enfoque-salida .columna { display: grid; }
 .perfil-nombre { font-weight: 600; }
 .perfil-alta { display: flex; align-items: flex-end; gap: .5rem; }
 .perfil-alta label { flex: 1; }
+
+/* --------------------------- los primeros pasos ------------------------- */
+/* El cartel NO es modal ni tapa la pantalla: la persona tiene que poder mirar
+   lo que le estamos señalando, y hasta tocarlo. Por eso no hay telón negro. */
+.bienvenida {
+  position: fixed; z-index: 60;
+  background: var(--fondo); color: var(--texto);
+  border: 2px solid var(--acento); border-radius: 10px;
+  padding: .8rem .9rem;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, .28);
+}
+.bienvenida h2 { margin: 0 0 .3rem; font-size: 1.02rem; }
+.bienvenida p { margin: 0 0 .7rem; font-size: .93rem; line-height: 1.45; }
+.bienvenida-pie { display: flex; align-items: center; gap: .4rem; }
+.bienvenida-cuenta { font-size: .82rem; opacity: .75; }
+
+/* Lo que el cartel está señalando. Se marca con el borde de acento y no
+   pintando el fondo: encima del editor, cualquier tinte le baja el contraste
+   a los números y a las palabras clave. */
+.bienvenida-mira {
+  outline: 3px solid var(--acento);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .bienvenida { animation: bienvenida-entra .18s ease-out; }
+  @keyframes bienvenida-entra { from { opacity: 0; transform: translateY(4px); } }
+}
