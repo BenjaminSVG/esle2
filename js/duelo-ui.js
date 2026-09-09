@@ -154,14 +154,14 @@
       proveedor.awareness.on('change', pintarGente);
       mapa.observe(alCambiarLaBatalla);
 
-      setTimeout(() => {
-        if (!proveedor) return;
-        if (!proveedor.signalingConns.filter(c => c.connected).length) {
-          campo('error').textContent = 'No responde ninguno de los servidores que juntan a las dos '
-            + 'computadoras. Probá de nuevo en un rato.';
-          campo('estado').textContent = 'sin señal';
-        }
-      }, 15000);
+      /* Conectado no es lo mismo que útil: si el servidor no reenvía, los dos
+         se quedan esperando una batalla que no va a empezar nunca. */
+      global.Juntos.alguienReenvia().then(bueno => {
+        if (!proveedor || bueno) return;
+        campo('error').textContent = 'Ningún servidor está reenviando, así que la batalla no puede '
+          + 'empezar. Hace falta un servidor de señas propio: está listo para publicar en servidor-senas/cloudflare, y es gratis.';
+        campo('estado').textContent = 'sin señal';
+      });
 
       campo('error').textContent = '';
       campo('codigo').value = codigo;

@@ -7,7 +7,7 @@
  *
  * Al publicar una versión nueva hay que subir VERSION: eso borra la caché vieja.
  */
-const VERSION = 'esle2-v49';
+const VERSION = 'esle2-v50';
 
 const ARCHIVOS = [
   './',

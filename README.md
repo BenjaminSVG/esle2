@@ -712,6 +712,34 @@ servidores del navegador: está dicho en pantalla antes de encenderlo.
 Un programa entero dictado frase por frase se compila y se ejecuta en `test/test-dictado.js`: si
 lo que escribe el dictado no compilara, sonaría bien y no serviría para nada.
 
+### Conectado no es lo mismo que servir
+
+Un servidor de señas puede aceptar la conexión y **no reenviar nada**. Las dos computadoras quedan
+«conectadas» y no se encuentran jamás. Mirar si la conexión está viva —que es lo que hacía este
+código— era mentirle a la persona con la cara más seria: *Programar de a dos*, *Batallas* y
+*Transmitir* decían **conectado** y se quedaban así para siempre.
+
+Ahora se prueba el reenvío, que es lo que haría cualquiera a mano: suscribirse a un tema inventado,
+publicar ahí y ver si vuelve. Medido hoy contra los públicos:
+
+| Servidor | Conecta | Reenvía |
+| --- | --- | --- |
+| `wss://y-webrtc-eu.fly.dev` | sí | **no** |
+| `wss://demos.yjs.dev/ws` | sí | **no** |
+| `wss://signaling.yjs.dev` | no | — |
+
+Por eso las tres funciones de red **no andan** hasta que haya un servidor propio, y ahora lo dicen con
+todas las letras en lugar de dejar a alguien esperando. Publicar el que está en
+`servidor-senas/cloudflare` es gratis y son dos comandos: `npx wrangler login` y
+`npx wrangler deploy`. Después, en la consola del navegador:
+
+```js
+localStorage.esle2_senas = 'wss://esle2-senas.TU-CUENTA.workers.dev'
+```
+
+El tema de la prueba lleva azar para que dos alumnos probando a la vez no se crucen, y los servidores
+se prueban todos juntos: son cuatro segundos en total y no cuatro por servidor.
+
 ## Batallas de código
 
 Dos personas, el mismo problema, cinco minutos. Desde **Batallas de código…**, en el Curso: alguien

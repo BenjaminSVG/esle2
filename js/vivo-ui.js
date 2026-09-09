@@ -162,14 +162,14 @@
       proveedor.awareness.on('change', pintarGente);
       pintarGente();
 
-      setTimeout(() => {
-        if (!proveedor) return;
-        if (!proveedor.signalingConns.filter(c => c.connected).length) {
-          campo('error').textContent = 'No responde ninguno de los servidores que presentan a las '
-            + 'computadoras. Nadie te va a poder ver hasta que vuelva alguno.';
-          campo('estado').value = 'sin señal';
-        }
-      }, ESPERA_SIN_SENAL);
+      /* No alcanza con que el servidor conteste: si no reenvía, nadie te ve
+         nunca y la pantalla diría «en vivo» igual. */
+      global.Juntos.alguienReenvia().then(bueno => {
+        if (!proveedor || bueno) return;
+        campo('error').textContent = 'Ningún servidor está reenviando, así que nadie te va a poder '
+          + 'ver. Hace falta un servidor de señas propio: está listo para publicar en servidor-senas/cloudflare, y es gratis.';
+        campo('estado').value = 'sin señal';
+      });
 
       campo('estado').value = 'en vivo';
       campo('enlace').value = global.Vivo.enlace(nombre, location.origin + '/');
@@ -286,11 +286,11 @@
               hay ? 'ok' : null);
       });
 
-      setTimeout(() => {
+      setTimeout(async () => {
         if (!proveedor) return;
-        if (!proveedor.signalingConns.filter(c => c.connected).length) {
-          decir('No responde ninguno de los servidores que presentan a las computadoras. '
-              + 'Probá de nuevo en un rato.', 'error');
+        if (!(await global.Juntos.alguienReenvia())) {
+          decir('Ningún servidor está reenviando, así que no se puede ver ninguna transmisión. '
+              + 'Hace falta un servidor de señas propio: está listo para publicar en servidor-senas/cloudflare, y es gratis.', 'error');
         } else if (!texto.toString()) {
           decir('Nadie está transmitiendo en este enlace ahora mismo.');
         }

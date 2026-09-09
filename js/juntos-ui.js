@@ -157,18 +157,16 @@
       proveedor.awareness.on('change', pintarGente);
       pintarGente();
 
-      /* Si en quince segundos ningún servidor de señas respondió, se dice.
-         Son servidores ajenos y gratuitos: se caen, y dejar a alguien mirando
-         «buscando…» para siempre es la peor forma de contarlo. */
-      setTimeout(() => {
-        if (!proveedor) return;
-        const vivas = proveedor.signalingConns.filter(c => c.connected).length;
-        if (!vivas) {
-          campo('error').textContent = 'No responde ninguno de los servidores que presentan a las '
-            + 'dos computadoras. Probá de nuevo en un rato, o pasale el programa por «Compartir».';
-          campo('estado').value = 'sin señal';
-        }
-      }, 15000);
+      /* Que el servidor conteste NO quiere decir que sirva: puede aceptar la
+         conexión y no reenviar nada, y entonces las dos computadoras quedan
+         «conectadas» sin encontrarse jamás. Mirar si la conexión está viva era
+         mentirle a la persona con la cara más seria; se prueba el reenvío. */
+      global.Juntos.alguienReenvia().then(bueno => {
+        if (!proveedor || bueno) return;
+        campo('error').textContent = 'Ningún servidor está reenviando: los dos quedarían esperando '
+          + 'para siempre sin encontrarse. Hace falta un servidor de señas propio: está listo para publicar en servidor-senas/cloudflare, y es gratis. Mientras tanto, pasale el programa por «Compartir».';
+        campo('estado').value = 'sin señal';
+      });
 
       campo('estado').value = 'conectado';
       dlg.querySelector('[data-accion="crear"]').classList.add('oculto');

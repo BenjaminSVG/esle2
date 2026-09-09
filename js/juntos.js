@@ -109,5 +109,84 @@
     return suyos.concat(PROPIOS);
   }
 
-  global.Juntos = { crearSala, enlace, leerUrl, nombreSugerido, color, PALABRAS, servidores, PROPIOS };
+  /* ------------------------------------------------------------------ */
+  /* ¿El servidor de señas REENVÍA?                                       */
+  /* ------------------------------------------------------------------ */
+
+  /* Conectar no alcanza. Un servidor puede aceptar la conexión y no reenviar
+     nada —comprobado: es exactamente lo que hace el que trae la librería por
+     omisión—, y entonces las dos computadoras quedan «conectadas» para
+     siempre sin encontrarse nunca. Mirar solo si la conexión está viva es
+     mentirle a la persona con la cara más seria.
+
+     La prueba es la que haría cualquiera a mano: suscribirse a un tema
+     inventado, publicar ahí, y ver si vuelve. Si no vuelve, ese servidor no
+     sirve, aunque conteste.
+
+     El tema lleva azar para que dos alumnos probando a la vez no se crucen. */
+  function temaDePrueba() {
+    return 'esle2-prueba-' + enBase36(azar(8));
+  }
+
+  function pruebaDeRelevo(tema) {
+    return {
+      suscribir: JSON.stringify({ type: 'subscribe', topics: [tema] }),
+      publicar: JSON.stringify({ type: 'publish', topic: tema, data: { esle2: 'prueba' } })
+    };
+  }
+
+  function esEco(datos, tema) {
+    let d;
+    try { d = JSON.parse(String(datos)); } catch (e) { return false; }
+    return !!d && d.type === 'publish' && d.topic === tema
+      && !!d.data && d.data.esle2 === 'prueba';
+  }
+
+  /* -> Promise<'reenvia' | 'no-reenvia' | 'sin-conexion'> */
+  function probarRelevo(url, opciones) {
+    const cfg = opciones || {};
+    /* Se mira si la opción vino, no si trae algo: pasar WebSocket: null es la
+       forma de decir «este navegador no tiene», y hace falta para probarlo. */
+    const Socket = 'WebSocket' in cfg
+      ? cfg.WebSocket
+      : (typeof WebSocket !== 'undefined' ? WebSocket : null);
+    const espera = cfg.espera || 4000;
+    if (!Socket) return Promise.resolve('sin-conexion');
+
+    return new Promise(resolver => {
+      const tema = cfg.tema || temaDePrueba();
+      const sobres = pruebaDeRelevo(tema);
+      let ws = null, reloj = null, listo = false;
+
+      const terminar = resultado => {
+        if (listo) return;
+        listo = true;
+        clearTimeout(reloj);
+        try { if (ws) ws.close(); } catch (e) { /* ya estaba cerrado */ }
+        resolver(resultado);
+      };
+
+      try { ws = new Socket(url); } catch (e) { return terminar('sin-conexion'); }
+
+      reloj = setTimeout(() => terminar('no-reenvia'), espera);
+      ws.onerror = () => terminar('sin-conexion');
+      ws.onclose = () => terminar('sin-conexion');
+      ws.onopen = () => { ws.send(sobres.suscribir); ws.send(sobres.publicar); };
+      ws.onmessage = ev => { if (esEco(ev.data, tema)) terminar('reenvia'); };
+    });
+  }
+
+  /* El primero de la lista que reenvíe de verdad, o null. Se prueban todos a
+     la vez: son cuatro segundos, no cuatro por servidor. */
+  async function alguienReenvia(urls, opciones) {
+    const lista = (urls && urls.length ? urls : servidores());
+    if (!lista.length) return null;
+    const resultados = await Promise.all(
+      lista.map(u => probarRelevo(u, opciones).then(r => ({ url: u, r }))));
+    const bueno = resultados.find(x => x.r === 'reenvia');
+    return bueno ? bueno.url : null;
+  }
+
+  global.Juntos = { crearSala, enlace, leerUrl, nombreSugerido, color, PALABRAS, servidores, PROPIOS,
+    probarRelevo, alguienReenvia, pruebaDeRelevo, esEco, temaDePrueba };
 })(typeof window !== 'undefined' ? window : globalThis);
