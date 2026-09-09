@@ -1567,3 +1567,21 @@ body.enfoque.enfoque-salida .columna { display: grid; }
 /* Una variable que no cambia nunca no se puede saltar, y tampoco se apaga:
    apagarla la haría ilegible justo cuando lo que importa es leer su valor. */
 .vars .v-salto:disabled { cursor: default; text-decoration: none; opacity: 1; }
+
+/* --------------------------- otra forma de resolverlo ------------------- */
+.dlg-otra { max-width: min(1100px, 95vw); }
+.otra-lado { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+.otra-lado h4 { margin: .2rem 0 .35rem; font-size: .95rem; }
+.otra-lado pre {
+  margin: 0; padding: .6rem .7rem; overflow: auto; max-height: 52vh;
+  border: 1px solid var(--borde); border-radius: 6px;
+  background: var(--fondo-2, var(--fondo));
+  font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .86rem;
+  line-height: 1.45; white-space: pre;
+}
+/* En un teléfono, una al lado de la otra no se lee: van una debajo de la
+   otra, que es como se comparan dos programas cortos igual. */
+@media (max-width: 720px) {
+  .otra-lado { grid-template-columns: 1fr; }
+  .otra-lado pre { max-height: 34vh; }
+}

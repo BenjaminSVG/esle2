@@ -32,6 +32,7 @@ const correr = (script, args = []) =>
     { encoding: 'utf8', cwd: RAIZ }).trim().split('\n').pop();
 
 paso('índice del buscador', () => correr('generar-indice.js'));
+paso('soluciones del curso', () => correr('generar-soluciones.js'));
 paso('caché sin agujeros', () => correr('revisar-cache.js'));
 
 /* VERSION nueva. Si alguien cambia un archivo y no sube VERSION, el service

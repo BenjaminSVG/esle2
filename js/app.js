@@ -942,6 +942,9 @@ fin
       <div class="acciones">
         <button class="btn primario" id="btnAbrirEjercicio">Abrir en el IDE</button>
         ${progreso[id] ? '<span class="nota">✔ Ya resolviste este ejercicio.</span>' : ''}
+        ${progreso[id] && window.OtraForma
+          ? '<button class="btn" id="btnOtraForma" title="Ver cómo lo resolvió la cátedra">Otra forma de resolverlo…</button>'
+          : ''}
       </div>
       <div class="casos">
         <h3>Casos de prueba</h3>
@@ -949,6 +952,27 @@ fin
       </div>`;
     $('#detalleEjercicio h2').textContent = e.titulo;
     $('#btnAbrirEjercicio').addEventListener('click', () => abrirEjercicio(e));
+    /* «Otra forma»: solo aparece si el ejercicio ya está resuelto. Antes de
+       resolverlo sería el botón de copiar, y un curso con botón de copiar no
+       enseña nada. */
+    const btnOtra = $('#btnOtraForma');
+    if (btnOtra) {
+      btnOtra.addEventListener('click', async () => {
+        btnOtra.disabled = true;
+        const antes = btnOtra.textContent;
+        btnOtra.textContent = 'buscando…';
+        try {
+          const mio = localStorage.getItem('esle2_ej_' + e.id)
+            || (ejercicioActivo && ejercicioActivo.id === e.id ? editor.getValue() : '');
+          await otraForma.mostrar(e, mio);
+        } catch (err) {
+          estado(err.message || 'no se pudo abrir', 'error');
+        } finally {
+          btnOtra.disabled = false;
+          btnOtra.textContent = antes;
+        }
+      });
+    }
   }
 
   function abrirEjercicio(e, codigoInicial) {
@@ -1264,6 +1288,11 @@ fin
       ' ejercicios resueltos.\n\nSe bajó el archivo: mandáselo a tu profesor.');
     return entrega;
   }
+
+  /* Comparar con la solución de la cátedra, después de resolver. Las
+     soluciones se piden recién al tocar el botón: son 14 KB que no tiene por
+     qué bajar quien nunca los va a mirar. */
+  const otraForma = window.OtraForma ? OtraForma.iniciar({}) : null;
 
   const aulaUI = AulaUI.crear({
     lenguaje: 'SLE2',

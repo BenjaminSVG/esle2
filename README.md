@@ -660,6 +660,35 @@ prueba sin navegador y sin hacer ruido: que ninguna nota se salga del acorde en 
 (por eso nunca desafina), que ninguna pase el techo de volumen, que volver de una pestaña dormida no
 dispare cientos de notas atrasadas de golpe, y que un navegador sin Web Audio no rompa nada.
 
+## Otra forma de resolverlo
+
+El alumno resuelve un ejercicio, pasa los casos y sigue al siguiente. Nunca se entera de que había
+una manera más corta, ni de que la cátedra lo pensó distinto. Eso es la mitad de lo que se aprende en
+un curso de programación, y se perdía entero.
+
+En el panel del ejercicio, **después de resolverlo**, aparece *Otra forma de resolverlo…*: los dos
+programas uno al lado del otro, el suyo y el de la cátedra.
+
+Tres reglas, en orden de importancia:
+
+* **solo después de resolverlo.** Antes sería el botón de copiar, y un curso con botón de copiar no
+  enseña nada. Lo que lo habilita es el progreso guardado, no haber apretado *Verificar* recién:
+  quien lo resolvió ayer también tiene derecho a comparar;
+* **las soluciones no viajan con la página.** Son 14 KB que se piden recién al tocar el botón, una
+  sola vez. Sí quedan en la caché del *service worker*, para que el botón no sea lo único del sitio
+  que deja de andar sin internet;
+* **no se dice cuál es mejor.** Se cuentan las líneas de cada una y se deja ahí: *«la tuya tiene 18
+  líneas y la de la cátedra 12. Más corto no es mejor, pero vale la pena mirar por qué.»* Decirle a
+  alguien que su programa —que funciona— está mal es la forma más rápida de que deje de escribir.
+
+`js/soluciones.js` lo genera `tools/generar-soluciones.js` a partir de `test/soluciones-curso.js`,
+que es el mismo archivo con el que las pruebas demuestran que los 50 ejercicios se pueden resolver.
+Dos copias serían una desactualizada, y la desactualizada sería justo la que ve el alumno:
+`test/test-otra-forma.js` no deja que se separen, y comprueba además que las 50 compilen —mostrar
+una «solución» que no compila sería peor que no mostrar nada.
+
+Por ahora es del curso de SLE2. POO y Visual no tienen archivo de soluciones de referencia.
+
 ## Repaso espaciado
 
 Resolver un ejercicio una vez no es aprenderlo. El panel **Para repasar hoy**, debajo del curso,
@@ -1567,6 +1596,7 @@ la copia vieja y el cambio no llega a nadie. `npm run revisar` compara las fecha
 | `js/perfil.js` · `js/perfil-ui.js` | Un cajón por alumno en las máquinas compartidas. |
 | `js/bienvenida.js` | Los cuatro carteles de la primera visita. |
 | `js/cobertura.js` | Qué líneas corrieron y cuáles no, con el gancho del depurador. |
+| `js/otra-forma.js` · `js/soluciones.js` | Comparar con la solución de la cátedra, después de resolver. |
 | `js/iconos.js` · `js/menus.js` | Iconos de la interfaz y los menús de la barra de herramientas. |
 | `js/flexible.js` · `js/flexible-ui.js` | Modo flexible: compilar con errores y verlos todos juntos. |
 | `js/escritorio.js` · `js/escritorio-ui.js` | Prueba de escritorio: el programa seguido en una tabla. |
