@@ -1420,6 +1420,22 @@ grabar son la misma corrida, no dos caminos distintos: grabando, el intérprete 
 cada sentencia y el objeto `io` queda envuelto para anotar lo que se le pide a la pantalla. Anda en
 ESLE2 y en ESLE2 POO.
 
+### Llevame a donde esto cambió
+
+En el panel de variables, **el nombre de cada una es un botón**: lleva al próximo paso donde esa
+variable se movió. Es la pregunta que uno se hace de verdad frente a un programa que no anda —*¿dónde
+se me volvió cero?*—, y buscarla arrastrando la barra por cuatro mil pasos es justo el trabajo que la
+máquina tendría que hacer sola.
+
+El botón dice de antemano cuántas veces cambia (*«suma cambia 4 veces: ir a la próxima»*), y una
+variable que no cambia nunca queda deshabilitada, que ya es una respuesta. Al llegar al último
+cambio vuelve al primero: dentro de un ciclo «la próxima» después de la última es la primera, y un
+botón que de golpe deja de hacer nada parece roto.
+
+Es un `<button>` y no un clic sobre la fila, así que se llega con `Tab` y cada salto se anuncia.
+Y no se recalcula en cada clic: los pasos donde se mueve cada variable se cuentan una sola vez por
+grabación —recorrer cuatro mil pasos por clic se nota, y acá el clic tiene que contestar en el acto.
+
 ## Accesibilidad
 
 En **Diseño** hay dos paletas de sintaxis pensadas para daltonismo —**Daltónico (claro)** y

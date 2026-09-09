@@ -1552,3 +1552,18 @@ body.enfoque.enfoque-salida .columna { display: grid; }
    de 4,5. Es la misma razón por la que la línea del depurador se marca así. */
 .linea-muerta { box-shadow: inset 3px 0 0 var(--aviso, #b58900); }
 .linea-muerta .CodeMirror-linenumber { font-weight: 700; }
+
+/* ------------------- saltar a donde una variable cambió ----------------- */
+/* El nombre de la variable es un botón, pero tiene que seguir leyéndose como
+   un nombre de variable: sin fondo, sin borde, con la misma tipografía. El
+   subrayado punteado es lo único que avisa que se puede tocar. */
+.vars .v-salto {
+  background: none; border: 0; padding: 0; margin: 0;
+  font: inherit; color: inherit; cursor: pointer;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+}
+.vars .v-salto:hover:not(:disabled) { color: var(--acento); }
+/* Una variable que no cambia nunca no se puede saltar, y tampoco se apaga:
+   apagarla la haría ilegible justo cuando lo que importa es leer su valor. */
+.vars .v-salto:disabled { cursor: default; text-decoration: none; opacity: 1; }

@@ -113,6 +113,39 @@
       }
     }
 
+    /* ------------------- saltar a donde algo cambió -------------------- */
+    /* Los pasos donde se mueve cada variable se calculan una sola vez por
+       grabación y se guardan: recorrer los cuatro mil pasos en cada clic se
+       nota, y acá el clic tiene que contestar en el acto. */
+    let dondeCambia = new Map();
+
+    function vecesQueCambia(nombre) {
+      if (!g) return 0;
+      if (!dondeCambia.has(nombre)) {
+        dondeCambia.set(nombre, global.Viaje.pasosDondeCambia(g, nombre));
+      }
+      return dondeCambia.get(nombre).length;
+    }
+
+    /* Del paso actual al próximo donde esa variable cambia. Al llegar al
+       último vuelve al primero en vez de quedarse mudo: con un ciclo, «la
+       próxima» después de la última es la primera, y un botón que deja de
+       hacer nada parece roto. */
+    function saltarA(nombre) {
+      vecesQueCambia(nombre);
+      const pasos = dondeCambia.get(nombre) || [];
+      if (!pasos.length) return;
+      const siguiente = pasos.find(x => x > i);
+      const destino = siguiente === undefined ? pasos[0] : siguiente;
+      const cual = pasos.indexOf(destino) + 1;
+      ir(destino);
+      if (cfg.estado) {
+        cfg.estado(nombre + ' cambia en el paso ' + destino
+          + ' (' + cual + ' de ' + pasos.length + ')'
+          + (siguiente === undefined && pasos.length > 1 ? ', volviendo al principio' : ''));
+      }
+    }
+
     /* -------------------------- las variables ------------------------- */
     function pintarVariables(paso) {
       const cuerpo = cfg.varsCuerpo;
@@ -139,7 +172,24 @@
           if (cambiadas.has(amb.titulo + '::' + v.nombre)) fila.className = 'cambio';
           const n = document.createElement('td');
           n.className = 'v-nombre';
-          n.textContent = v.nombre;
+          /* El nombre es un botón: lleva al próximo paso donde ESA variable
+             cambia. Buscar eso arrastrando la barra es el trabajo que la
+             máquina tendría que hacer sola, y es la pregunta que uno se hace
+             de verdad: «¿dónde se me volvió cero?».
+             Botón y no un clic sobre la fila, para que se llegue con Tab. */
+          const salto = document.createElement('button');
+          salto.type = 'button';
+          salto.className = 'v-salto';
+          salto.textContent = v.nombre;
+          const cuantos = vecesQueCambia(v.nombre);
+          salto.disabled = cuantos === 0;
+          salto.title = cuantos === 0
+            ? v.nombre + ' no cambia en toda la ejecución'
+            : v.nombre + ' cambia ' + cuantos + (cuantos === 1 ? ' vez' : ' veces')
+              + ': ir a la próxima';
+          salto.setAttribute('aria-label', salto.title);
+          salto.addEventListener('click', () => saltarA(v.nombre));
+          n.appendChild(salto);
           const val = document.createElement('td');
           val.className = 'v-valor';
           /* El mismo dibujo del depurador: los vectores como casillas, los
@@ -185,6 +235,7 @@
 
     /* ------------------------- abrir y cerrar ------------------------- */
     function mostrar(grabacion) {
+      dondeCambia = new Map();   // la película es otra: las cuentas viejas no sirven
       construir();
       g = grabacion;
       if (!g || !g.pasos.length) {
