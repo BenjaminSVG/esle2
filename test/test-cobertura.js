@@ -191,6 +191,65 @@ async function correr(fuente, entrada) {
     comprobar('y los pasos totales', c.pasos === 3, c.pasos);
   }
 
+
+  seccion('Cuánto trabajó el programa');
+  {
+    /* Un ciclo largo de verdad. No se mira el tiempo —eso cambia con la
+       máquina— sino cuántas veces pasó por la misma línea. */
+    const fuente = [
+      'programa p', 'var', '   k : numerico', '   s : numerico', 'inicio',
+      '   s = 0',
+      '   desde k=1 hasta 60000', '   {',
+      '      s = s + 1',
+      '   }',
+      '   imprimir (s)',
+      'fin', ''
+    ].join('\n');
+    const { r, salida } = await correr(fuente);
+    comprobar('el programa terminó bien', salida === '60000', salida);
+    comprobar('se ve qué línea se repitió', r.masCorrida.linea === 9, r.masCorrida);
+    comprobar('y cuántas veces', r.masCorrida.veces === 60000, r.masCorrida.veces);
+
+    const f = Cobertura.fraseEsfuerzo(r);
+    comprobar('se avisa', f.length > 0, f);
+    comprobar('con la línea y el número', /línea 9/.test(f) && /60 mil/.test(f), f);
+    /* No es un error: el programa anduvo. La palabra importa. */
+    comprobar('sin decir que está mal', !/(error|mal|incorrect)/i.test(f), f);
+  }
+
+  seccion('Un programa normal no recibe el aviso');
+  {
+    const fuente = [
+      'programa p', 'var', '   k : numerico', 'inicio',
+      '   desde k=1 hasta 100', '   {', '      imprimir (k)', '   }', 'fin', ''
+    ].join('\n');
+    const { r } = await correr(fuente);
+    comprobar('cien vueltas no molestan a nadie', Cobertura.fraseEsfuerzo(r) === '',
+      Cobertura.fraseEsfuerzo(r));
+    comprobar('sin resumen tampoco rompe', Cobertura.fraseEsfuerzo(null) === '');
+    comprobar('ni sin ninguna línea corrida',
+      Cobertura.fraseEsfuerzo({ masCorrida: null }) === '');
+  }
+
+  seccion('Ninguna solución del curso recibe el aviso');
+  {
+    /* Si los ejercicios de la cátedra dispararan el aviso, el aviso saldría
+       siempre y nadie lo leería. Es el mismo criterio que usa el revisor de
+       estilo con sus reglas. */
+    const SOLUCIONES = require(path.join(RAIZ, 'test', 'soluciones-curso.js'));
+    const CURSO = (() => { require(path.join(RAIZ, 'js', 'ejercicios.js')); return global.CURSO; })();
+    let avisados = 0;
+    for (const ej of CURSO.EJERCICIOS) {
+      const sol = SOLUCIONES[ej.id];
+      if (!sol) continue;
+      try {
+        const { r } = await correr(sol, ej.pruebas[0].entrada);
+        if (Cobertura.fraseEsfuerzo(r)) { avisados++; console.log('  · ' + ej.id + ': ' + Cobertura.fraseEsfuerzo(r)); }
+      } catch (e) { /* alguna necesita más datos de entrada: no es asunto de esta prueba */ }
+    }
+    comprobar('las 50 pasan sin aviso de esfuerzo', avisados === 0, avisados + ' con aviso');
+  }
+
   console.log(`\n${ok} verificaciones correctas, ${fallos} fallos.`);
   assert.strictEqual(fallos, 0, 'la cobertura tiene fallos');
 })();

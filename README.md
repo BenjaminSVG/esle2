@@ -194,6 +194,15 @@ que un `TEXT` no puede ser clave primaria en MySQL sin largo, y que solo MySQL i
 invertida adentro de un texto. Sale texto y no un `.sqlite` binario a propósito: un archivo de
 texto se lee, se corrige y se entrega.
 
+## Cómo meterle mano
+
+Este archivo cuenta **qué hace** ESLE2. [`CONTRIBUIR.md`](CONTRIBUIR.md) cuenta **cómo se le agregan
+cosas**: las cuatro reglas que no se negocian —sin servidor, sin IA, sin tocar el lenguaje, y que
+todo ande sin internet y sin mouse—, el ciclo de trabajo, cómo se agrega un ejercicio o una función
+del lenguaje, y la lista de los errores que ya cometimos para no volver a descubrirlos.
+
+Está escrito para el día en que esto lo mantenga alguien que no lo escribió.
+
 ## Uso
 
 En línea: **<https://esle2.vercel.app>** (se publica con `vercel deploy --prod`; `.vercelignore`
@@ -1396,6 +1405,20 @@ gancho en esa línea *una vez por vuelta*, así que un `mientras` cuya condició
 no aparece en las cuentas — pero su condición **sí** se evaluó, y marcarlo mandaría al alumno a buscar
 un problema que no existe. Lo que se marca es el **cuerpo** del ciclo, que es la información que
 sirve: *acá adentro no entró nunca*.
+
+### Cuánto trabajó el programa
+
+Del mismo conteo sale la otra mitad: **qué línea se repitió más veces**. Si una pasó de cincuenta mil,
+se dice: *«la línea 9 se ejecutó 60 mil veces. El programa terminó bien, pero fijate si tiene que
+repetir tanto.»*
+
+No es un error y el texto lo aclara: el programa anduvo y dio el resultado correcto, solo que tardó.
+Es la primera vez que alguien se topa con que dos programas que hacen lo mismo no cuestan lo mismo,
+sin que nadie tenga que hablarle de complejidad todavía.
+
+El tope es alto a propósito. `test/test-cobertura.js` comprueba que **ninguna de las 50 soluciones
+del curso reciba el aviso**: si los ejercicios de la cátedra lo dispararan, saldría siempre y nadie
+lo leería. Es el mismo criterio con el que se eligen las reglas del revisor de estilo.
 
 Está en el IDE y en POO. En ESLE2 Visual no: ahí el programa termina en `esperar_eventos()` y las
 líneas corren después, cuando alguien toca un botón, así que todo lo que atiende un clic figuraría

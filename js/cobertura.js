@@ -117,5 +117,28 @@
       : 'Nunca se ejecutaron ' + cuantas + ' líneas: ' + cuales + '.';
   }
 
-  global.Cobertura = { crearContador, lineasDeSentencias, resumir, frase, LISTAS };
+  /* Cuánto trabajó el programa, y dónde.
+     Un ciclo que da veinte vueltas es normal; uno que da doscientas mil casi
+     siempre es un error que nadie ve, porque el programa termina igual y da
+     el resultado correcto —solo que tarda—. Es también la primera vez que
+     alguien se topa con que dos programas que hacen lo mismo no cuestan lo
+     mismo, sin necesidad de hablar de complejidad.
+
+     El tope es alto a propósito: avisar por un ciclo de cien vueltas sería
+     avisar en todos los ejercicios del curso, y un aviso que sale siempre no
+     se lee. */
+  const MUCHAS_VUELTAS = 50000;
+
+  function fraseEsfuerzo(r) {
+    if (!r || !r.masCorrida) return '';
+    if (r.masCorrida.veces < MUCHAS_VUELTAS) return '';
+    const miles = Math.round(r.masCorrida.veces / 1000);
+    return 'La línea ' + r.masCorrida.linea + ' se ejecutó ' + miles.toLocaleString('es')
+      + ' mil veces. El programa terminó bien, pero fijate si tiene que repetir tanto.';
+  }
+
+  global.Cobertura = {
+    crearContador, lineasDeSentencias, resumir, frase, fraseEsfuerzo,
+    LISTAS, MUCHAS_VUELTAS
+  };
 })(typeof window !== 'undefined' ? window : globalThis);

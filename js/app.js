@@ -516,9 +516,14 @@ fin
     try { r = Cobertura.resumir(contador.cuentas(), Cobertura.lineasDeSentencias(ast)); }
     catch (e) { return; }
     const frase = Cobertura.frase(r);
-    if (!frase) return;
-    marcarSinCorrer(r.nunca);
-    escribir('\n' + frase + ' Están marcadas al costado.\n', 'aviso');
+    if (frase) {
+      marcarSinCorrer(r.nunca);
+      escribir('\n' + frase + ' Están marcadas al costado.\n', 'aviso');
+    }
+    /* Y si una línea se repitió muchísimas veces, también se dice. El
+       programa terminó bien: no es un error, es algo que vale la pena mirar. */
+    const esfuerzo = Cobertura.fraseEsfuerzo(r);
+    if (esfuerzo) escribir('\n' + esfuerzo + '\n', 'aviso');
   }
 
   async function ejecutar(paso_a_paso, grabando) {
