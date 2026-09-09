@@ -7,7 +7,7 @@
  *
  * Al publicar una versión nueva hay que subir VERSION: eso borra la caché vieja.
  */
-const VERSION = 'esle2-v47';
+const VERSION = 'esle2-v48';
 
 const ARCHIVOS = [
   './',
@@ -144,6 +144,8 @@ const ARCHIVOS = [
   'img/poo/abstraccion.svg',
   'img/poo/herencia.svg',
   'img/poo/polimorfismo.svg',
+  'js/perfil.js',
+  'js/perfil-ui.js',
 ];
 
 /* Guarda una copia bajo la dirección pedida.

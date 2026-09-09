@@ -1147,6 +1147,11 @@
     });
   }
 
+  /* ------------------------------ el alumno ---------------------------- */
+  /* Quién está usando esta máquina. Sin esto, tres alumnos del laboratorio
+     comparten avance, racha y código sin darse cuenta. */
+  if (window.PerfilUI) PerfilUI.iniciar({ boton: $('#btnPerfil') });
+
   if (window.Presentacion) Presentacion.crear();
   if (window.Racha) Racha.pintar();
   if (window.Iconos) Iconos.pintar(document);

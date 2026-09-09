@@ -1246,6 +1246,40 @@ node tools/generar-indice.js
 
 `test/test-indice.js` falla si el índice quedó viejo después de agregar una sección o un ejercicio.
 
+## Quién está usando esta máquina
+
+Todo lo del alumno —el avance, lo que escribió en cada ejercicio, la racha, sus ejercicios propios—
+vive en el navegador. En una máquina de casa está perfecto. En el laboratorio de la facultad, tres
+alumnos usan el mismo Chrome el mismo día: el segundo abre ESLE2 y ve la racha, los ejercicios y el
+código del primero.
+
+Desde que se puede **entregar una guía** eso pasó de confuso a grave: si Ana entrega desde la máquina
+donde antes trabajó Beto, se lleva el código de Beto con su nombre encima.
+
+El botón **¿Quién sos?**, arriba de las acciones de progreso, abre un cajón por persona. Al cambiar de
+alumno se guarda lo del que estaba y se saca lo del que viene.
+
+**No son cuentas ni contraseñas.** No hay servidor, así que una contraseña acá no protegería nada, y
+una que no protege nada enseña mal: cualquiera puede entrar al cajón de cualquiera. Lo que resuelve es
+que el trabajo de uno no aparezca en la sesión del otro, que es el problema real.
+
+Lo que **no** cambia son las preferencias de la máquina: el tema, los colores, la disposición de los
+paneles, el servidor de señas. Esas son del aula y no de la persona; hacer que cada alumno vuelva a
+acomodar los paneles sería castigar al que comparte máquina. La lista está en `js/perfil.js`, y una
+clave nueva que nadie agregue a esa lista cae del lado del alumno: si el error se paga, se paga
+reiniciando una preferencia y no dejando el código de uno en la sesión de otro.
+
+Dos detalles que hacen que no muerda:
+
+* **el primero se queda con lo que ya había.** Quien venía usando ESLE2 en esa máquina y recién ahora
+  se anota no pierde nada; los siguientes arrancan limpios;
+* **al cambiar se recarga la página.** Treinta módulos leen su estado una sola vez al arrancar: sin
+  recargar, media pantalla seguiría mostrando lo del alumno anterior, que es justo lo que esto viene a
+  evitar.
+
+Borrar un cajón avisa que se pierde todo y sugiere exportar el progreso antes: *Exportar progreso* ya
+existía y sigue siendo la forma de llevarse el avance a otra máquina.
+
 ## Progreso portable
 
 El avance de los cursos vive en cookies de un navegador. Los botones **Exportar progreso** e
@@ -1482,6 +1516,7 @@ la copia vieja y el cambio no llega a nadie. `npm run revisar` compara las fecha
 | `test/test-senas.js` | Que el servidor de señas **reenvíe**, no que conecte. Las dos versiones (22). |
 | `test/test-disenador.js` | Que arrastrar cambie dos números y NADA más, y que siga compilando (71). |
 | `test/test-cache.js` | Que todo lo que piden las páginas se guarde para usar sin internet (18). |
+| `test/test-perfil.js` | Que el trabajo de un alumno no aparezca en la sesión del otro (45). |
 | `test/test-vscode.js` | Que la extensión use el mismo compilador, byte por byte (61). |
 | `test/test-estadisticas.js` | Las cuentas del panel «Cómo venís» (9). |
 | `test/test-visual.js` | Ventanas, controles, eventos y dibujo de ESLE2 Visual (46). |

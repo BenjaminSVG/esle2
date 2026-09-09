@@ -1122,6 +1122,11 @@ fin
 
 
   /* --------------------- proyección y repaso -------------------------- */
+  /* ------------------------------ el alumno ---------------------------- */
+  /* Quién está usando esta máquina. Sin esto, tres alumnos del laboratorio
+     comparten avance, racha y código sin darse cuenta. */
+  if (window.PerfilUI) PerfilUI.iniciar({ boton: $('#btnPerfil') });
+
   const proyeccion = Presentacion.crear();
   const repaso = Repaso.crear('esle2_repasos');
   let repasando = null;          // id del ejercicio que se está repasando
