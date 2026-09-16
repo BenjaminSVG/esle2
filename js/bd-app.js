@@ -36,10 +36,6 @@
 
   AjustarTexto.iniciar({ editor: editor, boton: $('#btnAjustar'), clave: 'esle2bd_ajustar' });
 
-  /* Leer el código en voz alta y dictarlo. Apagado por omisión: quien ya usa
-     un lector de pantalla no necesita que le hablen encima. */
-  VozUI.iniciar({ editor: editor, guardarClave: 'esle2_voz_bd' });
-
   /* --------------------------- la salida ------------------------------ */
   /* Va acá arriba y no más abajo porque AnimoUI y el modo flexible escriben en
      la consola: declarada después, «consola» todavía no existe cuando se la

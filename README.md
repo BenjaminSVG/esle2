@@ -716,68 +716,6 @@ ejercicios resolviste por nivel, cuántas veces verificaste, cuántos intentos t
 resolver uno, y **en cuál te trabaste más** (el que más intentos acumula sin salir). Se alimenta de
 cada pulsación de *Verificar solución*, vive en `localStorage` y se borra con *Reiniciar progreso*.
 
-## Escuchar el código y dictarlo
-
-Programar sin mirar la pantalla. Dos cosas que van juntas:
-
-**Leer el código** (menú Ver, `Alt + L`) dice en voz alta la línea donde está el cursor, cada vez
-que te movés. No deletrea: dice *«si x es mayor o igual que 5»*. Dos detalles que parecen menores y
-no lo son:
-
-* `=` se dice **«recibe»** y `==` se dice **«es igual a»**. Confundirlos es el error número uno
-  de quien empieza, y decir «igual» para los dos lo volvería indetectable de oído;
-* la **sangría se anuncia cuando cambia** («nivel 2»), porque en SL la estructura está en las
-  llaves y en la sangría, y quien no ve la pantalla no tiene otra forma de saber dónde está parado.
-
-Los paréntesis de una condición o de una llamada **no se dicen** —«si abre paréntesis x es mayor
-que 5 cierra paréntesis» no hay quien lo siga— pero los que agrupan una cuenta, `(a + b) * c`,
-**sí**, porque ahí cambian el resultado.
-
-Viene **apagado a propósito**: quien usa NVDA o VoiceOver ya tiene quien le lea la pantalla, y
-hablarle encima sería escuchar todo dos veces. Esto es para quien no tiene un lector instalado, o
-ve poco y prefiere seguir el código de oído mientras lo mira.
-
-**Dictar código…** (menú Ver, `Alt + D`) hace el camino inverso: *«si x es mayor a 5 entonces»* se
-convierte en `si ( x > 5 )`. Traduce **una frase por vez** y **muestra qué entendió antes de
-escribir nada**; cuando no entiende lo dice, en vez de adivinar —una línea inventada es mucho peor
-que un «no te entendí», sobre todo para quien no puede mirar la pantalla para descubrirlo—.
-
-La traducción **no depende del micrófono**: la misma función traduce una frase escrita. Así anda en
-cualquier navegador, se prueba sin voz, y quien no puede hablar (o está en un aula ruidosa) tiene
-el mismo camino escribiendo. El micrófono, donde existe (Chrome y Edge), procesa el audio en los
-servidores del navegador: está dicho en pantalla antes de encenderlo.
-
-Un programa entero dictado frase por frase se compila y se ejecuta en `test/test-dictado.js`: si
-lo que escribe el dictado no compilara, sonaría bien y no serviría para nada.
-
-### Conectado no es lo mismo que servir
-
-Un servidor de señas puede aceptar la conexión y **no reenviar nada**. Las dos computadoras quedan
-«conectadas» y no se encuentran jamás. Mirar si la conexión está viva —que es lo que hacía este
-código— era mentirle a la persona con la cara más seria: *Programar de a dos*, *Batallas* y
-*Transmitir* decían **conectado** y se quedaban así para siempre.
-
-Ahora se prueba el reenvío, que es lo que haría cualquiera a mano: suscribirse a un tema inventado,
-publicar ahí y ver si vuelve. Medido hoy contra los públicos:
-
-| Servidor | Conecta | Reenvía |
-| --- | --- | --- |
-| `wss://y-webrtc-eu.fly.dev` | sí | **no** |
-| `wss://demos.yjs.dev/ws` | sí | **no** |
-| `wss://signaling.yjs.dev` | no | — |
-
-Por eso las tres funciones de red **no andan** hasta que haya un servidor propio, y ahora lo dicen con
-todas las letras en lugar de dejar a alguien esperando. Publicar el que está en
-`servidor-senas/cloudflare` es gratis y son dos comandos: `npx wrangler login` y
-`npx wrangler deploy`. Después, en la consola del navegador:
-
-```js
-localStorage.esle2_senas = 'wss://esle2-senas.TU-CUENTA.workers.dev'
-```
-
-El tema de la prueba lleva azar para que dos alumnos probando a la vez no se crucen, y los servidores
-se prueban todos juntos: son cuatro segundos en total y no cuatro por servidor.
-
 ## Batallas de código
 
 Dos personas, el mismo problema, cinco minutos. Desde **Batallas de código…**, en el Curso: alguien
@@ -1595,8 +1533,6 @@ la copia vieja y el cambio no llega a nadie. `npm run revisar` compara las fecha
 | `js/estilo.js` | Sugerencias de estilo del botón *Revisar*. |
 | `js/examen.js` | Modo examen: armarlo, rendirlo, corregirlo y leer la entrega. |
 | `js/aula.js` · `js/aula-ui.js` | Modo aula: la guía, el enlace que la lleva y el cartel de la clase. |
-| `js/voz.js` · `js/voz-ui.js` | El código dicho en palabras, y el sintetizador del navegador. |
-| `js/dictado.js` | Una frase en español, escrita en SLE2. |
 | `js/juntos.js` · `js/juntos-ui.js` · `vendor/yjs/` | Programar de a dos: la sala, el enlace y Yjs. |
 | `js/duelo.js` · `js/duelo-ui.js` | Batallas: el código de sala, el emparejado y el puntaje. |
 | `js/animo.js` · `js/animo-ui.js` | Detectar que alguien se trabó, y decirlo bien. |
@@ -1662,8 +1598,6 @@ la copia vieja y el cambio no llega a nadie. `npm run revisar` compara las fecha
 | `test/test-contraste.js` | Toda la paleta llega al contraste mínimo de WCAG AA (167). |
 | `test/test-examen.js` | Modo examen: paquete, cronómetro, plantillas y planilla (33). |
 | `test/test-aula.js` | Modo aula: la guía, el enlace de ida y vuelta y los ids (30). |
-| `test/test-voz.js` | El lector: «recibe» contra «es igual a», la sangría, los textos (43). |
-| `test/test-dictado.js` | El dictado, y que lo dictado compile y corra (63). |
 | `test/test-juntos.js` | La sala y su enlace: que no se adivine y que vuelva entero (20). |
 | `test/test-duelo.js` | Que las dos máquinas calculen lo mismo sin hablarse (39). |
 | `test/test-animo.js` | Cuándo avisar y —sobre todo— cuándo no (17). |

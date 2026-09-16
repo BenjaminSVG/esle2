@@ -58,6 +58,33 @@ comprobar('lo que no es de ESLE2 no se toca', !Perfil.esDelAlumno('otra_cosa'));
    lado seguro del error. */
 comprobar('una clave nueva se supone del alumno', Perfil.esDelAlumno('esle2_algo_nuevo'));
 
+seccion('Las preferencias del lector por voz, que ya no existe');
+/* El lector por voz se sacó del proyecto, pero quien lo había apagado o
+   prendido tiene esas cuatro claves guardadas en su navegador. Siguen
+   contando como «de la máquina»: si pasaran al lado del alumno, el perfil
+   diría que hay trabajo donde no hay ninguno, y se las copiaría de un perfil
+   a otro. */
+for (const k of ['esle2_voz', 'esle2_voz_poo', 'esle2_voz_vis', 'esle2_voz_bd'])
+  comprobar(k + ' sigue siendo de la máquina', !Perfil.esDelAlumno(k));
+{
+  const n = navegador();
+  const p = Perfil.crear(n);
+  n.almacen.escribir('esle2_voz', '1');
+  n.almacen.escribir('esle2_voz_poo', '0');
+  comprobar('un navegador con solo esas claves no tiene trabajo de nadie', !p.hayDatos());
+
+  p.crear('Ana');
+  n.almacen.escribir('esle2_ej_f1', 'el programa de Ana');
+  p.crear('Beto');
+  comprobar('al cambiar de alumno no se las lleva',
+    n.almacen.leer('esle2_voz') === '1' && n.almacen.leer('esle2_voz_poo') === '0',
+    n.almacen.leer('esle2_voz') + '/' + n.almacen.leer('esle2_voz_poo'));
+  comprobar('y el trabajo de Ana sí se guarda', n.almacen.leer('esle2_ej_f1') === null);
+  p.cambiar('Ana');
+  comprobar('y vuelve cuando vuelve Ana',
+    n.almacen.leer('esle2_ej_f1') === 'el programa de Ana', n.almacen.leer('esle2_ej_f1'));
+}
+
 seccion('El primero se queda con lo que ya había');
 {
   const n = navegador();

@@ -84,10 +84,6 @@
   /* Ajustar texto: el Alt + Z de Visual Studio Code. */
   AjustarTexto.iniciar({ editor: editor, boton: $('#btnAjustar'), clave: 'esle2vis_ajustar' });
 
-  /* Leer el código en voz alta y dictarlo. Apagado por omisión: quien ya usa
-     un lector de pantalla no necesita que le hablen encima. */
-  VozUI.iniciar({ editor: editor, guardarClave: 'esle2_voz_vis' });
-
   /* Cuando el mismo error de sintaxis aparece cinco veces seguidas en dos
      minutos, se dice algo. Va en la salida y no en un cartel: no interrumpe. */
   const animo = AnimoUI.iniciar({

@@ -7,7 +7,7 @@
  *
  * Al publicar una versión nueva hay que subir VERSION: eso borra la caché vieja.
  */
-const VERSION = 'esle2-v58';
+const VERSION = 'esle2-v59';
 
 const ARCHIVOS = [
   './',
@@ -100,9 +100,6 @@ const ARCHIVOS = [
   'js/animo-ui.js',
   'js/duelo.js',
   'js/duelo-ui.js',
-  'js/voz.js',
-  'js/dictado.js',
-  'js/voz-ui.js',
   /* vendor/yjs/juntos.min.js NO se guarda a propósito: son 214 KB que solo
      sirven conectado, y se traen recién al abrir «Programar de a dos». */
   'js/juntos.js',
@@ -157,7 +154,7 @@ const ARCHIVOS = [
   'img/visual/temporizador-eventos.png',
   'js/verificar-bd.js',
   'js/ejercicios-bd.js',
-  'js/curso-bd-ui.js',
+  'js/curso-bd-ui.js',
   'img/bd/subconsulta-suelta-vs-correlacionada.png',
   'img/bd/no-en-vs-no-existe.png',
   'img/bd/unir-por-clave.png',

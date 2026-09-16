@@ -46,6 +46,10 @@
     'esle2_ajustar', 'esle2bd_ajustar', 'esle2poo_ajustar', 'esle2vis_ajustar',
     'esle2_flexible', 'esle2bd_flexible', 'esle2poo_flexible', 'esle2vis_flexible',
     'esle2_explorador', 'esle2poo_explorador', 'esle2vis_explorador',
+    /* El lector por voz ya no existe, pero estas cuatro claves siguen acá:
+       quien las tiene guardadas de antes las tiene igual, y sacarlas de esta
+       lista las volvería «trabajo del alumno» — el perfil diría que hay datos
+       donde no hay ninguno, y se los copiaría de un perfil a otro. */
     'esle2_voz', 'esle2_voz_bd', 'esle2_voz_poo', 'esle2_voz_vis'
   ]);
 

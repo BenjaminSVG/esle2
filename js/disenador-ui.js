@@ -14,8 +14,8 @@
  * Se puede usar sin mouse
  * ------------------------------------------------------------------------
  * Y no es un agregado: un diseñador que solo funciona arrastrando deja afuera
- * a quien no puede arrastrar, que es justamente para quien se hizo el lector
- * de código por voz. Entonces:
+ * a quien no puede arrastrar, y arrastrar es lo que menos se puede hacer sin
+ * mouse. Entonces:
  *
  *   · con Tab se recorren los controles, y cada uno dice qué es, qué dice y
  *     dónde está;
