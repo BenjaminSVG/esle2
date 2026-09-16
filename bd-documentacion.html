@@ -675,6 +675,103 @@ fin</code></pre>
     </section>
 
     <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-subconsultas" data-titulo="Subconsultas">
+      <h2>Subconsultas</h2>
+      <p class="sub">Una consulta adentro de otra.</p>
+
+      <div class="doc-bloque">
+        <p>Cuando la respuesta necesita otra respuesta primero —«quién compró más que el
+           promedio»— la consulta de adentro se escribe entre paréntesis, donde iría el valor.</p>
+        <table>
+          <tr><th>Forma</th><th>Qué hace</th></tr>
+          <tr><td><code>(SELECCIONAR …)</code></td>
+              <td><strong>Escalar:</strong> vale un valor. Va donde va cualquier valor.</td></tr>
+          <tr><td><code>x EN (SELECCIONAR …)</code></td>
+              <td><strong>De pertenencia:</strong> si <code>x</code> es alguno de los que trae.</td></tr>
+          <tr><td><code>EXISTE (SELECCIONAR …)</code></td>
+              <td><strong>De existencia:</strong> si trae al menos una fila. No mira los valores.</td></tr>
+          <tr><td><code>DE (SELECCIONAR …) COMO t</code></td>
+              <td><strong>Tabla derivada:</strong> el resultado se usa como si fuera una tabla. El
+                  alias no es opcional: sin nombre no habría cómo escribir sus columnas.</td></tr>
+        </table>
+        <pre><code>-- Las compras por encima del promedio
+SELECCIONAR id, monto
+DE compras
+DONDE monto &gt; (SELECCIONAR PROMEDIO(monto) DE compras)
+
+-- Los clientes que compraron alguna vez
+SELECCIONAR nombre DE clientes
+DONDE id EN (SELECCIONAR cliente DE compras)
+
+-- Lo mismo, con EXISTE
+SELECCIONAR nombre DE clientes COMO c
+DONDE EXISTE (SELECCIONAR 1 DE compras COMO p DONDE p.cliente = c.id)
+
+-- Una tabla derivada, unida con una tabla de verdad
+SELECCIONAR c.nombre, t.total
+DE clientes COMO c
+UNIR (SELECCIONAR cliente, SUMAR(monto) COMO total
+      DE compras AGRUPAR POR cliente) COMO t
+SEGUN t.cliente = c.id</code></pre>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Suelta o correlacionada</h3>
+        <p>Una subconsulta <strong>suelta</strong> no nombra nada de la consulta de afuera, así
+           que da lo mismo siempre: el promedio de todas las compras es uno solo.</p>
+        <p>Una <strong>correlacionada</strong> sí la nombra —el <code>c.id</code> del ejemplo del
+           <code>EXISTE</code>— y entonces se calcula <em>una vez por cada fila de afuera</em>, con
+           el valor de esa fila. Es lo que la hace poderosa y también lo que la hace cara: con mil
+           clientes son mil consultas.</p>
+        <div class="doc-nota">Si un nombre está adentro y afuera, gana el de adentro. Y si el
+          alias que nombraste existe adentro pero no tiene esa columna, es un error: no se sale a
+          buscar el mismo alias afuera, porque entonces un nombre mal escrito se resolvería solo y
+          en silencio.</div>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Una escalar trae un valor, no el primero que aparezca</h3>
+        <p>Si la consulta de adentro trae más de una fila, el motor <strong>para</strong>. Podría
+           quedarse con la primera, pero las filas de una tabla no tienen orden: «la primera» no
+           quiere decir nada, y devolver una al azar sería inventar la respuesta.</p>
+        <table>
+          <tr><th>La de adentro trae</th><th>El valor es</th></tr>
+          <tr><td>Ninguna fila</td><td><code>NULO</code> — «no se sabe» es exactamente lo que pasó.</td></tr>
+          <tr><td>Una fila</td><td>Ese valor.</td></tr>
+          <tr><td>Más de una</td><td>Error. Agregá un filtro, o usá <code>MINIMO()</code> o <code>MAXIMO()</code>.</td></tr>
+          <tr><td>Más de una columna</td><td>Error, aunque venga vacía.</td></tr>
+        </table>
+      </div>
+
+      <div class="doc-bloque">
+        <h3><code>NO EN</code> y el nulo: la trampa clásica</h3>
+        <p>Esta es la que más cuesta de todo SQL, y no es un capricho del motor: sale sola de lo
+           que significa <a href="#s-null">NULO</a>.</p>
+        <pre><code>-- Los clientes que NO compraron… y no devuelve ninguno:
+SELECCIONAR nombre DE clientes
+DONDE id NO EN (SELECCIONAR cliente DE compras)</code></pre>
+        <p>Si en <code>compras</code> hay una fila con el cliente en <code>NULO</code>, la
+           pregunta «¿el 3 está entre 1, 2 y <em>no se sabe</em>?» no tiene respuesta: puede que
+           ese que no se sabe sea el 3. La respuesta es <em>desconocido</em>, y una fila con
+           condición desconocida no entra.</p>
+        <p><code>NO EXISTE</code> no tiene el problema, porque no compara valores: solo pregunta
+           si hay filas.</p>
+        <pre><code>-- Así sí:
+SELECCIONAR nombre DE clientes COMO c
+DONDE NO EXISTE (SELECCIONAR 1 DE compras COMO p DONDE p.cliente = c.id)</code></pre>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Hasta dónde se puede anidar</h3>
+        <p><strong>32 niveles.</strong> Pasado eso el motor para y lo dice, y con razón: a esa
+           altura la consulta ya no la lee nadie.</p>
+        <p>Anidar no esquiva los <a href="#s-limites">topes</a>: el presupuesto es de la
+           instrucción entera y lo comparten todas las subconsultas. Una correlacionada sobre una
+           tabla grande se para por ahí, no por el anidamiento.</p>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
     <section class="doc-seccion" id="s-null" data-titulo="NULL: lo que más cuesta">
       <h2>NULL: lo que más cuesta</h2>
       <p class="sub">No es cero, no es vacío, y no es igual a sí mismo.</p>
@@ -821,7 +918,8 @@ SELECT nombre FROM gente WHERE edad IS NULL</code></pre>
       <div class="doc-bloque">
         <p>El motor cubre el SQL de una primera materia. Lo que <strong>no</strong> está:</p>
         <ul>
-          <li>subconsultas (<code>SELECT</code> dentro de otro <code>SELECT</code>);</li>
+          <li><code>UNION</code>, las consultas con nombre (<code>WITH</code>), las funciones de ventana y <code>LATERAL</code>. Sí están las
+              <a href="#s-subconsultas">subconsultas</a>;</li>
           <li><code>ON DELETE CASCADE</code> y <code>ON DELETE RESTRICT</code>. Las
               <a href="#s-sql">claves foráneas</a> se controlan al insertar y al modificar, pero al
               borrar una fila no se mira quién la señalaba: para eso habría que decir cuál de las

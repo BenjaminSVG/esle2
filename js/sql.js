@@ -511,6 +511,17 @@
     }
 
     fuente() {
+      /* Una tabla derivada: «DE (SELECCIONAR …) COMO x». El alias no es
+         opcional acá, porque el resultado no tiene nombre propio y sin alias
+         no habría cómo escribir sus columnas. */
+      if (this.es('(') && this.tk(1).k === 'select') {
+        this.sig();
+        const q = this.seleccionar();
+        this.exige(')');
+        this.come('as');
+        const alias = this.nombre('el alias de la tabla derivada');
+        return { sub: q, alias };
+      }
       const tabla = this.nombre('el nombre de la tabla');
       let alias = null;
       if (this.come('as')) alias = this.nombre('el alias');
@@ -624,21 +635,38 @@
           n = { t: 'esNulo', e: n, neg };
           continue;
         }
-        if (this.come('like')) { n = { t: 'bin', op: 'like', i: n, d: this.nAdit() }; continue; }
+        /* «NO EN», «NO ENTRE», «NO COMO_PATRON»: el NO va en el medio, no
+           adelante, así que nNot() no lo ve. Hasta acá no se podía escribir
+           ninguno de los tres. */
+        let neg = false;
+        if (this.es('not') && ['in', 'between', 'like'].includes(this.tk(1).k)) {
+          this.sig();
+          neg = true;
+        }
+        const negar = x => (neg ? { t: 'un', op: 'not', e: x } : x);
+
+        if (this.come('like')) { n = negar({ t: 'bin', op: 'like', i: n, d: this.nAdit() }); continue; }
         if (this.come('between')) {
           const a = this.nAdit();
           if (!this.come('and') && !this.comeEsp('y')) this.exige('and', 'la palabra Y (AND)');
-          n = { t: 'entre', e: n, a, b: this.nAdit() };
+          n = negar({ t: 'entre', e: n, a, b: this.nAdit() });
           continue;
         }
         if (this.come('in')) {
           this.exige('(', '"(" con la lista de valores');
+          if (this.es('select')) {
+            const q = this.seleccionar();
+            this.exige(')');
+            n = negar({ t: 'enSub', e: n, q });
+            continue;
+          }
           const items = [];
           do { items.push(this.expr()); } while (this.come(','));
           this.exige(')');
-          n = { t: 'en', e: n, items };
+          n = negar({ t: 'en', e: n, items });
           continue;
         }
+        if (neg) err('después de NO (NOT) se esperaba EN, ENTRE o COMO_PATRON');
         if (['=', '<>', '!=', '<', '<=', '>', '>='].includes(this.k)) {
           const op = this.sig().k;
           n = { t: 'bin', op, i: n, d: this.nAdit() };
@@ -672,7 +700,28 @@
       if (this.es('num')) return { t: 'num', v: this.sig().v };
       if (this.es('cad')) return { t: 'cad', v: this.sig().v };
       if (this.come('null')) return { t: 'nulo' };
-      if (this.come('(')) { const e = this.expr(); this.exige(')'); return e; }
+      /* EXISTE (consulta): no mira ningún valor, solo si la consulta de
+         adentro trae al menos una fila. */
+      if (this.es('exists') && this.tk(1).k === '(') {
+        this.sig(); this.sig();
+        const q = this.seleccionar();
+        this.exige(')');
+        return { t: 'existe', q };
+      }
+      if (this.es('(')) {
+        /* Un paréntesis puede abrir una expresión o una consulta entera: una
+           subconsulta escalar vale donde vale un valor. */
+        if (this.tk(1).k === 'select') {
+          this.sig();
+          const q = this.seleccionar();
+          this.exige(')');
+          return { t: 'sub', q };
+        }
+        this.sig();
+        const e = this.expr();
+        this.exige(')');
+        return e;
+      }
       /* Las funciones de agregación son palabras reservadas, pero solo cuando
          viene el paréntesis: si no, una columna llamada «promedio» o «max»
          dejaría de poder nombrarse. */
@@ -807,6 +856,9 @@
         }
         return hayNulo ? null : false;
       }
+      case 'sub': return subEscalar(e.q, fila, ctx);
+      case 'existe': return correrSub(e.q, fila, ctx).filas.length > 0;
+      case 'enSub': return enSub(e, fila, ctx);
       case 'bin': return binario(e, fila, ctx);
       case 'fn': return funcion(e, fila, ctx);
       case 'agr': return ctx && ctx.agregados ? ctx.agregados.get(claveAgr(e)) : null;
@@ -831,9 +883,78 @@
       }
     }
     if (ctx && ctx.alias && Object.prototype.hasOwnProperty.call(ctx.alias, clave)) return ctx.alias[clave];
+    /* Acá adentro no está: puede ser una columna de la consulta de afuera. Eso
+       es exactamente lo que vuelve «correlacionada» a una subconsulta.
+
+       Con una excepción: si el alias que se nombró existe acá adentro pero no
+       tiene esa columna, es un error y no una invitación a buscar el mismo
+       alias afuera. Si no, «a.zzz» mal escrito se resolvería en silencio con
+       el «a» de la consulta de arriba. */
+    if (ctx && ctx.afuera) {
+      const al = (e.tabla || '').toLowerCase();
+      const aquiEstaElAlias = al
+        && (ctx.columnas || []).some(k => k.toLowerCase().startsWith(al + '.'));
+      if (!aquiEstaElAlias) return leerCol(e, ctx.afuera.fila, ctx.afuera.ctx);
+    }
     err(`no existe la columna "${e.tabla ? e.tabla + '.' : ''}${e.nombre}"`,
       ctx && ctx.columnas && ctx.columnas.length
         ? 'Las que hay son: ' + ctx.columnas.join(', ') + '.' : '');
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Subconsultas                                                         */
+  /* ------------------------------------------------------------------ */
+  /* Una subconsulta se corre con la fila de afuera a la vista: eso es lo que
+     la vuelve correlacionada. El presupuesto NO se reinicia —lo comparten
+     todas— o anidar sería la forma de esquivarlo. */
+  const HONDO = 32;
+
+  function correrSub(q, fila, ctx) {
+    if (!ctx || !ctx.base) err('una subconsulta no se puede usar acá');
+    const hondo = (ctx.hondo || 0) + 1;
+    if (hondo > HONDO)
+      err(`la consulta supera los ${HONDO} niveles de anidamiento`,
+        'Dividila en consultas más simples: a esta altura ya no la lee nadie.');
+    gastar(1);
+    return seleccionar(ctx.base, q, { fila, ctx }, hondo);
+  }
+
+  function unaSolaColumna(r, donde) {
+    if (r.columnas.length !== 1)
+      err(`la subconsulta trae ${r.columnas.length} columnas y ${donde}`,
+        'Dejá una sola columna en el SELECCIONAR de adentro.');
+  }
+
+  function subEscalar(q, fila, ctx) {
+    const r = correrSub(q, fila, ctx);
+    unaSolaColumna(r, 'acá se espera un solo valor');
+    /* Sin filas, el valor es NULO: «no se sabe» es exactamente lo que pasó. */
+    if (!r.filas.length) return null;
+    if (r.filas.length > 1)
+      err(`la subconsulta trajo ${r.filas.length} filas y acá se espera un solo valor`,
+        'Agregá un filtro, o usá un agregado como MINIMO() o MAXIMO(). Quedarse con la '
+        + 'primera fila sería inventar una respuesta: las filas de una tabla no tienen orden.');
+    return r.filas[0][0];
+  }
+
+  function enSub(e, fila, ctx) {
+    const r = correrSub(e.q, fila, ctx);
+    unaSolaColumna(r, 'con EN (IN) tiene que traer una sola');
+    /* Contra un resultado vacío la respuesta es falso, aunque la izquierda sea
+       nula: no hay nada con qué comparar, así que no hay nada que no se sepa. */
+    if (!r.filas.length) return false;
+    const v = evaluar(e.e, fila, ctx);
+    gastar(r.filas.length);
+    let hayNulo = false;
+    for (const f of r.filas) {
+      const w = f[0];
+      if (esNulo(w)) { hayNulo = true; continue; }
+      if (!esNulo(v) && comparar(v, w) === 0) return true;
+    }
+    /* Ni la izquierda nula ni un nulo adentro dan falso: dan «no se sabe», y
+       por eso NO EN contra una columna con nulos no devuelve nada. */
+    if (esNulo(v) || hayNulo) return null;
+    return false;
   }
 
   function binario(e, fila, ctx) {
@@ -939,6 +1060,10 @@
         + 'ROUND, ABS, SUBSTR, COALESCE e IFNULL.');
     for (const k of Object.keys(e)) {
       if (k === 't' || k === 'tabla' || k === 'nombre' || k === 'op' || k === 'f') continue;
+      /* Una subconsulta tiene sus propias columnas: revisarla con las de acá
+         rechazaría las suyas y aceptaría las que no puede ver. Se revisa sola
+         cuando se la corre. */
+      if (k === 'q') continue;
       const v = e[k];
       if (Array.isArray(v)) v.forEach(x => validar(x, columnas));
       else if (v && typeof v === 'object') validar(v, columnas);
@@ -1235,31 +1360,46 @@
   /* Arma las filas «anchas» del FROM y los JOIN: cada clave es
      «alias.columna» en minúsculas, más «columna» sola para poder escribirla
      sin prefijo cuando no hay ambigüedad. */
-  function filasDe(base, q) {
-    const fuentes = [q.de].concat(q.joins.map(j => j.fuente)).filter(Boolean);
-    const columnas = [];
-    for (const f of fuentes) {
-      const t = tabla(base, f.tabla);
-      for (const c of t.columnas) columnas.push(f.alias + '.' + c.nombre);
-    }
-    if (!q.de) return { filas: [{}], columnas };
-
-    const ancha = (base_, f, fila) => {
-      const o = {};
-      const t = tabla(base_, f.tabla);
-      for (const c of t.columnas) {
-        o[f.alias.toLowerCase() + '.' + c.nombre.toLowerCase()] = fila[c.nombre];
+  function filasDe(base, q, afuera, hondo) {
+    /* Cada fuente puede ser una tabla o una consulta entera («tabla
+       derivada»). Las dos terminan igual: una lista de nombres de columna y
+       una lista de filas anchas. */
+    const deLaFuente = f => {
+      if (f.sub) {
+        /* Una tabla derivada se resuelve sola, sin ver las fuentes de al lado
+           ni la fila de afuera: eso sería LATERAL, que este motor no tiene. */
+        const r = seleccionar(base, f.sub, afuera, hondo || 0);
+        const nombres = r.columnas.map(c => f.alias + '.' + c);
+        const filas = r.filas.map(v => {
+          const o = {};
+          r.columnas.forEach((c, i) => { o[f.alias.toLowerCase() + '.' + c.toLowerCase()] = v[i]; });
+          return o;
+        });
+        return { nombres, filas, vacia: nombresVacios(nombres) };
       }
-      return o;
+      const t = tabla(base, f.tabla);
+      const nombres = t.columnas.map(c => f.alias + '.' + c.nombre);
+      const filas = t.filas.map(fila => {
+        const o = {};
+        for (const c of t.columnas) o[f.alias.toLowerCase() + '.' + c.nombre.toLowerCase()] = fila[c.nombre];
+        return o;
+      });
+      return { nombres, filas, vacia: nombresVacios(nombres) };
     };
 
-    const ctxJ = { columnas };
-    let filas = tabla(base, q.de.tabla).filas.map(f => ancha(base, q.de, f));
-    for (const j of q.joins) {
-      const der = tabla(base, j.fuente.tabla).filas.map(f => ancha(base, j.fuente, f));
-      const vacia = {};
-      for (const c of tabla(base, j.fuente.tabla).columnas)
-        vacia[j.fuente.alias.toLowerCase() + '.' + c.nombre.toLowerCase()] = null;
+    const fuentes = [q.de].concat(q.joins.map(j => j.fuente)).filter(Boolean);
+    if (!q.de) return { filas: [{}], columnas: [] };
+
+    const resueltas = fuentes.map(deLaFuente);
+    const columnas = [];
+    for (const r of resueltas) for (const n of r.nombres) columnas.push(n);
+
+    const ctxJ = { base, columnas, afuera, hondo: hondo || 0 };
+    let filas = resueltas[0].filas;
+    for (let ji = 0; ji < q.joins.length; ji++) {
+      const j = q.joins[ji];
+      const der = resueltas[ji + 1].filas;
+      const vacia = resueltas[ji + 1].vacia;
 
       const pares = igualdadesCruzadas(j.on, j.fuente.alias);
       const cubos = pares.length ? agrupar(der, pares.map(p => p[1]), ctxJ) : null;
@@ -1290,6 +1430,14 @@
       filas = nuevas;
     }
     return { filas, columnas };
+  }
+
+  /* La fila «no hay pareja» de un IZQUIERDA UNIR: todas las columnas de esa
+     fuente en nulo. */
+  function nombresVacios(nombres) {
+    const o = {};
+    for (const n of nombres) o[n.toLowerCase()] = null;
+    return o;
   }
 
   /* De la condición de un UNIR, las igualdades «columna de acá = columna de la
@@ -1344,6 +1492,13 @@
   function buscarAgregados(e, out) {
     if (!e || typeof e !== 'object') return out;
     if (e.t === 'agr') { out.push(e); return out; }
+    /* Los agregados de adentro de una subconsulta son de esa consulta, no de
+       esta: si se los juntara acá, un SUMAR() de adentro se calcularía sobre
+       las filas de afuera. */
+    if (e.t === 'sub' || e.t === 'existe' || e.t === 'enSub') {
+      if (e.e) buscarAgregados(e.e, out);       // «x EN (SELECCIONAR …)»: la x sí es de acá
+      return out;
+    }
     for (const k of Object.keys(e)) {
       const v = e[k];
       if (Array.isArray(v)) v.forEach(x => buscarAgregados(x, out));
@@ -1400,9 +1555,14 @@
     return 'expr';
   }
 
-  function seleccionar(base, q) {
-    const { filas, columnas } = filasDe(base, q);
-    const ctx = { columnas };
+  function seleccionar(base, q, afuera, hondo) {
+    const { filas, columnas } = filasDe(base, q, afuera, hondo);
+    const ctx = { base, columnas, afuera, hondo: hondo || 0 };
+    /* validar() es un control previo, para que una columna mal escrita se
+       avise aunque la tabla esté vacía. Adentro de una subconsulta también
+       valen las columnas de afuera; cuál gana cuando el nombre está en las dos
+       lo decide leerCol(), que es quien resuelve de verdad. */
+    const visibles = afuera ? columnas.concat(afuera.ctx.columnas || []) : columnas;
 
     gastar(filas.length);
     let vivas = q.where
@@ -1431,9 +1591,9 @@
 
     /* También los del ORDER BY: «ORDER BY SUM(monto)» es legítimo aunque la
        suma no aparezca entre las columnas que se muestran. */
-    for (const c of salida) validar(c.e, columnas);
-    if (q.where) validar(q.where, columnas);
-    if (q.having) validar(q.having, columnas);
+    for (const c of salida) validar(c.e, visibles);
+    if (q.where) validar(q.where, visibles);
+    if (q.having) validar(q.having, visibles);
     /* En el ORDER BY también vale el nombre que la propia consulta le puso a
        una columna —«... COUNT(*) AS cuantos  ORDER BY cuantos»—, como en
        SQLite, MySQL y PostgreSQL. Ese nombre no es una columna de ninguna
@@ -1441,8 +1601,8 @@
        resolver valorOrden(). */
     const aliasSalida = e => e.t === 'col' && !e.tabla
       && salida.some(c => c.nombre.toLowerCase() === e.nombre.toLowerCase());
-    for (const o of q.order) if (!aliasSalida(o.e)) validar(o.e, columnas);
-    for (const g of q.group || []) validar(g, columnas);
+    for (const o of q.order) if (!aliasSalida(o.e)) validar(o.e, visibles);
+    for (const g of q.group || []) validar(g, visibles);
 
     const agrs = buscarAgregados({
       cols: salida.map(s => s.e), having: q.having, order: q.order.map(o => o.e)
@@ -1468,14 +1628,14 @@
       }
 
       for (const [, gf] of grupos) {
-        const ctxG = { columnas, agregados: calcularAgregados(agrs, gf, ctx) };
+        const ctxG = { base, columnas, afuera, hondo: hondo || 0, agregados: calcularAgregados(agrs, gf, ctx) };
         const rep = gf[0] || {};
         if (q.having && verdad(evaluar(q.having, rep, ctxG)) !== true) continue;
         resultado.push({ v: salida.map(c => evaluar(c.e, rep, ctxG)), origen: rep, ctx: ctxG });
       }
       /* Sin GROUP BY y sin filas, COUNT(*) igual tiene que dar 0. */
       if (!q.group && !vivas.length && agrs.length && !resultado.length) {
-        const ctxG = { columnas, agregados: calcularAgregados(agrs, [], ctx) };
+        const ctxG = { base, columnas, afuera, hondo: hondo || 0, agregados: calcularAgregados(agrs, [], ctx) };
         resultado.push({ v: salida.map(c => evaluar(c.e, {}, ctxG)), origen: {}, ctx: ctxG });
       }
     } else {
@@ -1542,7 +1702,7 @@
 
   function actualizar(base, s) {
     const t = tabla(base, s.tabla);
-    const ctx = { columnas: t.columnas.map(c => t.nombre + '.' + c.nombre) };
+    const ctx = { base, columnas: t.columnas.map(c => t.nombre + '.' + c.nombre) };
     const ancha = f => {
       const o = {};
       for (const c of t.columnas) {
@@ -1594,7 +1754,7 @@
 
   function eliminar(base, s) {
     const t = tabla(base, s.tabla);
-    const ctx = { columnas: t.columnas.map(c => t.nombre + '.' + c.nombre) };
+    const ctx = { base, columnas: t.columnas.map(c => t.nombre + '.' + c.nombre) };
     const ancha = f => {
       const o = {};
       for (const c of t.columnas) o[t.nombre.toLowerCase() + '.' + c.nombre.toLowerCase()] = f[c.nombre];

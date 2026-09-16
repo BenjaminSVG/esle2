@@ -791,5 +791,133 @@ seccion('UNIR por clave: mismo resultado, sin mirarlas todas');
   comprobar(`y tardó menos de 10 s (tardó ${(tardo / 1000).toFixed(1)} s)`, tardo < 10000, tardo);
 }
 
+/* ------------------------------------------------------------------ */
+seccion('Subconsultas');
+/* ------------------------------------------------------------------ */
+{
+  const b = SQL.crear();
+  q(b, 'CREAR TABLA clientes (id ENTERO CLAVE PRIMARIA, nombre TEXTO, ciudad TEXTO)');
+  q(b, 'CREAR TABLA compras (id ENTERO CLAVE PRIMARIA, cliente ENTERO REFERENCIA clientes (id), monto REAL)');
+  q(b, 'INSERTAR DENTRO clientes VALORES (1, "Ana", "Luque"), (2, "Beto", "Luque"), '
+    + '(3, "Cora", "Asuncion"), (4, "Dani", "Asuncion")');
+  q(b, 'INSERTAR DENTRO compras VALORES (10, 1, 100), (11, 1, 50), (12, 2, 300), (13, NULO, 7)');
+
+  /* Escalar suelta: se calcula una vez y vale para toda la consulta. */
+  comprobar('escalar suelta: quién compró más que el promedio',
+    filas(q(b, 'SELECCIONAR id DE compras DONDE monto > (SELECCIONAR PROMEDIO(monto) DE compras) '
+      + 'ORDENAR POR id')) === '12',
+    filas(q(b, 'SELECCIONAR id DE compras DONDE monto > (SELECCIONAR PROMEDIO(monto) DE compras)')));
+
+  comprobar('escalar en la lista de columnas',
+    filas(q(b, 'SELECCIONAR nombre, (SELECCIONAR CONTAR(*) DE compras) DE clientes DONDE id = 1'))
+    === 'Ana|4');
+
+  /* Cardinalidad: lo que no se puede hacer es elegir la primera. */
+  let e = falla(b, 'SELECCIONAR (SELECCIONAR id DE clientes) DE compras DONDE id = 10');
+  comprobar('una escalar con más de una fila es un error',
+    e !== null && /un solo valor/.test(e.message), e && e.message);
+  e = falla(b, 'SELECCIONAR (SELECCIONAR id, nombre DE clientes DONDE id = 1) DE compras DONDE id = 10');
+  comprobar('y con más de una columna también',
+    e !== null && /columnas/.test(e.message), e && e.message);
+  comprobar('sin filas, una escalar vale NULO',
+    filas(q(b, 'SELECCIONAR (SELECCIONAR id DE clientes DONDE id = 99) DE compras DONDE id = 10'))
+    === 'NULL');
+
+  /* EN con subconsulta. */
+  comprobar('EN con subconsulta',
+    filas(q(b, 'SELECCIONAR nombre DE clientes DONDE id EN (SELECCIONAR cliente DE compras) '
+      + 'ORDENAR POR nombre')) === 'Ana ; Beto');
+
+  /* NO EN contra una columna con nulos no devuelve nada: es lo que más
+     sorprende de SQL y tiene que pasar acá también. */
+  comprobar('NO EN con un nulo adentro no devuelve nada',
+    filas(q(b, 'SELECCIONAR nombre DE clientes DONDE id NO EN (SELECCIONAR cliente DE compras)'))
+    === '',
+    filas(q(b, 'SELECCIONAR nombre DE clientes DONDE id NO EN (SELECCIONAR cliente DE compras)')));
+  comprobar('y sin el nulo sí',
+    filas(q(b, 'SELECCIONAR nombre DE clientes DONDE id NO EN '
+      + '(SELECCIONAR cliente DE compras DONDE cliente ES NO NULO) ORDENAR POR nombre'))
+    === 'Cora ; Dani');
+  comprobar('EN contra un resultado vacío da falso',
+    filas(q(b, 'SELECCIONAR nombre DE clientes DONDE id EN '
+      + '(SELECCIONAR cliente DE compras DONDE monto > 9999)')) === '');
+
+  /* EXISTE y NO EXISTE, correlacionados. */
+  comprobar('EXISTE correlacionado: los que compraron',
+    filas(q(b, 'SELECCIONAR nombre DE clientes COMO c DONDE EXISTE '
+      + '(SELECCIONAR 1 DE compras COMO p DONDE p.cliente = c.id) ORDENAR POR nombre'))
+    === 'Ana ; Beto');
+  comprobar('NO EXISTE: los que no compraron — y el nulo no los tapa',
+    filas(q(b, 'SELECCIONAR nombre DE clientes COMO c DONDE NO EXISTE '
+      + '(SELECCIONAR 1 DE compras COMO p DONDE p.cliente = c.id) ORDENAR POR nombre'))
+    === 'Cora ; Dani');
+
+  /* Escalar correlacionada. */
+  comprobar('escalar correlacionada: cuánto compró cada uno',
+    filas(q(b, 'SELECCIONAR c.nombre, (SELECCIONAR SUMAR(p.monto) DE compras COMO p '
+      + 'DONDE p.cliente = c.id) DE clientes COMO c ORDENAR POR c.nombre'))
+    === 'Ana|150 ; Beto|300 ; Cora|NULL ; Dani|NULL',
+    filas(q(b, 'SELECCIONAR c.nombre, (SELECCIONAR SUMAR(p.monto) DE compras COMO p '
+      + 'DONDE p.cliente = c.id) DE clientes COMO c ORDENAR POR c.nombre')));
+
+  /* Tabla derivada. */
+  comprobar('tabla derivada con agregado',
+    filas(q(b, 'SELECCIONAR t.cliente, t.total DE (SELECCIONAR cliente, SUMAR(monto) COMO total '
+      + 'DE compras AGRUPAR POR cliente) COMO t DONDE t.total > 100 ORDENAR POR t.cliente'))
+    === '1|150 ; 2|300',
+    filas(q(b, 'SELECCIONAR t.cliente, t.total DE (SELECCIONAR cliente, SUMAR(monto) COMO total '
+      + 'DE compras AGRUPAR POR cliente) COMO t DONDE t.total > 100 ORDENAR POR t.cliente')));
+
+  comprobar('tabla derivada unida con una tabla',
+    filas(q(b, 'SELECCIONAR c.nombre, t.total DE clientes COMO c '
+      + 'UNIR (SELECCIONAR cliente, SUMAR(monto) COMO total DE compras AGRUPAR POR cliente) COMO t '
+      + 'SEGUN t.cliente = c.id ORDENAR POR c.nombre')) === 'Ana|150 ; Beto|300',
+    filas(q(b, 'SELECCIONAR c.nombre, t.total DE clientes COMO c '
+      + 'UNIR (SELECCIONAR cliente, SUMAR(monto) COMO total DE compras AGRUPAR POR cliente) COMO t '
+      + 'SEGUN t.cliente = c.id ORDENAR POR c.nombre')));
+
+  /* Subconsulta en el TENIENDO. */
+  comprobar('subconsulta en el TENIENDO',
+    filas(q(b, 'SELECCIONAR ciudad, CONTAR(*) DE clientes AGRUPAR POR ciudad '
+      + 'TENIENDO CONTAR(*) >= (SELECCIONAR CONTAR(*) DE compras DONDE monto > 200) '
+      + 'ORDENAR POR ciudad')) === 'Asuncion|2 ; Luque|2');
+
+  /* Y en un ACTUALIZAR. */
+  q(b, 'ACTUALIZAR clientes CONJUNTO ciudad = "compró" DONDE id EN (SELECCIONAR cliente DE compras)');
+  comprobar('subconsulta adentro de un ACTUALIZAR',
+    filas(q(b, 'SELECCIONAR nombre DE clientes DONDE ciudad = "compró" ORDENAR POR nombre'))
+    === 'Ana ; Beto');
+}
+
+/* ------------------------------------------------------------------ */
+seccion('Anidar mucho');
+/* ------------------------------------------------------------------ */
+{
+  const b = SQL.crear();
+  q(b, 'CREAR TABLA n (v ENTERO)');
+  q(b, 'INSERTAR DENTRO n VALORES (1)');
+
+  const anidar = cuantos => {
+    let s = 'SELECCIONAR v DE n';
+    for (let i = 0; i < cuantos; i++) s = 'SELECCIONAR (' + s + ')';
+    return s;
+  };
+  comprobar('treinta niveles andan', filas(q(b, anidar(30))) === '1', filas(q(b, anidar(30))));
+  const e = falla(b, anidar(40));
+  comprobar('cuarenta paran y lo dicen',
+    e !== null && /32 niveles/.test(e.message), e && e.message);
+
+  /* Anidar no esquiva el presupuesto: lo comparten todas. */
+  q(b, 'CREAR TABLA g (v ENTERO)');
+  const vs = [];
+  for (let i = 1; i <= 3000; i++) vs.push('(' + i + ')');
+  q(b, 'INSERTAR DENTRO g VALORES ' + vs.join(', '));
+  const e2 = falla(b, 'SELECCIONAR CONTAR(*) DE g COMO a DONDE EXISTE '
+    + '(SELECCIONAR 1 DE g COMO b DONDE b.v > a.v Y EXISTE '
+    + '(SELECCIONAR 1 DE g COMO c DONDE c.v > b.v))');
+  comprobar('una correlacionada cara para por el presupuesto, no por el anidamiento',
+    e2 !== null && e2.limite === true, e2 && e2.message);
+}
+
 console.log(`\n${ok} verificaciones correctas, ${fallos} fallos.`);
 assert.strictEqual(fallos, 0, 'el motor de SQL tiene fallos');

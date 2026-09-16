@@ -43,8 +43,8 @@ Cada fila se publica sola, con `npm run soltar`, y deja el sitio andando.
 | 2 ✅ | Presupuesto y cancelación | `sql.js`, `bd-app.js` | Una consulta cara se detiene sin colgar el IDE y sin dejar la base a medias |
 | 3 ✅ | Índices de clave | `sql.js` | Buscar por clave primaria deja de recorrer la tabla; índice y datos nunca divergen |
 | 4 ✅ | Consultas grandes | `sql.js` | 100.000 × 100.000 por igualdad sin armar el producto cartesiano |
-| 5 | Subconsultas sueltas | `sql.js` | Escalar, `EN`, `EXISTE`, tabla derivada; cardinalidad y nulos cubiertos |
-| 6 | Subconsultas correlacionadas | `sql.js` | Correlación a varios niveles, con el mismo presupuesto compartido |
+| 5 ✅ | Subconsultas sueltas | `sql.js` | Escalar, `EN`, `EXISTE`, tabla derivada; cardinalidad y nulos cubiertos |
+| 6 ✅ | Subconsultas correlacionadas | `sql.js` | Correlación a varios niveles, con el mismo presupuesto compartido |
 | 7 | Diez ejemplos | `bd-ejemplos.js` | Los diez corren desde una base limpia |
 | 8 | Curso de cincuenta | `ejercicios-bd.js`, `verificar-bd.js`, `curso-bd-ui.js` | Las cincuenta soluciones pasan y las respuestas tramposas no |
 | 9 | Documentación ilustrada | `bd-documentacion.html`, `img/bd/` | Referencia completa, tres dibujos, ayuda regenerada, anda sin conexión |
