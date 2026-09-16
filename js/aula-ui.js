@@ -242,7 +242,7 @@
             localStorage.getItem('esle2_alumno') || '');
           if (nombre === null) return;
           if (!nombre.trim()) { alert('Sin tu nombre la entrega no sirve: el profesor no sabría de quién es.'); return; }
-          localStorage.setItem('esle2_alumno', nombre.trim());
+          try { localStorage.setItem('esle2_alumno', nombre.trim()); } catch (e) { /* almacén lleno */ }
           ent.disabled = true;
           const antes = ent.textContent;
           ent.textContent = 'corrigiendo…';

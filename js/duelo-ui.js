@@ -39,7 +39,9 @@
       try { return JSON.parse(localStorage.getItem(CLAVE_PERFIL) || 'null') || global.Duelo.perfilVacio(); }
       catch (e) { return global.Duelo.perfilVacio(); }
     };
-    const guardarPerfil = p => localStorage.setItem(CLAVE_PERFIL, JSON.stringify(p));
+    const guardarPerfil = p => {
+      try { localStorage.setItem(CLAVE_PERFIL, JSON.stringify(p)); } catch (e) { /* almacén lleno */ }
+    };
 
     /* ----------------------------- el diálogo ------------------------ */
     function construir() {
@@ -87,7 +89,7 @@
       const nom = campo('nombre');
       nom.value = localStorage.getItem(CLAVE_NOMBRE) || global.Juntos.nombreSugerido();
       nom.addEventListener('input', () => {
-        localStorage.setItem(CLAVE_NOMBRE, nom.value);
+        try { localStorage.setItem(CLAVE_NOMBRE, nom.value); } catch (e) { /* almacén lleno */ }
         if (proveedor) proveedor.awareness.setLocalStateField('user', quienSoy());
       });
 

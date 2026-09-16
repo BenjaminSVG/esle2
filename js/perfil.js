@@ -42,7 +42,7 @@
   const DE_LA_MAQUINA = new Set([
     'esle2_tema', 'esle2_diseno', 'esle2_senas', 'esle2_sonido',
     'esle2_presentacion', 'esle2_enfoque',
-    'esle2_disposicion', 'esle2bd_disposicion', 'esle2vis_disposicion',
+    'esle2_disposicion', 'esle2bd_disposicion', 'esle2poo_disposicion', 'esle2vis_disposicion',
     'esle2_ajustar', 'esle2bd_ajustar', 'esle2poo_ajustar', 'esle2vis_ajustar',
     'esle2_flexible', 'esle2bd_flexible', 'esle2poo_flexible', 'esle2vis_flexible',
     'esle2_explorador', 'esle2poo_explorador', 'esle2vis_explorador',
@@ -53,9 +53,13 @@
     'esle2_voz', 'esle2_voz_bd', 'esle2_voz_poo', 'esle2_voz_vis'
   ]);
 
-  /* Las cookies del avance de los tres cursos. Se nombran acá y no se leen de
-     ProgresoESLE2 para que esto se pueda probar sin cargar aquel archivo. */
-  const COOKIES = ['esle2_progreso', 'esle2_progreso_poo', 'esle2_progreso_vis'];
+  /* Las cookies del avance de los cuatro cursos. Se nombran acá y no se leen
+     de ProgresoESLE2 para que esto se pueda probar sin cargar aquel archivo
+     — con la contra de que hay que acordarse de agregar la del curso nuevo:
+     la de BD faltó desde que existe el curso, así que el avance de un alumno
+     en BD se lo encontraba el siguiente. */
+  const COOKIES = ['esle2_progreso', 'esle2_progreso_poo', 'esle2_progreso_vis',
+    'esle2_progreso_bd'];
 
   function esDelAlumno(clave) {
     if (typeof clave !== 'string' || !clave.startsWith('esle2')) return false;

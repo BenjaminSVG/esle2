@@ -111,14 +111,14 @@
   const compilar = fuente => Flex.compilar(fuente);
 
 
-  editor.setValue(localStorage.getItem('esle2vis_codigo') || INICIAL);
+  editor.setValue(Guardado.leer('esle2vis_codigo') || INICIAL);
   editor.getInputField().setAttribute('aria-label', 'Editor de programas ESLE2 Visual');
   editor.getScrollerElement().setAttribute('tabindex', '0');
   editor.getScrollerElement().setAttribute('role', 'region');
   editor.getScrollerElement().setAttribute('aria-label', 'Editor de programas ESLE2 Visual');
   editor.on('change', () => {
-    localStorage.setItem('esle2vis_codigo', editor.getValue());
-    if (ejercicioActivo) localStorage.setItem('esle2vis_ej_' + ejercicioActivo.id, editor.getValue());
+    Guardado.escribir('esle2vis_codigo', editor.getValue());
+    if (ejercicioActivo) Guardado.escribir('esle2vis_ej_' + ejercicioActivo.id, editor.getValue());
   });
   editor.on('cursorActivity', () => {
     const c = editor.getCursor();
@@ -147,6 +147,14 @@
     $('#estado').textContent = txt;
     $('#estado').className = 'estado ' + (clase || '');
   }
+
+  /* Si el navegador no deja guardar —ventana privada, o el almacén lleno— se
+     dice una sola vez. Callarlo sería dejar que alguien trabaje una hora
+     creyendo que su programa está a salvo. */
+  Guardado.alFallar(texto => {
+    escribir('\nAviso: ' + texto + '\n', 'aviso');
+    estado('no se está guardando', 'error');
+  });
 
   function mostrarError(e) {
     const linea = e && e.linea ? ' (línea ' + e.linea + ')' : '';
@@ -411,10 +419,10 @@
   function verEntrada(si) {
     $('#panelEntrada').classList.toggle('oculto', !si);
   }
-  $('#entrada').value = localStorage.getItem('esle2vis_entrada') || '';
+  $('#entrada').value = Guardado.leer('esle2vis_entrada') || '';
   if ($('#entrada').value) verEntrada(true);
   $('#entrada').addEventListener('input', () =>
-    localStorage.setItem('esle2vis_entrada', $('#entrada').value));
+    Guardado.escribir('esle2vis_entrada', $('#entrada').value));
 
   /* =================================================================== */
   /* Menú «Insertar»: el cuadro de herramientas                          */
@@ -770,7 +778,7 @@
     if (historial) historial.registrar('previa', 'Antes de abrir «' + e.titulo + '»');
     detener();
     ejercicioActivo = e;
-    const guardado = localStorage.getItem('esle2vis_ej_' + e.id);
+    const guardado = Guardado.leer('esle2vis_ej_' + e.id);
     editor.setValue(guardado || e.plantilla);
     $('#bannerTitulo').textContent = e.titulo + ' (' + NIVELES[e.nivel] + ')';
     $('#bannerEjercicio').classList.remove('oculto');
@@ -889,7 +897,7 @@
     if (!e) return;
     repasando = e.id;
     /* En un repaso se arranca de la plantilla: la gracia es rehacerlo. */
-    localStorage.removeItem('esle2vis_ej_' + e.id);
+    Guardado.borrar('esle2vis_ej_' + e.id);
     abrirEjercicio(e);
     estado('repaso: rehacelo de memoria');
   });
@@ -1045,8 +1053,8 @@
 
   if (window.Sonido) {
     Sonido.iniciar({
-      leer: k => localStorage.getItem(k),
-      guardar: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} }
+      leer: k => Guardado.leer(k),
+      guardar: (k, v) => { try { Guardado.escribir(k, v); } catch (e) {} }
     });
     const btnSonido = $('#btnSonido');
     const pintarSonido = () => {
@@ -1238,11 +1246,11 @@
   async function entregarLaGuia(alumno) {
     if (!guiaAula) throw new Error('no hay ninguna guía abierta');
     const abierto = ejercicioActivo;
-    if (abierto) localStorage.setItem('esle2vis_ej_' + abierto.id, editor.getValue());
+    if (abierto) Guardado.escribir('esle2vis_ej_' + abierto.id, editor.getValue());
 
     const hechos = [];
     for (const e of EJERCICIOS) {
-      const codigo = localStorage.getItem('esle2vis_ej_' + e.id) || '';
+      const codigo = Guardado.leer('esle2vis_ej_' + e.id) || '';
       let r = { pasadas: 0, total: (e.pruebas || []).length };
       /* Sin nada escrito no se corre nada: correr la plantilla vacía tarda y
          da lo mismo que no haberla corrido. */

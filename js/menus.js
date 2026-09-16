@@ -45,6 +45,8 @@
     document.addEventListener('click', ev => {
       if (!ev.target.closest(SELECTOR)) cerrarTodos(null);
     });
+
+    devolverElFoco();
     document.addEventListener('keydown', ev => {
       if (ev.key !== 'Escape') return;
       const abierto = todos().find(d => d.open);
@@ -53,6 +55,54 @@
       const s = abierto.querySelector('summary');
       if (s) s.focus();
     });
+  }
+
+  /* Casi todos los diálogos del sitio se abren desde un botón de un menú, y
+     ese botón se esconde en el mismo clic: el menú se cierra. Entonces, cuando
+     el diálogo se cierra, el navegador intenta devolverle el foco a un botón
+     que ya no se ve, no puede, y lo deja en el <body>. Quien usa el teclado
+     cierra el diálogo y aparece al principio de la página, sin ninguna
+     relación con lo que estaba haciendo.
+
+     Se arregla acá y no en cada diálogo porque el problema es del menú, no de
+     los diálogos: son diez, en cuatro páginas, y todos lo tenían. */
+  /* No alcanza con mirar si el elemento se ve: adentro de un <details> cerrado
+     el botón sigue teniendo su lugar en la página pero no acepta el foco. La
+     única forma honesta de saberlo es intentarlo y fijarse si quedó. */
+  function enfocar(el) {
+    if (!el || !el.isConnected) return false;
+    try { el.focus(); } catch (e) { return false; }
+    return document.activeElement === el;
+  }
+
+  function devolverElFoco() {
+    let previo = null;
+    document.addEventListener('focusin', ev => {
+      const t = ev.target;
+      if (t && t.closest && !t.closest('dialog')) previo = t;
+    });
+
+    /* «close» no burbujea: hay que escucharlo en la fase de captura. */
+    document.addEventListener('close', ev => {
+      const dlg = ev.target;
+      if (!dlg || dlg.tagName !== 'DIALOG') return;
+      const acomodar = () => {
+        const a = document.activeElement;
+        /* Si el navegador pudo devolverlo solo, o si el diálogo dejó el foco
+           en otro lado a propósito, no se toca nada. */
+        if (a && a !== document.body && a !== document.documentElement) return;
+        if (enfocar(previo)) return;
+        /* El botón quedó escondido adentro de su menú: el lugar razonable es
+           el nombre del menú, que es de donde salió. */
+        const menu = previo && previo.closest && previo.closest(SELECTOR);
+        enfocar(menu && menu.querySelector('summary'));
+      };
+      /* Dos veces: el navegador hace su propio intento de devolver el foco
+         después de este evento, y si le erra deja el <body>. Si se acomodara
+         una sola vez, ese intento tardío pisaría lo que acabamos de poner. */
+      acomodar();
+      setTimeout(acomodar, 60);
+    }, true);
   }
 
   global.Menus = { iniciar, cerrarTodos };

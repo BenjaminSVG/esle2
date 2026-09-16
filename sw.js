@@ -157,7 +157,8 @@ const ARCHIVOS = [
   'js/curso-bd-ui.js',
   'img/bd/subconsulta-suelta-vs-correlacionada.png',
   'img/bd/no-en-vs-no-existe.png',
-  'img/bd/unir-por-clave.png',
+  'img/bd/unir-por-clave.png',
+  'js/guardado.js',
 ];
 
 /* Guarda una copia bajo la dirección pedida.

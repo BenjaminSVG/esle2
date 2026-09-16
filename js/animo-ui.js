@@ -71,7 +71,7 @@
       basta.textContent = 'No me lo muestres más';
       basta.title = 'No volver a avisar en este navegador';
       basta.addEventListener('click', () => {
-        localStorage.setItem(claveApagado, '1');
+        try { localStorage.setItem(claveApagado, '1'); } catch (e) { /* almacén lleno */ }
         c.replaceChildren(document.createTextNode('Listo, no te lo muestro más.'));
       });
 

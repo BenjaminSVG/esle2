@@ -1553,6 +1553,7 @@ la copia vieja y el cambio no llega a nadie. `npm run revisar` compara las fecha
 | `js/disenador.js` · `js/disenador-ui.js` | Diseñar la ventana arrastrando, reescribiendo los números del programa. |
 | `tools/soltar.js` · `tools/probar.js` · `tools/revisar-cache.js` | Publicar: pruebas, índice, caché y `VERSION` en un comando. |
 | `js/perfil.js` · `js/perfil-ui.js` | Un cajón por alumno en las máquinas compartidas. |
+| `js/guardado.js` | Guardar en el navegador sin tirar abajo el IDE cuando el almacén está lleno. |
 | `js/bienvenida.js` | Los cuatro carteles de la primera visita. |
 | `js/cobertura.js` | Qué líneas corrieron y cuáles no, con el gancho del depurador. |
 | `js/otra-forma.js` · `js/soluciones.js` | Comparar con la solución de la cátedra, después de resolver. |
@@ -1607,7 +1608,8 @@ la copia vieja y el cambio no llega a nadie. `npm run revisar` compara las fecha
 | `test/test-senas.js` | Que el servidor de señas **reenvíe**, no que conecte. Las dos versiones (22). |
 | `test/test-disenador.js` | Que arrastrar cambie dos números y NADA más, y que siga compilando (71). |
 | `test/test-cache.js` | Que todo lo que piden las páginas se guarde para usar sin internet (18). |
-| `test/test-perfil.js` | Que el trabajo de un alumno no aparezca en la sesión del otro (45). |
+| `test/test-perfil.js` | Que el trabajo de un alumno no aparezca en la sesión del otro (61). |
+| `test/test-guardado.js` | Que guardar nunca tire, y que avise una sola vez cuando no puede (21). |
 | `test/test-bienvenida.js` | Sobre todo, a quién NO tiene que aparecerle el recorrido (19). |
 | `test/test-cobertura.js` | Que no mienta en ninguna de las dos direcciones (31). |
 | `test/test-vscode.js` | Que la extensión use el mismo compilador, byte por byte (61). |

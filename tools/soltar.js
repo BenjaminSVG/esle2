@@ -82,9 +82,28 @@ if (!publicar) {
 
 console.log('\npublicando…');
 const r = spawnSync('vercel', ['--prod', '--yes'], { cwd: RAIZ, stdio: 'inherit', shell: true });
-if (!r.status) {
-  fs.writeFileSync(REGISTRO, JSON.stringify(
-    { version: versionActual(), cuando: Date.now(), fecha: new Date().toISOString() }, null, 2) + '\n');
-  console.log('\npublicado ' + versionActual());
+
+/* Salió bien solamente si terminó por su cuenta con 0. spawnSync deja `status`
+   en null cuando el proceso no arrancó (mirar `error`) o cuando lo mató una
+   señal —un Ctrl+C, por ejemplo—, y `!null` es verdadero: con la comprobación
+   de antes, cortar la publicación a mitad de camino escribía publicado.json y
+   decía «publicado». Eso es peor que fallar: la próxima vez el control de
+   VERSION cree que lo de ahora ya está en el aire y deja pasar un release sin
+   subirla, así que a nadie se le actualiza la caché. */
+if (r.error) {
+  console.log('\nno se pudo ejecutar vercel: ' + r.error.message);
+  process.exit(1);
 }
-process.exit(r.status || 0);
+if (r.signal) {
+  console.log('\nla publicación se cortó (' + r.signal + '): no se publicó nada.');
+  process.exit(1);
+}
+if (r.status !== 0) {
+  console.log('\nvercel terminó con ' + r.status + ': no se publicó nada.');
+  process.exit(r.status);
+}
+
+fs.writeFileSync(REGISTRO, JSON.stringify(
+  { version: versionActual(), cuando: Date.now(), fecha: new Date().toISOString() }, null, 2) + '\n');
+console.log('\npublicado ' + versionActual());
+process.exit(0);

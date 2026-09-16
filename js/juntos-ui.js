@@ -94,7 +94,7 @@
       const nom = dlg.querySelector('[data-campo="nombre"]');
       nom.value = localStorage.getItem('esle2_juntos_nombre') || global.Juntos.nombreSugerido();
       nom.addEventListener('input', () => {
-        localStorage.setItem('esle2_juntos_nombre', nom.value);
+        try { localStorage.setItem('esle2_juntos_nombre', nom.value); } catch (e) { /* almacén lleno */ }
         if (proveedor) proveedor.awareness.setLocalStateField('user', usuario());
       });
 
@@ -254,7 +254,8 @@
         + 'Lo que tenés escrito ahora se reemplaza por el programa de la sala. '
         + 'Se guarda una copia por las dudas.\n\n¿Entrás?');
       if (seguir) {
-        if (tenia) localStorage.setItem('esle2_antes_de_la_sala', editor.getValue());
+        try { if (tenia) localStorage.setItem('esle2_antes_de_la_sala', editor.getValue()); }
+        catch (e) { /* almacén lleno */ }
         if (!dlg) construir();
         conectar(dela.sala, dela.clave, false);
         dlg.showModal();

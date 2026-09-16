@@ -119,14 +119,14 @@ fin
   const compilar = fuente => Flex.compilar(fuente);
 
 
-  editor.setValue(localStorage.getItem('esle2_codigo') || CODIGO_INICIAL);
+  editor.setValue(Guardado.leer('esle2_codigo') || CODIGO_INICIAL);
   // El área de texto que usa CodeMirror por debajo también necesita nombre.
   editor.getInputField().setAttribute('aria-label', 'Editor de programas SLE2');
   // El área con scroll del editor se anuncia y se alcanza con el teclado.
   editor.getScrollerElement().setAttribute('tabindex', '0');
   editor.getScrollerElement().setAttribute('role', 'region');
   editor.getScrollerElement().setAttribute('aria-label', 'Editor de programas SLE2');
-  editor.on('change', () => localStorage.setItem('esle2_codigo', editor.getValue()));
+  editor.on('change', () => Guardado.escribir('esle2_codigo', editor.getValue()));
 
   /* Si la URL trae un programa compartido, ese gana. */
   const compartido = window.Compartir && Compartir.leer();
@@ -138,10 +138,10 @@ fin
     const c = editor.getCursor();
     $('#posCursor').textContent = `${c.line + 1} : ${c.ch + 1}`;
   });
-  $('#entrada').value = (compartido && compartido.entrada) || localStorage.getItem('esle2_entrada') || '';
-  $('#entrada').addEventListener('input', e => localStorage.setItem('esle2_entrada', e.target.value));
-  $('#argumentos').value = localStorage.getItem('esle2_args') || '';
-  $('#argumentos').addEventListener('input', e => localStorage.setItem('esle2_args', e.target.value));
+  $('#entrada').value = (compartido && compartido.entrada) || Guardado.leer('esle2_entrada') || '';
+  $('#entrada').addEventListener('input', e => Guardado.escribir('esle2_entrada', e.target.value));
+  $('#argumentos').value = Guardado.leer('esle2_args') || '';
+  $('#argumentos').addEventListener('input', e => Guardado.escribir('esle2_args', e.target.value));
 
   let marcaLinea = null;
   function limpiarMarca() {
@@ -181,6 +181,14 @@ fin
   const consola = $('#consola');
   const pantalla = new Pantalla($('#pantalla'), consola);
   const diagnostico = crearDiagnostico(consola, l => editor.getLine(l - 1), () => editor.lineCount());
+  /* Si el navegador no deja guardar —ventana privada, o el almacén lleno— se
+     dice una sola vez. Callarlo sería dejar que alguien trabaje una hora
+     creyendo que su programa está a salvo. */
+  Guardado.alFallar(texto => diagnostico({
+    tipo: 'aviso', titulo: 'No se está guardando tu programa', mensaje: texto,
+    sugerencia: 'Archivo → Guardar baja un archivo a tu computadora.'
+  }));
+
 
   /* El lienzo aparece solo la primera vez que el programa dibuja algo, y se
      vuelve a ocultar al arrancar la ejecución siguiente: así nunca queda un
@@ -748,8 +756,8 @@ fin
   Disposicion.iniciar($('.area'));
   /* --------------------------- micro-sonidos --------------------------- */
   Sonido.iniciar({
-    leer: k => localStorage.getItem(k),
-    guardar: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} }
+    leer: k => Guardado.leer(k),
+    guardar: (k, v) => { try { Guardado.escribir(k, v); } catch (e) {} }
   });
   const btnSonido = $('#btnSonido');
   function pintarSonido() {
@@ -775,7 +783,7 @@ fin
     aplicar: (codigo, entrada) => {
       editor.setValue(codigo);
       $('#entrada').value = entrada || '';
-      localStorage.setItem('esle2_entrada', entrada || '');
+      Guardado.escribir('esle2_entrada', entrada || '');
       editor.refresh();
     },
     estado: nombre => estado('abierto ' + nombre)
@@ -787,7 +795,7 @@ fin
     entrada: () => $('#entrada').value,
     aplicar: (codigo, entrada) => {
       editor.setValue(codigo);
-      if (entrada !== undefined) { $('#entrada').value = entrada; localStorage.setItem('esle2_entrada', entrada); }
+      if (entrada !== undefined) { $('#entrada').value = entrada; Guardado.escribir('esle2_entrada', entrada); }
       editor.focus();
     },
     estado
@@ -875,7 +883,7 @@ fin
     historial.registrar('previa', 'Antes de cargar el ejemplo «' + e.nombre + '»');
     editor.setValue(e.codigo);
     $('#entrada').value = e.entrada;
-    localStorage.setItem('esle2_entrada', e.entrada);
+    Guardado.escribir('esle2_entrada', e.entrada);
     salirDeEjercicio();
     sel.value = '';
     limpiarConsola();
@@ -963,7 +971,7 @@ fin
         const antes = btnOtra.textContent;
         btnOtra.textContent = 'buscando…';
         try {
-          const mio = localStorage.getItem('esle2_ej_' + e.id)
+          const mio = Guardado.leer('esle2_ej_' + e.id)
             || (ejercicioActivo && ejercicioActivo.id === e.id ? editor.getValue() : '');
           await otraForma.mostrar(e, mio);
         } catch (err) {
@@ -979,10 +987,10 @@ fin
   function abrirEjercicio(e, codigoInicial) {
     historial.registrar('previa', 'Antes de abrir «' + e.titulo + '»');
     ejercicioActivo = e;
-    const guardado = localStorage.getItem('esle2_ej_' + e.id);
+    const guardado = Guardado.leer('esle2_ej_' + e.id);
     editor.setValue(codigoInicial !== undefined ? codigoInicial : (guardado || e.plantilla));
     $('#entrada').value = e.pruebas[0].entrada;
-    localStorage.setItem('esle2_entrada', e.pruebas[0].entrada);
+    Guardado.escribir('esle2_entrada', e.pruebas[0].entrada);
     $('#bannerTitulo').textContent = `${e.titulo} (${NIVELES[e.nivel]})`;
     $('#bannerEjercicio').classList.remove('oculto');
     limpiarConsola();
@@ -1000,7 +1008,7 @@ fin
   $('#btnSalirEjercicio').addEventListener('click', salirDeEjercicio);
 
   editor.on('change', () => {
-    if (ejercicioActivo) localStorage.setItem('esle2_ej_' + ejercicioActivo.id, editor.getValue());
+    if (ejercicioActivo) Guardado.escribir('esle2_ej_' + ejercicioActivo.id, editor.getValue());
   });
 
   /* --------------------------- verificación --------------------------- */
@@ -1260,11 +1268,11 @@ fin
   async function entregarLaGuia(alumno) {
     if (!guiaAula) throw new Error('no hay ninguna guía abierta');
     const abierto = ejercicioActivo;
-    if (abierto) localStorage.setItem('esle2_ej_' + abierto.id, editor.getValue());
+    if (abierto) Guardado.escribir('esle2_ej_' + abierto.id, editor.getValue());
 
     const hechos = [];
     for (const e of EJERCICIOS) {
-      const codigo = localStorage.getItem('esle2_ej_' + e.id) || '';
+      const codigo = Guardado.leer('esle2_ej_' + e.id) || '';
       let r = { pasadas: 0, total: (e.pruebas || []).length };
       /* Sin nada escrito no se corre nada: correr la plantilla vacía tarda y
          da lo mismo que no haberla corrido. */

@@ -814,6 +814,49 @@ fin`);
     Object.keys(SLE2.PREDEF).every(n => !!SLE2VIS.PREDEF[n]));
 }
 
+/* ============ el aviso de «espera eventos» y el temporizador =========== */
+/* El aviso es para el programa que espera algo que no puede llegar nunca. Un
+   temporizador andando también lo despierta, así que un reloj o una animación
+   —que no registran ningún clic— no tienen que recibirlo. */
+{
+  /* guiDeMentira() no anota los avisos, así que se le pone dónde dejarlos. */
+  const conAvisos = () => {
+    const avisos = [];
+    const gui = SLE2VIS.guiDeMentira();
+    gui.aviso = t => avisos.push(t);
+    return { gui, avisos };
+  };
+  const hubo = avisos => avisos.some(a => /espera eventos/.test(a));
+
+  const solo = conAvisos();
+  const r1 = correr([
+    'var', '   t : numerico',
+    'inicio',
+    '   ventana ("Reloj", 200, 100)',
+    '   t = temporizador (50, "tic")',
+    '   activar_temporizador (t, TRUE)',
+    '   esperar_eventos ()',
+    'fin', '',
+    'subrutina tic (id : numerico)',
+    'inicio',
+    '   cerrar_ventana ()',
+    'fin', ''].join('\n'), { gui: solo.gui, reloj: relojFalso() });
+  await r1.listo();
+  comprobar('un programa con solo un temporizador no recibe el aviso',
+    !hubo(solo.avisos), solo.avisos.join(' | '));
+
+  const nada = conAvisos();
+  const r2 = correr([
+    'inicio',
+    '   ventana ("Nada", 200, 100)',
+    '   etiqueta ("hola", 10, 10)',
+    '   esperar_eventos ()',
+    'fin', ''].join('\n'), { gui: nada.gui });
+  await r2.listo();
+  comprobar('y el que no tiene ni clics ni temporizador sí lo recibe',
+    hubo(nada.avisos), nada.avisos.join(' | '));
+}
+
 console.log(`\n${ok} verificaciones correctas, ${fallos} fallos.`);
 assert.strictEqual(fallos, 0, 'ESLE2 Visual tiene fallos');
 })();

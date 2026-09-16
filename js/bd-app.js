@@ -43,6 +43,14 @@
   const consola = $('#consola');
   const { crearDiagnostico } = window.ESLE2Consola;
   const diagnostico = crearDiagnostico(consola, l => editor.getLine(l - 1), () => editor.lineCount());
+  /* Si el navegador no deja guardar —ventana privada, o el almacén lleno— se
+     dice una sola vez. Callarlo sería dejar que alguien trabaje una hora
+     creyendo que su programa está a salvo. */
+  Guardado.alFallar(texto => diagnostico({
+    tipo: 'aviso', titulo: 'No se está guardando tu programa', mensaje: texto,
+    sugerencia: 'Archivo → Guardar baja un archivo a tu computadora.'
+  }));
+
 
   /* Cuando el mismo error de sintaxis aparece cinco veces seguidas en dos
      minutos, se dice algo. Va en la salida y no en un cartel: no interrumpe. */
@@ -75,12 +83,12 @@
   const compilar = fuente =>
     Flex.compilar(SLE2BD.aSQL(fuente === undefined ? editor.getValue() : fuente));
 
-  editor.setValue(localStorage.getItem('esle2bd_codigo') || INICIAL);
+  editor.setValue(Guardado.leer('esle2bd_codigo') || INICIAL);
   editor.getInputField().setAttribute('aria-label', 'Editor de programas ESLE2 BD');
   editor.getScrollerElement().setAttribute('tabindex', '0');
   editor.getScrollerElement().setAttribute('role', 'region');
   editor.getScrollerElement().setAttribute('aria-label', 'Editor de programas ESLE2 BD');
-  editor.on('change', () => localStorage.setItem('esle2bd_codigo', editor.getValue()));
+  editor.on('change', () => Guardado.escribir('esle2bd_codigo', editor.getValue()));
   editor.on('cursorActivity', () => {
     const c = editor.getCursor();
     $('#posCursor').textContent = (c.line + 1) + ' : ' + (c.ch + 1);
@@ -491,13 +499,13 @@
 
   /* El panel del esquema se puede apagar, como el explorador en los otros. */
   const btnEsq = $('#btnEsquema');
-  let esquemaVisible = localStorage.getItem('esle2bd_esquema') !== '0';
+  let esquemaVisible = Guardado.leer('esle2bd_esquema') !== '0';
   function aplicarEsquema() {
     $('#panelEsquema').classList.toggle('oculto', !esquemaVisible);
     btnEsq.setAttribute('aria-pressed', String(esquemaVisible));
     const etq = btnEsq.querySelector('.menu-etiqueta');
     etq.textContent = esquemaVisible ? 'Esquema de la base ✓' : 'Esquema de la base';
-    try { localStorage.setItem('esle2bd_esquema', esquemaVisible ? '1' : '0'); } catch (e) {}
+    try { Guardado.escribir('esle2bd_esquema', esquemaVisible ? '1' : '0'); } catch (e) {}
     window.dispatchEvent(new CustomEvent('esle2:disposicion'));
   }
   btnEsq.addEventListener('click', () => { esquemaVisible = !esquemaVisible; aplicarEsquema(); });
@@ -509,8 +517,8 @@
 
   /* Sonido, tema, presentación y buscador, como en las demás páginas. */
   Sonido.iniciar({
-    leer: k => localStorage.getItem(k),
-    guardar: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} }
+    leer: k => Guardado.leer(k),
+    guardar: (k, v) => { try { Guardado.escribir(k, v); } catch (e) {} }
   });
   const btnSonido = $('#btnSonido');
   function pintarSonido() {

@@ -58,6 +58,14 @@ comprobar('lo que no es de ESLE2 no se toca', !Perfil.esDelAlumno('otra_cosa'));
    lado seguro del error. */
 comprobar('una clave nueva se supone del alumno', Perfil.esDelAlumno('esle2_algo_nuevo'));
 
+seccion('Los cuatro cursos y las cuatro disposiciones');
+/* Dos listas que hay que acordarse de actualizar cuando aparece un dialecto
+   nuevo, y las dos se olvidaron alguna vez. */
+for (const c of ['esle2_progreso', 'esle2_progreso_poo', 'esle2_progreso_vis', 'esle2_progreso_bd'])
+  comprobar('el avance de ' + c + ' viaja con el perfil', Perfil.COOKIES.includes(c));
+for (const d of ['esle2_disposicion', 'esle2poo_disposicion', 'esle2vis_disposicion', 'esle2bd_disposicion'])
+  comprobar('la disposición ' + d + ' queda en la máquina', !Perfil.esDelAlumno(d));
+
 seccion('Las preferencias del lector por voz, que ya no existe');
 /* El lector por voz se sacó del proyecto, pero quien lo había apagado o
    prendido tiene esas cuatro claves guardadas en su navegador. Siguen

@@ -17,7 +17,9 @@
     const leer = () => {
       try { return JSON.parse(localStorage.getItem(clave) || '{}'); } catch (e) { return {}; }
     };
-    const guardar = d => localStorage.setItem(clave, JSON.stringify(d));
+    const guardar = d => {
+      try { localStorage.setItem(clave, JSON.stringify(d)); } catch (e) { /* almacén lleno */ }
+    };
 
     return {
       datos: leer,
@@ -31,7 +33,7 @@
         guardar(d);
         return e;
       },
-      borrar() { localStorage.removeItem(clave); }
+      borrar() { try { localStorage.removeItem(clave); } catch (e) { /* nada que hacer */ } }
     };
   }
 

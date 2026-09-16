@@ -85,14 +85,14 @@
   const compilar = fuente => Flex.compilar(fuente);
 
 
-  editor.setValue(localStorage.getItem('esle2poo_codigo') || EJEMPLOS[0].codigo);
+  editor.setValue(Guardado.leer('esle2poo_codigo') || EJEMPLOS[0].codigo);
   // El área de texto que usa CodeMirror por debajo también necesita nombre.
   editor.getInputField().setAttribute('aria-label', 'Editor de programas ESLE2 POO');
   // El área con scroll del editor se anuncia y se alcanza con el teclado.
   editor.getScrollerElement().setAttribute('tabindex', '0');
   editor.getScrollerElement().setAttribute('role', 'region');
   editor.getScrollerElement().setAttribute('aria-label', 'Editor de programas ESLE2 POO');
-  editor.on('change', () => localStorage.setItem('esle2poo_codigo', editor.getValue()));
+  editor.on('change', () => Guardado.escribir('esle2poo_codigo', editor.getValue()));
 
   /* Si la URL trae un programa compartido, ese gana. */
   const compartido = window.Compartir && Compartir.leer();
@@ -104,8 +104,8 @@
     const c = editor.getCursor();
     $('#posCursor').textContent = `${c.line + 1} : ${c.ch + 1}`;
   });
-  $('#entrada').value = (compartido && compartido.entrada) || localStorage.getItem('esle2poo_entrada') || '';
-  $('#entrada').addEventListener('input', e => localStorage.setItem('esle2poo_entrada', e.target.value));
+  $('#entrada').value = (compartido && compartido.entrada) || Guardado.leer('esle2poo_entrada') || '';
+  $('#entrada').addEventListener('input', e => Guardado.escribir('esle2poo_entrada', e.target.value));
 
   let marcaLinea = null;
   const limpiarMarca = () => {
@@ -140,6 +140,14 @@
   const consola = $('#consola');
   const pantalla = new Pantalla($('#pantalla'), consola);
   const diagnostico = crearDiagnostico(consola, l => editor.getLine(l - 1), () => editor.lineCount());
+  /* Si el navegador no deja guardar —ventana privada, o el almacén lleno— se
+     dice una sola vez. Callarlo sería dejar que alguien trabaje una hora
+     creyendo que su programa está a salvo. */
+  Guardado.alFallar(texto => diagnostico({
+    tipo: 'aviso', titulo: 'No se está guardando tu programa', mensaje: texto,
+    sugerencia: 'Archivo → Guardar baja un archivo a tu computadora.'
+  }));
+
 
   function escribir(texto, clase) {
     const n = document.createElement('span');
@@ -428,7 +436,7 @@
     historial.registrar('previa', 'Antes de cargar el ejemplo «' + e.nombre + '»');
     editor.setValue(e.codigo);
     $('#entrada').value = e.entrada;
-    localStorage.setItem('esle2poo_entrada', e.entrada);
+    Guardado.escribir('esle2poo_entrada', e.entrada);
     salirDeEjercicio();
     sel.value = '';
     limpiarConsola(); limpiarMarca();
@@ -483,11 +491,17 @@
     mostrarError,
     estado
   });
-  Disposicion.iniciar($('.area'));
+  /* Con su propia clave, como Visual y BD. Sin ella usaba la de por omisión,
+     que es la del IDE clásico — y los paneles no son los mismos: el clásico
+     tiene el del lienzo y este no. Al guardar los dos en el mismo lugar, el
+     que se abría segundo encontraba una disposición con otra cantidad de
+     paneles, la descartaba, y volvía a la de fábrica. Acomodar los paneles en
+     POO no quedaba nunca. */
+  Disposicion.iniciar($('.area'), { clave: 'esle2poo_disposicion' });
   /* --------------------------- micro-sonidos --------------------------- */
   Sonido.iniciar({
-    leer: k => localStorage.getItem(k),
-    guardar: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} }
+    leer: k => Guardado.leer(k),
+    guardar: (k, v) => { try { Guardado.escribir(k, v); } catch (e) {} }
   });
   const btnSonido = $('#btnSonido');
   function pintarSonido() {
@@ -513,7 +527,7 @@
     aplicar: (codigo, entrada) => {
       editor.setValue(codigo);
       $('#entrada').value = entrada || '';
-      localStorage.setItem('esle2poo_entrada', entrada || '');
+      Guardado.escribir('esle2poo_entrada', entrada || '');
       editor.refresh();
     },
     estado: nombre => estado('abierto ' + nombre)
@@ -525,7 +539,7 @@
     entrada: () => $('#entrada').value,
     aplicar: (codigo, entrada) => {
       editor.setValue(codigo);
-      if (entrada !== undefined) { $('#entrada').value = entrada; localStorage.setItem('esle2poo_entrada', entrada); }
+      if (entrada !== undefined) { $('#entrada').value = entrada; Guardado.escribir('esle2poo_entrada', entrada); }
       editor.focus();
     },
     estado
@@ -636,7 +650,7 @@
   function abrirEjercicio(e, codigoInicial) {
     historial.registrar('previa', 'Antes de abrir «' + e.titulo + '»');
     ejercicioActivo = e;
-    editor.setValue(codigoInicial !== undefined ? codigoInicial : (localStorage.getItem('esle2poo_ej_' + e.id) || e.plantilla));
+    editor.setValue(codigoInicial !== undefined ? codigoInicial : (Guardado.leer('esle2poo_ej_' + e.id) || e.plantilla));
     $('#entrada').value = e.pruebas[0].entrada;
     $('#bannerTitulo').textContent = `${e.titulo} (${NIVELES[e.nivel]})`;
     $('#bannerEjercicio').classList.remove('oculto');
@@ -652,7 +666,7 @@
   }
   $('#btnSalirEjercicio').addEventListener('click', salirDeEjercicio);
   editor.on('change', () => {
-    if (ejercicioActivo) localStorage.setItem('esle2poo_ej_' + ejercicioActivo.id, editor.getValue());
+    if (ejercicioActivo) Guardado.escribir('esle2poo_ej_' + ejercicioActivo.id, editor.getValue());
   });
 
   const normalizar = t => t.replace(/\r/g, '').split('\n')
@@ -886,11 +900,11 @@
   async function entregarLaGuia(alumno) {
     if (!guiaAula) throw new Error('no hay ninguna guía abierta');
     const abierto = ejercicioActivo;
-    if (abierto) localStorage.setItem('esle2poo_ej_' + abierto.id, editor.getValue());
+    if (abierto) Guardado.escribir('esle2poo_ej_' + abierto.id, editor.getValue());
 
     const hechos = [];
     for (const e of EJERCICIOS) {
-      const codigo = localStorage.getItem('esle2poo_ej_' + e.id) || '';
+      const codigo = Guardado.leer('esle2poo_ej_' + e.id) || '';
       let r = { pasadas: 0, total: (e.pruebas || []).length };
       /* Sin nada escrito no se corre nada: correr la plantilla vacía tarda y
          da lo mismo que no haberla corrido. */

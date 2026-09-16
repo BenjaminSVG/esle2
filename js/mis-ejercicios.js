@@ -25,7 +25,9 @@
         return Array.isArray(v) ? v.filter(valido) : [];
       } catch (e) { return []; }
     }
-    const guardar = lista => localStorage.setItem(clave, JSON.stringify(lista));
+    const guardar = lista => {
+      try { localStorage.setItem(clave, JSON.stringify(lista)); } catch (e) { /* almacén lleno */ }
+    };
 
     function valido(e) {
       return e && typeof e.id === 'string' && typeof e.titulo === 'string'
@@ -201,7 +203,7 @@
         const e = cargar().find(x => x.id === id);
         if (!e || !confirm(`¿Borrar «${e.titulo}»?`)) return;
         guardar(cargar().filter(x => x.id !== id));
-        localStorage.removeItem('esle2_ej_' + id);
+        try { localStorage.removeItem('esle2_ej_' + id); } catch (e) { /* nada que hacer */ }
         pintar();
         if (alCambiar) alCambiar();
       }

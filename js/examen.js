@@ -156,14 +156,20 @@
 
     /* ------------------------------ estado ----------------------------- */
     const CLAVE_ESTADO = claveDe(cfg.lenguaje);
-    const guardar = () => localStorage.setItem(CLAVE_ESTADO, JSON.stringify(estado));
+    const guardar = () => {
+      try { localStorage.setItem(CLAVE_ESTADO, JSON.stringify(estado)); }
+      catch (e) { /* almacén lleno: el examen sigue, pero no sobrevive a recargar */ }
+    };
     function recuperar() {
       try {
         const e = JSON.parse(localStorage.getItem(CLAVE_ESTADO) || 'null');
         if (e && e.paquete && e.empezado) estado = e;
       } catch (err) { estado = null; }
     }
-    const terminarEstado = () => { estado = null; localStorage.removeItem(CLAVE_ESTADO); };
+    const terminarEstado = () => {
+      estado = null;
+      try { localStorage.removeItem(CLAVE_ESTADO); } catch (e) { /* nada que hacer */ }
+    };
 
     /* ------------------------------ diálogo ---------------------------- */
     function construir() {

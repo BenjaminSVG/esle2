@@ -407,8 +407,15 @@
     esperar_eventos: async function (n) {
       const l = n.linea;
       this.exigeVentana(l);
-      if (!this.manejadores.size && this.gui.aviso)
-        this.gui.aviso('El programa espera eventos pero no registró ninguno con al_hacer_clic().');
+      /* El aviso es para el programa que se queda esperando algo que no puede
+         llegar nunca. Un temporizador andando también despierta al programa,
+         así que contarlo no es un detalle: sin esto, un reloj o una animación
+         —que no registran ningún clic— recibían un aviso que los mandaba a
+         agregar un al_hacer_clic() que no les hace falta. */
+      const tic = [...this.temporizadores.values()].some(t => t.andando);
+      if (!this.manejadores.size && !tic && this.gui.aviso)
+        this.gui.aviso('El programa espera eventos pero no hay nada que pueda despertarlo: '
+          + 'no registró ningún clic con al_hacer_clic() ni tiene un temporizador andando.');
       this.gui.listo();
       await new Promise(res => { this.esperando = res; });
       return true;

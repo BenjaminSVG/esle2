@@ -17,7 +17,13 @@
   const leer = () => {
     try { return JSON.parse(localStorage.getItem(CLAVE) || '{}'); } catch (e) { return {}; }
   };
-  const guardar = v => localStorage.setItem(CLAVE, JSON.stringify(v));
+  /* Guardar acá no puede tirar: esto se llama al arrancar la página, antes de
+     que exista nada donde mostrar un error, y la excepción cortaba el arranque
+     del IDE entero. Que no se guarde el zoom del modo presentación es una
+     molestia; que no arranque el IDE, no. */
+  const guardar = v => {
+    try { localStorage.setItem(CLAVE, JSON.stringify(v)); } catch (e) { /* almacén lleno */ }
+  };
 
   /* Un zoom válido: ni tan chico que no se note ni tan grande que no entre. */
   const acotar = z => Math.min(MAX, Math.max(MIN, Math.round(z * 100) / 100));
