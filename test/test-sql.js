@@ -676,5 +676,120 @@ seccion('El presupuesto de una sentencia');
   comprobar('un error de límite es un SQLError', e instanceof SQL.SQLError);
 }
 
+/* ------------------------------------------------------------------ */
+seccion('Cargar una tabla grande de a una fila');
+/* ------------------------------------------------------------------ */
+/* Es como se carga una base de verdad: un ciclo con un INSERTAR adentro. Sin
+   índice, cada fila compara su clave contra todas las anteriores, así que
+   cargar N filas cuesta N² y a las decenas de miles no termina más. */
+{
+  const b = SQL.crear();
+  q(b, 'CREAR TABLA ciudades (id ENTERO CLAVE PRIMARIA, nombre TEXTO)');
+  q(b, 'CREAR TABLA gente (id ENTERO CLAVE PRIMARIA, correo TEXTO UNICO, '
+    + 'ciudad ENTERO REFERENCIA ciudades (id))');
+  for (let i = 1; i <= 50; i++) q(b, `INSERTAR DENTRO ciudades VALORES (${i}, 'c${i}')`);
+
+  const N = 20000;
+  const arranque = Date.now();
+  for (let i = 1; i <= N; i++) {
+    q(b, `INSERTAR DENTRO gente VALORES (${i}, 'p${i}@x.py', ${(i % 50) + 1})`);
+  }
+  const tardo = Date.now() - arranque;
+  comprobar(`${N} filas de a una, con clave, UNICO y clave foránea`,
+    q(b, 'SELECCIONAR CONTAR(*) DE gente').filas[0][0] === N);
+  /* El número no es una marca de velocidad: es un techo que solo se puede
+     superar si la búsqueda de la clave volvió a recorrer la tabla. */
+  comprobar(`y tardó menos de 10 s (tardó ${(tardo / 1000).toFixed(1)} s)`, tardo < 10000, tardo);
+
+  comprobar('la clave repetida se sigue rechazando después de la carga',
+    falla(b, 'INSERTAR DENTRO gente VALORES (7, "otro@x.py", 1)') !== null);
+  comprobar('y la columna UNICO también',
+    falla(b, 'INSERTAR DENTRO gente VALORES (999999, "p7@x.py", 1)') !== null);
+  comprobar('y la clave foránea que no existe también',
+    falla(b, 'INSERTAR DENTRO gente VALORES (999999, "nuevo@x.py", 777)') !== null);
+
+  /* Después de borrar, la clave que quedó libre se tiene que poder volver a
+     usar: si el índice no se hubiera tirado, diría que sigue ocupada. */
+  q(b, 'BORRAR DE gente DONDE id = 7');
+  comprobar('borrar libera la clave', q(b, 'INSERTAR DENTRO gente VALORES (7, "otro@x.py", 1)').afectadas === 1);
+
+  /* Y lo mismo después de un ACTUALIZAR. */
+  q(b, 'ACTUALIZAR gente CONJUNTO id = 999999 DONDE id = 8');
+  comprobar('actualizar libera la clave vieja',
+    q(b, 'INSERTAR DENTRO gente VALORES (8, "otro8@x.py", 1)').afectadas === 1);
+  comprobar('y ocupa la nueva',
+    falla(b, 'INSERTAR DENTRO gente VALORES (999999, "otro9@x.py", 1)') !== null);
+}
+
+/* ------------------------------------------------------------------ */
+seccion('UNIR por clave: mismo resultado, sin mirarlas todas');
+/* ------------------------------------------------------------------ */
+/* Agrupar por clave cambia cómo se resuelve el UNIR, así que lo que hay que
+   probar es que el resultado sea exactamente el mismo: duplicados incluidos,
+   nulos incluidos, y el orden también. */
+{
+  const b = SQL.crear();
+  q(b, 'CREAR TABLA a (id ENTERO, n TEXTO)');
+  q(b, 'CREAR TABLA c (id ENTERO, m TEXTO, f ENTERO)');
+  q(b, 'INSERTAR DENTRO a VALORES (1, "a1"), (2, "a2"), (3, "a3"), (NULO, "aN")');
+  /* El 1 aparece dos veces a la derecha: las dos parejas tienen que salir. */
+  q(b, 'INSERTAR DENTRO c VALORES (1, "c1", 5), (1, "c1b", 9), (2, "c2", 5), (NULO, "cN", 5)');
+
+  comprobar('los duplicados de la derecha salen los dos',
+    filas(q(b, 'SELECCIONAR a.n, c.m DE a UNIR c SEGUN a.id = c.id ORDENAR POR a.n, c.m'))
+    === 'a1|c1 ; a1|c1b ; a2|c2',
+    filas(q(b, 'SELECCIONAR a.n, c.m DE a UNIR c SEGUN a.id = c.id ORDENAR POR a.n, c.m')));
+
+  comprobar('un NULO no empareja con otro NULO',
+    filas(q(b, 'SELECCIONAR a.n DE a UNIR c SEGUN a.id = c.id DONDE a.n = "aN"')) === '');
+
+  comprobar('IZQUIERDA UNIR: los que no emparejan salen con nulos',
+    filas(q(b, 'SELECCIONAR a.n, c.m DE a IZQUIERDA UNIR c SEGUN a.id = c.id '
+      + 'ORDENAR POR a.n, c.m')) === 'a1|c1 ; a1|c1b ; a2|c2 ; a3|NULL ; aN|NULL',
+    filas(q(b, 'SELECCIONAR a.n, c.m DE a IZQUIERDA UNIR c SEGUN a.id = c.id ORDENAR POR a.n, c.m')));
+
+  /* Una condición de más además de la igualdad: no alcanza con agrupar, hay
+     que seguir mirando el resto sobre las que quedaron. */
+  comprobar('la condición que sobra se sigue evaluando',
+    filas(q(b, 'SELECCIONAR a.n, c.m DE a UNIR c SEGUN a.id = c.id Y c.f > 6')) === 'a1|c1b',
+    filas(q(b, 'SELECCIONAR a.n, c.m DE a UNIR c SEGUN a.id = c.id Y c.f > 6')));
+
+  /* Sin igualdad no se puede agrupar y se miran todas: tiene que seguir
+     dando lo mismo. */
+  comprobar('un SEGUN sin igualdad sigue andando',
+    q(b, 'SELECCIONAR CONTAR(*) DE a UNIR c SEGUN a.id > c.id').filas[0][0] === 5,
+    q(b, 'SELECCIONAR CONTAR(*) DE a UNIR c SEGUN a.id > c.id').filas[0][0]);
+
+  /* Tres tablas seguidas. */
+  q(b, 'CREAR TABLA d (id ENTERO, z TEXTO)');
+  q(b, 'INSERTAR DENTRO d VALORES (5, "d5"), (9, "d9")');
+  comprobar('tres tablas encadenadas',
+    filas(q(b, 'SELECCIONAR a.n, c.m, d.z DE a UNIR c SEGUN a.id = c.id '
+      + 'UNIR d SEGUN d.id = c.f ORDENAR POR c.m'))
+    === 'a1|c1|d5 ; a1|c1b|d9 ; a2|c2|d5',
+    filas(q(b, 'SELECCIONAR a.n, c.m, d.z DE a UNIR c SEGUN a.id = c.id '
+      + 'UNIR d SEGUN d.id = c.f ORDENAR POR c.m')));
+}
+
+/* Y lo que antes no terminaba: dos tablas grandes cruzadas por su clave. */
+{
+  const b = SQL.crear();
+  q(b, 'CREAR TABLA x (id ENTERO CLAVE PRIMARIA, n ENTERO)');
+  q(b, 'CREAR TABLA y (id ENTERO CLAVE PRIMARIA, x ENTERO)');
+  const N = 20000;
+  const fx = [], fy = [];
+  for (let i = 1; i <= N; i++) { fx.push(`(${i}, ${i * 2})`); fy.push(`(${i}, ${i})`); }
+  q(b, 'INSERTAR DENTRO x VALORES ' + fx.join(', '));
+  q(b, 'INSERTAR DENTRO y VALORES ' + fy.join(', '));
+
+  const arranque = Date.now();
+  const r = q(b, 'SELECCIONAR CONTAR(*) DE x UNIR y SEGUN y.x = x.id');
+  const tardo = Date.now() - arranque;
+  comprobar(`${N} × ${N} por la clave da las ${N} parejas`, r.filas[0][0] === N, r.filas[0][0]);
+  /* Mirándolas todas serían cuatrocientos millones de parejas: el presupuesto
+     lo cortaría mucho antes de este tope. */
+  comprobar(`y tardó menos de 10 s (tardó ${(tardo / 1000).toFixed(1)} s)`, tardo < 10000, tardo);
+}
+
 console.log(`\n${ok} verificaciones correctas, ${fallos} fallos.`);
 assert.strictEqual(fallos, 0, 'el motor de SQL tiene fallos');

@@ -1086,8 +1086,16 @@
       if (!c.refiere || esNulo(fila[c.nombre])) continue;
       const otra = base.tablas.get(c.refiere.tabla.toLowerCase());
       if (!otra) continue;                       // la borraron con DROP TABLE
-      gastar(otra.filas.length);
-      const hay = otra.filas.some(f => comparar(f[c.refiere.columna], fila[c.nombre]) === 0);
+      /* La columna a la que apunta es siempre clave primaria o UNIQUE —se
+         controla al crear la tabla—, así que tiene índice y la búsqueda no
+         recorre la otra tabla. */
+      const mapa = indices(otra).get(c.refiere.columna.toLowerCase());
+      let hay;
+      if (mapa) hay = mapa.has(claveDe(fila[c.nombre]));
+      else {
+        gastar(otra.filas.length);
+        hay = otra.filas.some(f => comparar(f[c.refiere.columna], fila[c.nombre]) === 0);
+      }
       if (!hay) err(`no hay ninguna fila con ${c.refiere.tabla}.${c.refiere.columna} = ${textoDe(fila[c.nombre])}`,
         `La columna "${t.nombre}.${c.nombre}" apunta a "${c.refiere.tabla}": el valor tiene que existir allá primero. `
         + 'Si todavía no se sabe cuál es, dejalo en NULL.');
@@ -1131,10 +1139,32 @@
     tope(cuantasFilas(base) + nuevas.length, 'filasEnTotal',
       'la base quedaría con más filas de las que entran en una pestaña');
 
-    /* Sobre cómo va a quedar la tabla, no sobre cómo está: si no, dos filas
-       repetidas dentro del mismo INSERT pasarían las dos. */
-    controlarClaves(t, t.filas.concat(nuevas));
-    for (const fila of nuevas) controlarRefs(base, t, fila);
+    /* Las claves se anotan en el índice a medida que se revisan, así que una
+       fila repetida dentro del mismo INSERTAR choca contra la anterior: antes
+       cada una se comparaba contra la tabla y no contra las otras, y las dos
+       pasaban. Si algo falla en el medio, lo anotado se saca: la tabla no se
+       tocó todavía, y un índice con filas que no existen miente. */
+    const ix = indices(t);
+    const puestas = [];
+    try {
+      for (const fila of nuevas) {
+        for (const c of t.columnas) {
+          if (!c.pk && !c.unico) continue;
+          const v = fila[c.nombre];
+          if (esNulo(v)) continue;
+          const mapa = ix.get(c.nombre.toLowerCase());
+          const k = claveDe(v);
+          if (mapa.has(k)) err(`ya hay una fila con ${c.nombre} = ${textoDe(v)}`,
+            c.pk ? 'La clave primaria no se puede repetir.' : 'La columna está declarada UNIQUE.');
+          mapa.add(k);
+          puestas.push([mapa, k]);
+        }
+        controlarRefs(base, t, fila);
+      }
+    } catch (e) {
+      for (const [mapa, k] of puestas) mapa.delete(k);
+      throw e;
+    }
 
     for (const fila of nuevas) t.filas.push(fila);
     const n = nuevas.length;
@@ -1157,13 +1187,50 @@
       for (const f of filas) {
         const v = f[c.nombre];
         if (esNulo(v)) continue;
-        const k = typeof v + '|' + textoDe(v);
+        const k = claveDe(v);
         if (vistos.has(k)) err(`ya hay una fila con ${c.nombre} = ${textoDe(v)}`,
           c.pk ? 'La clave primaria no se puede repetir.' : 'La columna está declarada UNIQUE.');
         vistos.add(k);
       }
     }
   }
+
+  /* ------------------------------------------------------------------ */
+  /* Índices de las columnas clave                                        */
+  /* ------------------------------------------------------------------ */
+  /* Existen por una sola razón: sin ellos, comprobar que una clave primaria no
+     se repite recorre la tabla entera. Un programa que carga cien mil filas de
+     a una —que es como se carga una base de verdad— hace diez mil millones de
+     comparaciones y no termina nunca. Con el índice, cada fila cuesta lo
+     mismo, sea la primera o la cien mil.
+
+     Se pueden mantener sin miedo porque el motor es el único que escribe:
+     el editor visual de tablas y la importación de un .sql pasan los dos por
+     ejecutar(). INSERTAR los actualiza fila por fila; ACTUALIZAR y BORRAR los
+     tiran, porque los dos ya recorren la tabla entera de todas formas y un
+     índice desactualizado miente, que es peor que no tenerlo.
+
+     Es la misma clave que usa comparar() para la igualdad: un número y un
+     texto nunca son iguales, así que el tipo entra en la clave. */
+  const claveDe = v => typeof v + '|' + textoDe(v);
+
+  function indices(t) {
+    if (t.indices) return t.indices;
+    t.indices = new Map();
+    for (const c of t.columnas) {
+      if (!c.pk && !c.unico) continue;
+      gastar(t.filas.length);
+      const mapa = new Set();
+      for (const f of t.filas) {
+        const v = f[c.nombre];
+        if (!esNulo(v)) mapa.add(claveDe(v));
+      }
+      t.indices.set(c.nombre.toLowerCase(), mapa);
+    }
+    return t.indices;
+  }
+
+  const tirarIndices = t => { t.indices = null; };
 
   /* Arma las filas «anchas» del FROM y los JOIN: cada clave es
      «alias.columna» en minúsculas, más «columna» sola para poder escribirla
@@ -1186,6 +1253,7 @@
       return o;
     };
 
+    const ctxJ = { columnas };
     let filas = tabla(base, q.de.tabla).filas.map(f => ancha(base, q.de, f));
     for (const j of q.joins) {
       const der = tabla(base, j.fuente.tabla).filas.map(f => ancha(base, j.fuente, f));
@@ -1193,13 +1261,28 @@
       for (const c of tabla(base, j.fuente.tabla).columnas)
         vacia[j.fuente.alias.toLowerCase() + '.' + c.nombre.toLowerCase()] = null;
 
+      const pares = igualdadesCruzadas(j.on, j.fuente.alias);
+      const cubos = pares.length ? agrupar(der, pares.map(p => p[1]), ctxJ) : null;
+
       const nuevas = [];
       for (const a of filas) {
+        gastar(1);
+        /* Con una igualdad en el SEGUN se va derecho a las filas que pueden
+           emparejar; sin ella no queda otra que mirarlas todas. */
+        let candidatas;
+        if (cubos) {
+          const k = clavePara(a, pares.map(p => p[0]), ctxJ);
+          candidatas = k === null ? [] : (cubos.get(k) || []);
+        } else {
+          candidatas = der;
+        }
+        gastar(candidatas.length);
         let hubo = false;
-        gastar(der.length);
-        for (const b of der) {
+        for (const b of candidatas) {
           const fila = Object.assign({}, a, b);
-          if (verdad(evaluar(j.on, fila, { columnas })) === true) { nuevas.push(fila); hubo = true; }
+          /* La condición entera, no solo las igualdades: el SEGUN puede traer
+             algo más («… Y p.fecha > c.alta») y ese resto se mira acá. */
+          if (verdad(evaluar(j.on, fila, ctxJ)) === true) { nuevas.push(fila); hubo = true; }
         }
         /* LEFT JOIN: la fila de la izquierda sale igual, con nulos. */
         if (!hubo && j.izq) nuevas.push(Object.assign({}, a, vacia));
@@ -1207,6 +1290,54 @@
       filas = nuevas;
     }
     return { filas, columnas };
+  }
+
+  /* De la condición de un UNIR, las igualdades «columna de acá = columna de la
+     tabla que se está sumando», unidas por Y. Son las que dejan agrupar por
+     clave en vez de comparar cada fila con todas: de N×M a N+M.
+
+     Devuelve [[expresión de la izquierda, expresión de la derecha], …]. Una
+     igualdad entre dos columnas del mismo lado no sirve para agrupar y se
+     deja para la evaluación de siempre. */
+  function igualdadesCruzadas(e, alias) {
+    const del = (alias || '').toLowerCase();
+    const esDeLaDerecha = c => c && c.t === 'col' && (c.tabla || '').toLowerCase() === del;
+    const out = [];
+    const juntar = x => {
+      if (!x || x.t !== 'bin') return;
+      if (x.op === 'and') { juntar(x.i); juntar(x.d); return; }
+      if (x.op !== '=') return;
+      if (esDeLaDerecha(x.d) && x.i && x.i.t === 'col' && !esDeLaDerecha(x.i)) out.push([x.i, x.d]);
+      else if (esDeLaDerecha(x.i) && x.d && x.d.t === 'col' && !esDeLaDerecha(x.d)) out.push([x.d, x.i]);
+    };
+    juntar(e);
+    return out;
+  }
+
+  /* La clave de una fila para esas columnas, o null si alguna es nula: en SQL
+     un NULL no empareja con nada, ni siquiera con otro NULL. */
+  function clavePara(fila, cols, ctx) {
+    const partes = [];
+    for (const c of cols) {
+      const v = evaluar(c, fila, ctx);
+      if (esNulo(v)) return null;
+      partes.push(claveDe(v));
+    }
+    return partes.join(SEPARADOR);
+  }
+
+  function agrupar(filas, cols, ctx) {
+    const m = new Map();
+    gastar(filas.length * cols.length);
+    for (const f of filas) {
+      const k = clavePara(f, cols, ctx);
+      if (k === null) continue;
+      /* Una lista por clave, no una fila: si dos filas tienen la misma, las
+         dos emparejan y las dos tienen que salir. */
+      const cubo = m.get(k);
+      if (cubo) cubo.push(f); else m.set(k, [f]);
+    }
+    return m;
   }
 
   /* Junta todas las funciones de agregación que aparecen en la consulta. */
@@ -1456,6 +1587,7 @@
     for (const nueva of tocadas) controlarRefs(base, t, nueva);
 
     t.filas = finales;
+    tirarIndices(t);
     const n = tocadas.length;
     return { tipo: 'update', afectadas: n, mensaje: `${n} fila(s) modificada(s) en ${t.nombre}` };
   }
@@ -1470,7 +1602,9 @@
     };
     if (s.where) validar(s.where, ctx.columnas);
     const antes = t.filas.length;
+    gastar(antes);
     t.filas = t.filas.filter(f => (s.where ? verdad(evaluar(s.where, ancha(f), ctx)) !== true : false));
+    tirarIndices(t);
     const n = antes - t.filas.length;
     return { tipo: 'delete', afectadas: n, mensaje: `${n} fila(s) borrada(s) de ${t.nombre}` };
   }
