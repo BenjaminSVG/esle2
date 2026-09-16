@@ -422,6 +422,60 @@ fin
   }
 
   /* ------------------------------------------------------------------ */
+  seccion('Un programa entero en español');
+  /* ------------------------------------------------------------------ */
+  /* Lo que importa acá no es el motor —eso lo prueba test-sql.js— sino que el
+     traductor sepa dónde empieza y dónde termina una instrucción escrita en
+     español y repartida en varios renglones, que es como se escribe cuando la
+     consulta crece. */
+  {
+    let r = await correr(`inicio
+   CREAR TABLA ventas (id ENTERO CLAVE PRIMARIA, ciudad TEXTO, monto REAL)
+   INSERTAR DENTRO ventas VALORES (1, "Luque", 10), (2, "Luque", 20), (3, "Asuncion", 5)
+   SELECCIONAR ciudad, SUMAR(monto) COMO total
+      DE ventas
+      AGRUPAR POR ciudad
+      TENIENDO SUMAR(monto) > 6
+      ORDENAR POR total DESCENDENTE
+fin
+`);
+    comprobar('una consulta española de varios renglones es una sola instrucción',
+      !r.error && /Luque/.test(r.salida) && /30/.test(r.salida),
+      r.error ? r.error.linea + ': ' + r.error.message : r.salida);
+    comprobar('y no se coló la ciudad que el TENIENDO dejó afuera',
+      !r.error && !/Asuncion/.test(r.salida), r.salida);
+
+    /* Recorrer el resultado desde SL, con la consulta también en español. */
+    r = await correr(`var
+   i, cuantas : numerico
+inicio
+   CREAR TABLA t (n ENTERO)
+   INSERTAR DENTRO t VALORES (4), (7)
+   cuantas = consultar ("SELECCIONAR n DE t ORDENAR POR n")
+   desde i = 1 hasta cuantas
+   {
+      imprimir (str (dato (i, 1), 0, 0) + "\\n")
+   }
+fin
+`);
+    comprobar('consultar() acepta la consulta en español',
+      !r.error && r.salida === '4\n7\n', r.error ? r.error.message : JSON.stringify(r.salida));
+
+    /* La instrucción cortada justo después de un Y sigue en el renglón de
+       abajo: «y» tuvo que entrar en la lista de palabras que no cierran. */
+    r = await correr(`inicio
+   CREAR TABLA p (x ENTERO, y ENTERO)
+   INSERTAR DENTRO p VALORES (1, 5), (9, 9)
+   SELECCIONAR x DE p DONDE x > 0 Y
+      y < 7
+fin
+`);
+    comprobar('un renglón que termina en Y sigue abajo',
+      !r.error && /\b1\b/.test(r.salida) && !/\b9\b/.test(r.salida),
+      r.error ? r.error.linea + ': ' + r.error.message : r.salida);
+  }
+
+  /* ------------------------------------------------------------------ */
   seccion('Los ejemplos que trae la página');
   {
     require(path.join(RAIZ, 'js', 'bd-ejemplos.js'));

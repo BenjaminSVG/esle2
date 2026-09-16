@@ -149,12 +149,30 @@
     + 'IS LIKE IN BETWEEN COUNT SUM AVG MIN MAX UPPER LOWER LENGTH TRIM ROUND ABS SUBSTR '
     + 'COALESCE IFNULL INTEGER REAL TEXT VARCHAR DECIMAL').split(' ');
 
-  /* Y sus formas en español, que son las que se enseñan primero. */
+  /* Y sus formas en español, que son las que se enseñan primero. Están todas:
+     el material se escribe en español, así que si el autocompletado ofreciera
+     solo la mitad estaría empujando a escribir mitad y mitad. */
   const SQL_PAREJAS = [
     ['SELECCIONAR', 'SELECT'], ['DE', 'FROM'], ['DONDE', 'WHERE'],
     ['INSERTAR', 'INSERT'], ['DENTRO', 'INTO'], ['VALORES', 'VALUES'],
     ['ACTUALIZAR', 'UPDATE'], ['CONJUNTO', 'SET'], ['BORRAR', 'DELETE'],
-    ['CREAR', 'CREATE'], ['TABLA', 'TABLE'], ['ELIMINAR', 'DROP'], ['USAR', 'USE']
+    ['CREAR', 'CREATE'], ['TABLA', 'TABLE'], ['ELIMINAR', 'DROP'], ['USAR', 'USE'],
+    ['ORDENAR', 'ORDER'], ['AGRUPAR', 'GROUP'], ['POR', 'BY'], ['TENIENDO', 'HAVING'],
+    ['UNIR', 'JOIN'], ['INTERIOR', 'INNER'], ['IZQUIERDA', 'LEFT'], ['SEGUN', 'ON'],
+    ['COMO', 'AS'], ['COMO_PATRON', 'LIKE'], ['DISTINTOS', 'DISTINCT'],
+    ['LIMITE', 'LIMIT'], ['DESPLAZAMIENTO', 'OFFSET'],
+    ['ASCENDENTE', 'ASC'], ['DESCENDENTE', 'DESC'],
+    ['ES', 'IS'], ['NULO', 'NULL'], ['EN', 'IN'], ['ENTRE', 'BETWEEN'],
+    ['EXISTE', 'EXISTS'], ['SI', 'IF'], ['NO', 'NOT'],
+    ['CLAVE PRIMARIA', 'PRIMARY KEY'], ['CLAVE FORANEA', 'FOREIGN KEY'],
+    ['REFERENCIA', 'REFERENCES'], ['UNICO', 'UNIQUE'], ['POR DEFECTO', 'DEFAULT'],
+    ['CONTAR', 'COUNT'], ['SUMAR', 'SUM'], ['PROMEDIO', 'AVG'],
+    ['MINIMO', 'MIN'], ['MAXIMO', 'MAX'],
+    ['MAYUSCULAS', 'UPPER'], ['MINUSCULAS', 'LOWER'], ['LONGITUD', 'LENGTH'],
+    ['RECORTAR', 'TRIM'], ['REDONDEAR', 'ROUND'], ['ABSOLUTO', 'ABS'],
+    ['SUBCADENA', 'SUBSTR'], ['PRIMERO_NO_NULO', 'COALESCE'], ['SI_NULO', 'IFNULL'],
+    ['ENTERO', 'INTEGER'], ['TEXTO', 'TEXT'], ['CADENA', 'VARCHAR'],
+    ['NUMERICO', 'NUMERIC'], ['LOGICO', 'BOOLEAN'], ['FECHA', 'DATE']
   ];
 
   /* -------------------------- el catálogo ---------------------------- */

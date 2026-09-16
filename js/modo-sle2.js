@@ -49,13 +49,27 @@
     create crear table tabla drop eliminar use usar database order group by
     having join left inner outer on as distinct limit offset asc desc union
     exists between like in is all any primary key unique default references
-    foreign check autoincrement if`);
+    foreign check autoincrement if
+    ordenar agrupar por teniendo unir segun según izquierda interior como
+    como_patron distintos limite límite desplazamiento ascendente descendente
+    entre en existe si clave primaria foranea foránea referencia referencias
+    unico único nulo es no`);
+
+  /* «y» y «o» no se pintan: son columnas tan seguido como operadores, y
+     pintarlas de control cuando son la columna «y» de una tabla de puntos
+     confunde más de lo que ayuda. */
 
   const SQL_TIPO = juego(`integer int text char varchar real float double numeric
-    decimal boolean blob date datetime time`);
+    decimal boolean blob date datetime time
+    entero entero_corto entero_largo flotante doble numerico numérico texto
+    texto_largo binario caracter carácter cadena logico lógico fecha hora
+    fecha_hora marca_tiempo`);
 
   const SQL_FUNCION = juego(`count sum avg min max upper lower length trim round
-    abs substr coalesce ifnull`);
+    abs substr coalesce ifnull
+    contar sumar promedio minimo mínimo maximo máximo mayusculas mayúsculas
+    minusculas minúsculas longitud recortar redondear absoluto subcadena
+    primero_no_nulo si_nulo`);
 
   const LETRA = /[A-Za-z_ñÑ]/;
   const ALFANUM = /[A-Za-z0-9_ñÑ]/;

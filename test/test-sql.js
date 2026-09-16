@@ -291,7 +291,7 @@ seccion('Los errores se explican');
     ['ZAS t', /no se entiende/],
     /* "insertar" ya se reconoce como INSERT (ver la sección de pseudocódigo
        más abajo), así que ahora el error es sobre lo que falta después. */
-    ['INSERTAR EN t', /se esperaba .* INTO/],
+    ['INSERTAR EN t', /se esperaba .*DENTRO \(INTO\)/],
     ['SELECT ZZZ(a) FROM t', /la función "zzz" no existe/],
     ['SELECT 1 / 0 FROM t', /división por cero/]
   ];
@@ -409,13 +409,160 @@ seccion('Pseudocódigo en español (fernandoarciniega.com/pseudocodigo-en-mysql)
   comprobar('los verbos en español tampoco distinguen mayúsculas',
     filas(q(b3, 'seleccionar a de t')) === '9', filas(q(b3, 'seleccionar a de t')));
 
-  /* No se tradujeron AND/OR/NOT/LIKE/NULL: una columna de una sola letra
-     como "y" tiene que seguir sirviendo como columna, no como el AND. */
+  /* "y" y "o" ahora también son AND y OR, pero solo donde no puede haber una
+     columna: una columna llamada "y" tiene que seguir sirviendo. */
   const b4 = SQL.crear();
   q(b4, 'CREAR TABLA punto (x INTEGER, y INTEGER)');
   q(b4, 'INSERTAR DENTRO punto VALUES (3, 7)');
   comprobar('una columna llamada "y" no choca con ningún alias de AND/OR',
     filas(q(b4, 'SELECCIONAR y DE punto')) === '7', filas(q(b4, 'SELECCIONAR y DE punto')));
+}
+
+/* ------------------------------------------------------------------ */
+seccion('Toda la sintaxis en español');
+/* ------------------------------------------------------------------ */
+/* Lo que hay que poder hacer es escribir un programa entero sin una sola
+   palabra en inglés. El inglés se sigue entendiendo —si no, un volcado propio
+   no se podría volver a cargar— y los dos idiomas se pueden mezclar. */
+{
+  const b = SQL.crear();
+  q(b, 'CREAR TABLA alumnos (id ENTERO CLAVE PRIMARIA, nombre TEXTO NO NULO, '
+    + 'nota REAL POR DEFECTO 0, ciudad CADENA(30))');
+  q(b, 'INSERTAR DENTRO alumnos VALORES (1, "Ana", 9, "Luque"), (2, "Beto", 5, "Luque"), '
+    + '(3, "Cora", 7, "Asuncion")');
+
+  comprobar('SELECCIONAR / DE / DONDE / ORDENAR POR / DESCENDENTE',
+    filas(q(b, 'SELECCIONAR nombre DE alumnos DONDE nota >= 7 ORDENAR POR nota DESCENDENTE'))
+    === 'Ana ; Cora');
+
+  /* Los tipos en español se guardan con el nombre interno, o el volcado
+     dejaría de ser SQL que SQLite entienda. */
+  const cols = SQL.tablas(b)[0].columnas;
+  comprobar('ENTERO es INTEGER', cols[0].tipo === 'INTEGER', cols[0].tipo);
+  comprobar('TEXTO es TEXT', cols[1].tipo === 'TEXT', cols[1].tipo);
+  comprobar('CADENA(30) es VARCHAR(30)', cols[3].tipo === 'VARCHAR(30)', cols[3].tipo);
+  comprobar('CLAVE PRIMARIA se entiende', cols[0].pk === true);
+  comprobar('NO NULO se entiende', cols[1].noNulo === true);
+  comprobar('POR DEFECTO se entiende', cols[2].porDefecto === 0, cols[2].porDefecto);
+
+  comprobar('Y y O son AND y OR',
+    filas(q(b, 'SELECCIONAR id DE alumnos DONDE nota > 6 Y ciudad = "Luque" O id = 3'))
+    === '1 ; 3');
+
+  comprobar('AGRUPAR POR / TENIENDO / CONTAR / SUMAR',
+    filas(q(b, 'SELECCIONAR ciudad, CONTAR(*), SUMAR(nota) DE alumnos '
+      + 'AGRUPAR POR ciudad TENIENDO CONTAR(*) > 1')) === 'Luque|2|14');
+
+  comprobar('PROMEDIO, MINIMO y MAXIMO',
+    filas(q(b, 'SELECCIONAR MINIMO(nota), MAXIMO(nota), PROMEDIO(nota) DE alumnos')) === '5|9|7');
+
+  comprobar('MAYUSCULAS, LONGITUD, RECORTAR y SUBCADENA',
+    filas(q(b, 'SELECCIONAR MAYUSCULAS(nombre), LONGITUD(nombre), SUBCADENA(nombre, 1, 2) '
+      + 'DE alumnos DONDE id = 1')) === 'ANA|3|An');
+
+  comprobar('ES NULO y ES NO NULO',
+    filas(q(b, 'SELECCIONAR CONTAR(*) DE alumnos DONDE nombre ES NO NULO')) === '3');
+
+  comprobar('EN, ENTRE y COMO_PATRON',
+    filas(q(b, 'SELECCIONAR id DE alumnos DONDE id EN (1, 3) Y nota ENTRE 6 Y 10 '
+      + 'Y nombre COMO_PATRON "%a%"')) === '1 ; 3');
+
+  comprobar('NO delante de una condición',
+    filas(q(b, 'SELECCIONAR id DE alumnos DONDE NO id EN (1, 2)')) === '3');
+
+  comprobar('DISTINTOS, LIMITE y DESPLAZAMIENTO',
+    filas(q(b, 'SELECCIONAR DISTINTOS ciudad DE alumnos ORDENAR POR ciudad '
+      + 'LIMITE 1 DESPLAZAMIENTO 1')) === 'Luque');
+
+  comprobar('COMO le pone alias a la columna',
+    q(b, 'SELECCIONAR nota COMO puntaje DE alumnos').columnas[0] === 'puntaje');
+
+  /* Dos tablas, en español de punta a punta. */
+  q(b, 'CREAR TABLA notas (alumno ENTERO, materia TEXTO, '
+    + 'CLAVE FORANEA (alumno) REFERENCIA alumnos (id))');
+  q(b, 'INSERTAR DENTRO notas VALORES (1, "Base de datos")');
+  comprobar('UNIR / SEGUN',
+    filas(q(b, 'SELECCIONAR a.nombre, n.materia DE alumnos COMO a '
+      + 'UNIR notas COMO n SEGUN n.alumno = a.id')) === 'Ana|Base de datos');
+  comprobar('INTERIOR UNIR',
+    filas(q(b, 'SELECCIONAR a.nombre DE alumnos COMO a '
+      + 'INTERIOR UNIR notas COMO n SEGUN n.alumno = a.id')) === 'Ana');
+  comprobar('IZQUIERDA UNIR deja los que no tienen pareja',
+    filas(q(b, 'SELECCIONAR a.id, n.materia DE alumnos COMO a '
+      + 'IZQUIERDA UNIR notas COMO n SEGUN n.alumno = a.id ORDENAR POR a.id'))
+    === '1|Base de datos ; 2|NULL ; 3|NULL');
+
+  comprobar('ACTUALIZAR / CONJUNTO',
+    q(b, 'ACTUALIZAR alumnos CONJUNTO nota = 10 DONDE id = 2').afectadas === 1);
+  comprobar('BORRAR DE', q(b, 'BORRAR DE notas DONDE alumno = 1').afectadas === 1);
+  comprobar('ELIMINAR TABLA SI EXISTE no protesta si no está',
+    q(b, 'ELIMINAR TABLA SI EXISTE no_existe').tipo === 'drop');
+
+  /* Las palabras de sintaxis se escriben sin tildes, pero con tildes también
+     tienen que andar: nadie va a acordarse de la regla mientras escribe. */
+  comprobar('con tildes anda igual',
+    filas(q(b, 'SELECCIONAR MÍNIMO(nota) DE alumnos')) === '7');
+
+  /* Mezclar los dos idiomas: hace falta para releer un volcado propio. */
+  const bm = SQL.crear();
+  q(bm, 'CREATE TABLE t (n INTEGER)');
+  q(bm, 'INSERTAR DENTRO t VALUES (3), (1)');
+  comprobar('los dos idiomas se pueden mezclar',
+    filas(q(bm, 'SELECT n DE t ORDER BY n')) === '1 ; 3');
+}
+
+/* ------------------------------------------------------------------ */
+seccion('Las palabras nuevas no se comen los nombres de columna');
+/* ------------------------------------------------------------------ */
+{
+  const b = SQL.crear();
+  q(b, 'CREAR TABLA puntos (x ENTERO, y ENTERO, o TEXTO)');
+  q(b, 'INSERTAR DENTRO puntos VALORES (1, 5, "a"), (2, 3, "b")');
+  comprobar('«y» y «o» siguen siendo columnas donde va una columna',
+    filas(q(b, 'SELECCIONAR x, y, o DE puntos DONDE y > 0 Y x < 9 ORDENAR POR y'))
+    === '2|3|b ; 1|5|a');
+
+  /* Un agregado solo es un agregado si viene el paréntesis: si no, una
+     columna llamada «promedio» dejaría de poder nombrarse — y en español es
+     un nombre de columna mucho más probable que «avg». */
+  q(b, 'CREAR TABLA n (promedio REAL, maximo ENTERO, contar ENTERO)');
+  q(b, 'INSERTAR DENTRO n VALORES (7.5, 3, 1)');
+  comprobar('una columna puede llamarse promedio, maximo o contar',
+    filas(q(b, 'SELECCIONAR promedio, maximo, contar DE n')) === '7.5|3|1');
+  comprobar('y el agregado con paréntesis sigue siendo el agregado',
+    filas(q(b, 'SELECCIONAR CONTAR(*) DE n')) === '1');
+
+  /* Para lo que sí queda ambiguo —una columna llamada «nulo»— están los
+     corchetes, que es lo que dice la documentación. */
+  q(b, 'CREAR TABLA raro ([nulo] ENTERO, [no] TEXTO)');
+  q(b, 'INSERTAR DENTRO raro VALORES (1, "x")');
+  comprobar('un nombre entre corchetes nunca es una palabra reservada',
+    filas(q(b, 'SELECCIONAR [nulo], [no] DE raro')) === '1|x');
+
+  /* POR a secas es BY; POR DEFECTO es DEFAULT. La frase se reconoce entera. */
+  q(b, 'CREAR TABLA d (a ENTERO, b TEXTO POR DEFECTO "sin dato")');
+  q(b, 'INSERTAR DENTRO d (a) VALORES (1)');
+  comprobar('POR DEFECTO no se confunde con POR', filas(q(b, 'SELECCIONAR b DE d')) === 'sin dato');
+}
+
+/* ------------------------------------------------------------------ */
+seccion('INNER JOIN suelto');
+/* ------------------------------------------------------------------ */
+/* Estaba roto: INNER solo se consumía después de LEFT, así que un "INNER JOIN"
+   suelto dejaba la palabra sin comer y la consulta se cortaba ahí. */
+{
+  const b = SQL.crear();
+  q(b, 'CREATE TABLE a (id INTEGER)');
+  q(b, 'CREATE TABLE b (id INTEGER)');
+  q(b, 'INSERT INTO a VALUES (1)');
+  q(b, 'INSERT INTO b VALUES (1)');
+  comprobar('INNER JOIN sin LEFT adelante',
+    filas(q(b, 'SELECT a.id FROM a INNER JOIN b ON a.id = b.id')) === '1');
+  comprobar('LEFT INNER JOIN sigue andando',
+    filas(q(b, 'SELECT a.id FROM a LEFT INNER JOIN b ON a.id = b.id')) === '1');
+  const e = falla(b, 'SELECT a.id FROM a INNER b ON a.id = b.id');
+  comprobar('y un INNER sin JOIN lo dice', e && /UNIR \(JOIN\)/.test(e.message),
+    e && e.message);
 }
 
 /* ------------------------------------------------------------------ */

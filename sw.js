@@ -7,7 +7,7 @@
  *
  * Al publicar una versión nueva hay que subir VERSION: eso borra la caché vieja.
  */
-const VERSION = 'esle2-v57';
+const VERSION = 'esle2-v58';
 
 const ARCHIVOS = [
   './',
@@ -137,7 +137,7 @@ const ARCHIVOS = [
   'img/icono-512.png',
   'img/icono-mask-512.png',
   'img/icono-180.png',
-  'manifest.json'
+  'manifest.json'
   'img/poo/hero.svg',
   'img/poo/clase-objeto.svg',
   'img/poo/encapsulamiento.svg',

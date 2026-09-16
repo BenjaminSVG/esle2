@@ -416,16 +416,51 @@ fin</code></pre>
           <tr><td><code>CREATE TABLE</code></td><td><code>CREAR TABLA</code></td></tr>
           <tr><td><code>DROP TABLE</code></td><td><code>ELIMINAR TABLA</code></td></tr>
           <tr><td><code>CREATE DATABASE</code> / <code>USE</code></td><td><code>CREAR BASE DE DATOS</code> / <code>USAR</code></td></tr>
+          <tr><td><code>IF EXISTS</code> / <code>IF NOT EXISTS</code></td><td><code>SI EXISTE</code> / <code>SI NO EXISTE</code></td></tr>
+          <tr><td><code>AS</code></td><td><code>COMO</code></td></tr>
+          <tr><td><code>DISTINCT</code></td><td><code>DISTINTOS</code></td></tr>
+          <tr><td><code>ORDER BY</code></td><td><code>ORDENAR POR</code></td></tr>
+          <tr><td><code>ASC</code> / <code>DESC</code></td><td><code>ASCENDENTE</code> / <code>DESCENDENTE</code></td></tr>
+          <tr><td><code>GROUP BY</code></td><td><code>AGRUPAR POR</code></td></tr>
+          <tr><td><code>HAVING</code></td><td><code>TENIENDO</code></td></tr>
+          <tr><td><code>JOIN</code></td><td><code>UNIR</code></td></tr>
+          <tr><td><code>INNER JOIN</code></td><td><code>INTERIOR UNIR</code></td></tr>
+          <tr><td><code>LEFT JOIN</code></td><td><code>IZQUIERDA UNIR</code></td></tr>
+          <tr><td><code>ON</code></td><td><code>SEGUN</code></td></tr>
+          <tr><td><code>LIMIT</code></td><td><code>LIMITE</code></td></tr>
+          <tr><td><code>OFFSET</code></td><td><code>DESPLAZAMIENTO</code></td></tr>
+          <tr><td><code>AND</code> / <code>OR</code> / <code>NOT</code></td><td><code>Y</code> / <code>O</code> / <code>NO</code></td></tr>
+          <tr><td><code>IS NULL</code> / <code>IS NOT NULL</code></td><td><code>ES NULO</code> / <code>ES NO NULO</code></td></tr>
+          <tr><td><code>LIKE</code></td><td><code>COMO_PATRON</code></td></tr>
+          <tr><td><code>IN</code></td><td><code>EN</code></td></tr>
+          <tr><td><code>BETWEEN</code></td><td><code>ENTRE</code></td></tr>
+          <tr><td><code>EXISTS</code></td><td><code>EXISTE</code></td></tr>
+          <tr><td><code>PRIMARY KEY</code></td><td><code>CLAVE PRIMARIA</code></td></tr>
+          <tr><td><code>FOREIGN KEY</code></td><td><code>CLAVE FORANEA</code></td></tr>
+          <tr><td><code>REFERENCES</code></td><td><code>REFERENCIA</code></td></tr>
+          <tr><td><code>UNIQUE</code></td><td><code>UNICO</code></td></tr>
+          <tr><td><code>NOT NULL</code></td><td><code>NO NULO</code></td></tr>
+          <tr><td><code>DEFAULT</code></td><td><code>POR DEFECTO</code></td></tr>
+          <tr><td><code>NULL</code></td><td><code>NULO</code></td></tr>
         </table>
         <pre><code>SELECCIONAR nombre, nota DE alumnos DONDE nota &gt;= 7
 ACTUALIZAR alumnos CONJUNTO nota = nota + 1 DONDE nombre = 'Beto'
 BORRAR DE alumnos DONDE nota IS NULL</code></pre>
-        <p><code>AND</code>, <code>OR</code>, <code>NOT</code>, <code>LIKE</code> y
-           <code>NULL</code> se dejaron en inglés a propósito: son cortos, ya se enseñan así, y
-           traducir <code>AND</code>/<code>OR</code> a <code>Y</code>/<code>O</code> —una sola
-           letra— chocaría con cualquier columna así de corta (una tabla de puntos con una columna
-           <code>y</code>, como en <a href="documentacion.html#s-pantalla">dibujar_pixel()</a>,
-           por ejemplo).</p>
+        <p><strong>No queda ninguna palabra que haya que escribir en inglés.</strong> El
+           inglés se sigue entendiendo, y los dos idiomas se pueden mezclar en la misma
+           consulta: hace falta para poder volver a cargar un volcado propio, que sale en
+           inglés.</p>
+        <p>Las palabras de sintaxis se escriben <strong>sin tildes</strong>, pero con tildes
+           también andan: <code>SEGUN</code> y <code>SEGÚN</code> son la misma.</p>
+        <div class="doc-nota"><code>Y</code> y <code>O</code> son las dos únicas palabras que
+          <strong>no</strong> quedan reservadas, porque una columna llamada <code>y</code> es
+          moneda corriente (una tabla de puntos, como en
+          <a href="documentacion.html#s-pantalla">dibujar_pixel()</a>). Se leen como
+          <code>AND</code> y <code>OR</code> solamente donde no puede haber una columna, así que
+          las dos cosas conviven:
+          <br><code>SELECCIONAR x, y, o DE puntos DONDE y &gt; 0 Y o &lt; 10 ORDENAR POR y</code>
+          <br>Para el resto —una columna que se llame <code>nulo</code> o <code>en</code>— están
+          los corchetes: <code>SELECCIONAR [nulo] DE t</code>.</div>
         <div class="doc-nota"><code>CREAR BASE DE DATOS nombre</code> y <code>USAR nombre</code>
           se entienden y no hacen nada más que decirlo: ESLE2 BD ya trabaja con una única base, la
           que se ve en el panel <em>La base</em>. Están para que las primeras dos líneas de un
@@ -451,6 +486,29 @@ BORRAR DE alumnos DONDE nota IS NULL</code></pre>
 CREATE TABLE IF NOT EXISTS alumnos (...)
 DROP TABLE alumnos
 DROP TABLE IF EXISTS alumnos</code></pre>
+        <pre><code>CREAR TABLA alumnos (
+  id     ENTERO CLAVE PRIMARIA,
+  nombre TEXTO NO NULO,
+  nota   REAL,
+  ciudad CADENA(30) POR DEFECTO 'Asunción'
+)
+
+CREAR TABLA SI NO EXISTE alumnos (...)
+ELIMINAR TABLA SI EXISTE alumnos</code></pre>
+        <p>Los tipos también tienen su nombre en español. Adentro se guardan con el nombre
+           de siempre, así que el archivo que baja <a href="#s-exportar">Exportar</a> sigue
+           siendo SQL que SQLite entiende:</p>
+        <table>
+          <tr><th>Inglés</th><th>Español</th><th>Para qué</th></tr>
+          <tr><td><code>INTEGER</code></td><td><code>ENTERO</code></td><td>Números sin coma: un id, una cantidad.</td></tr>
+          <tr><td><code>REAL</code></td><td><code>REAL</code></td><td>Números con coma: una nota, un precio.</td></tr>
+          <tr><td><code>TEXT</code></td><td><code>TEXTO</code></td><td>Texto de cualquier largo.</td></tr>
+          <tr><td><code>VARCHAR(n)</code></td><td><code>CADENA(n)</code></td><td>Texto con un largo máximo.</td></tr>
+          <tr><td><code>CHAR(n)</code></td><td><code>CARACTER(n)</code></td><td>Texto de largo fijo.</td></tr>
+          <tr><td><code>NUMERIC</code> / <code>DECIMAL(n,d)</code></td><td><code>NUMERICO</code> / <code>DECIMAL(n,d)</code></td><td>Plata, cuando importan los decimales exactos.</td></tr>
+          <tr><td><code>BOOLEAN</code></td><td><code>LOGICO</code></td><td>Verdadero o falso, guardado como 1 y 0.</td></tr>
+          <tr><td><code>DATE</code> / <code>TIME</code> / <code>DATETIME</code></td><td><code>FECHA</code> / <code>HORA</code> / <code>FECHA_HORA</code></td><td>Se guardan como texto: ver <a href="#s-limites">Lo que no hace</a>.</td></tr>
+        </table>
         <p>Los modificadores que acepta cada columna son <code>PRIMARY KEY</code>,
            <code>NOT NULL</code>, <code>UNIQUE</code>, <code>DEFAULT valor</code> y
            <code>REFERENCES</code>. La clave primaria y las columnas <code>UNIQUE</code> se hacen
@@ -516,28 +574,36 @@ DELETE FROM alumnos WHERE nota IS NULL</code></pre>
         <table>
           <tr><th>En la condición</th><th>Qué hace</th></tr>
           <tr><td><code>= &lt;&gt; &lt; &lt;= &gt; &gt;=</code></td><td>Comparar. En SQL el «igual que» es <code>=</code>, con un solo signo.</td></tr>
-          <tr><td><code>AND OR NOT</code></td><td>Combinar condiciones.</td></tr>
-          <tr><td><code>IS NULL</code> · <code>IS NOT NULL</code></td><td>Preguntar por el nulo. Ver <a href="#s-null">NULL</a>.</td></tr>
-          <tr><td><code>BETWEEN a AND b</code></td><td>Entre dos valores, incluidos los dos.</td></tr>
-          <tr><td><code>IN (a, b, c)</code></td><td>Si es alguno de esos.</td></tr>
-          <tr><td><code>LIKE 'p%'</code></td><td>Parecido: <code>%</code> es «cualquier cosa» y <code>_</code> es «una letra».</td></tr>
+          <tr><td><code>Y</code> <code>O</code> <code>NO</code> · <code>AND OR NOT</code></td><td>Combinar condiciones.</td></tr>
+          <tr><td><code>ES NULO</code> · <code>ES NO NULO</code></td><td>Preguntar por el nulo. Ver <a href="#s-null">NULL</a>.</td></tr>
+          <tr><td><code>ENTRE a Y b</code></td><td>Entre dos valores, incluidos los dos.</td></tr>
+          <tr><td><code>EN (a, b, c)</code></td><td>Si es alguno de esos.</td></tr>
+          <tr><td><code>COMO_PATRON 'p%'</code></td><td>Parecido: <code>%</code> es «cualquier cosa» y <code>_</code> es «una letra». Se llama así, y no <code>COMO</code> a secas, porque <code>COMO</code> ya es el <code>AS</code> que le pone alias a una columna.</td></tr>
         </table>
       </div>
 
       <div class="doc-bloque">
         <h3>Funciones</h3>
         <table>
-          <tr><th>Grupo</th><th>Funciones</th></tr>
+          <tr><th>Grupo</th><th>En español</th><th>En inglés</th></tr>
           <tr><td>De agregación</td>
+              <td><code>CONTAR</code>, <code>SUMAR</code>, <code>PROMEDIO</code>,
+                  <code>MINIMO</code>, <code>MAXIMO</code>. Aceptan <code>DISTINTOS</code>:
+                  <code>CONTAR(DISTINTOS ciudad)</code>.</td>
               <td><code>COUNT</code>, <code>SUM</code>, <code>AVG</code>, <code>MIN</code>,
-                  <code>MAX</code>. Aceptan <code>DISTINCT</code>:
-                  <code>COUNT(DISTINCT ciudad)</code>.</td></tr>
+                  <code>MAX</code></td></tr>
           <tr><td>De texto</td>
+              <td><code>MAYUSCULAS</code>, <code>MINUSCULAS</code>, <code>LONGITUD</code>,
+                  <code>RECORTAR</code>, <code>SUBCADENA(s, desde, cuantos)</code>. Para pegar
+                  textos está <code>||</code>.</td>
               <td><code>UPPER</code>, <code>LOWER</code>, <code>LENGTH</code>, <code>TRIM</code>,
-                  <code>SUBSTR(s, desde, cuantos)</code>. Para pegar textos está
-                  <code>||</code>.</td></tr>
-          <tr><td>De números</td><td><code>ABS</code>, <code>ROUND(n [, decimales])</code>.</td></tr>
-          <tr><td>Para el nulo</td><td><code>COALESCE(a, b, ...)</code>, <code>IFNULL(a, b)</code>.</td></tr>
+                  <code>SUBSTR</code></td></tr>
+          <tr><td>De números</td>
+              <td><code>ABSOLUTO</code>, <code>REDONDEAR(n [, decimales])</code></td>
+              <td><code>ABS</code>, <code>ROUND</code></td></tr>
+          <tr><td>Para el nulo</td>
+              <td><code>PRIMERO_NO_NULO(a, b, ...)</code>, <code>SI_NULO(a, b)</code></td>
+              <td><code>COALESCE</code>, <code>IFNULL</code></td></tr>
         </table>
       </div>
     </section>

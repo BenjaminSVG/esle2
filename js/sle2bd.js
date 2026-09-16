@@ -232,7 +232,18 @@
   const SIGUE = new Set(['select', 'seleccionar', 'from', 'de', 'where', 'donde',
     'into', 'dentro', 'values', 'valores', 'set', 'conjunto', 'by', 'and', 'or',
     'not', 'join', 'on', 'group', 'order', 'having', 'left', 'inner', 'as',
-    'distinct', 'table', 'tabla', 'database', 'datos', 'like', 'is', 'in']);
+    'distinct', 'table', 'tabla', 'database', 'datos', 'like', 'is', 'in',
+    /* Las mismas, en español. «y» y «o» también: una instrucción cortada
+       justo después de un Y sigue en el renglón de abajo. */
+    'ordenar', 'agrupar', 'por', 'teniendo', 'unir', 'segun', 'según',
+    'izquierda', 'interior', 'como', 'como_patron', 'distintos', 'limite',
+    'límite', 'desplazamiento', 'entre', 'en', 'existe', 'clave', 'primaria',
+    'foranea', 'foránea', 'referencia', 'referencias',
+    'es', 'y', 'o', 'no', 'base']);
+  /* Ojo con lo que NO va en esta lista: ASCENDENTE, DESCENDENTE, NULO y UNICO
+     sí pueden ser la última palabra de una instrucción («ORDENAR POR total
+     DESCENDENTE»), así que ponerlas acá haría que la instrucción se comiera
+     el renglón de abajo — y, si abajo estaba el «fin», el programa entero. */
 
   /* Palabras de SL que siempre empiezan otra cosa. */
   const CORTAN = new Set(['inicio', 'fin', 'si', 'sino', 'mientras', 'desde',

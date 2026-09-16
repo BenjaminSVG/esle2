@@ -12,6 +12,20 @@
  * El dialecto que entiende es el que se enseña en una primera materia de
  * bases de datos, y a propósito no más:
  *
+ *   CREAR TABLA t (c TIPO [CLAVE PRIMARIA] [NO NULO] [POR DEFECTO v], ...)
+ *   ELIMINAR TABLA [SI EXISTE] t
+ *   INSERTAR DENTRO t [(cols)] VALORES (...), (...)
+ *   SELECCIONAR [DISTINTOS] cols DE t [alias]
+ *          [UNIR t2 [alias] SEGUN cond]
+ *          [DONDE cond] [AGRUPAR POR cols] [TENIENDO cond]
+ *          [ORDENAR POR col [ASCENDENTE|DESCENDENTE], ...] [LIMITE n [DESPLAZAMIENTO m]]
+ *   ACTUALIZAR t CONJUNTO c = v, ... [DONDE cond]
+ *   BORRAR DE t [DONDE cond]
+ *
+ * La misma gramática se escribe en inglés, y los dos idiomas se pueden
+ * mezclar: hace falta para volver a cargar un volcado propio, que sale en
+ * inglés. Es exactamente el mismo camino, palabra por palabra:
+ *
  *   CREATE TABLE t (c TIPO [PRIMARY KEY] [NOT NULL] [DEFAULT v], ...)
  *   DROP TABLE [IF EXISTS] t
  *   INSERT INTO t [(cols)] VALUES (...), (...)
@@ -69,16 +83,76 @@
      se escribe dos veces: "SELECCIONAR … DE … DONDE" recorre exactamente el
      mismo camino que "SELECT … FROM … WHERE".
 
-     A propósito NO se traducen AND/OR/NOT/LIKE/NULL: el artículo tampoco lo
-     hace, y una palabra de una sola letra como "y" u "o" chocaría con
-     columnas así de cortas (una tabla de puntos con una columna "y" es
-     moneda corriente en este mismo sitio, ver dibujar_pixel()). */
+     Están todas: no queda ninguna palabra que haya que escribir en inglés por
+     obligación. El inglés se sigue entendiendo, y los dos idiomas se pueden
+     mezclar en la misma sentencia — hace falta para poder volver a cargar un
+     volcado propio, que sale en inglés.
+
+     Las palabras de sintaxis se escriben sin tildes, pero se aceptan con
+     ellas: adentro se comparan sin tilde (ver sinTildes). */
   const SINONIMOS = {
     seleccionar: 'select', de: 'from', donde: 'where',
     insertar: 'insert', dentro: 'into', valores: 'values',
     actualizar: 'update', conjunto: 'set', borrar: 'delete',
     crear: 'create', tabla: 'table', eliminar: 'drop', usar: 'use',
-    basededatos: 'database'                    // "basededatos", una sola palabra
+    basededatos: 'database',                   // "basededatos", una sola palabra
+
+    ordenar: 'order', agrupar: 'group', por: 'by', teniendo: 'having',
+    unir: 'join', interior: 'inner', izquierda: 'left', segun: 'on',
+    como: 'as', como_patron: 'like', distintos: 'distinct',
+    limite: 'limit', desplazamiento: 'offset',
+    ascendente: 'asc', descendente: 'desc',
+    es: 'is', nulo: 'null', en: 'in', entre: 'between', existe: 'exists',
+    si: 'if', unico: 'unique', referencia: 'references', referencias: 'references',
+    no: 'not',
+    contar: 'count', sumar: 'sum', promedio: 'avg', minimo: 'min', maximo: 'max'
+  };
+
+  /* «y» y «o» son las dos únicas que NO se reservan. Una tabla de puntos con
+     columnas «x» e «y» es moneda corriente en este mismo sitio (ver
+     dibujar_pixel()), así que reservarlas rompería «ORDENAR POR y». Llegan
+     como identificadores, y el parser las lee como operador solamente donde
+     no puede haber una columna — ver esEsp() y comeEsp(). */
+  const CONTEXTUALES = new Set(['y', 'o']);
+
+  /* Las que no son una palabra por otra: en español el orden es al revés
+     (CLAVE PRIMARIA, no PRIMARIA CLAVE) o son dos palabras donde el inglés
+     tiene una. Se reconocen enteras: «PRIMARY CLAVE» no es ninguna de las dos
+     formas y no se acepta. */
+  const FRASES = {
+    base: [{ palabras: ['de', 'datos'], token: 'database', texto: 'base de datos' }],
+    por: [{ palabras: ['defecto'], token: 'default', texto: 'por defecto' }],
+    clave: [{ palabras: ['primaria'], token: 'primary', mas: 'key', texto: 'clave primaria' },
+      { palabras: ['foranea'], token: 'foreign', mas: 'key', texto: 'clave foránea' }]
+  };
+
+  /* Las palabras de sintaxis se comparan sin tildes, así que «SEGUN» y
+     «SEGÚN» son la misma. La ñ no se toca: solo aparece en nombres de
+     columna, y «año» no puede volverse «ano». */
+  const sinTildes = s => s.replace(/[áà]/g, 'a').replace(/[éè]/g, 'e')
+    .replace(/[íì]/g, 'i').replace(/[óò]/g, 'o').replace(/[úùü]/g, 'u');
+
+  /* Los tipos en español se pasan al nombre interno al declarar la columna,
+     antes de la afinidad y antes de exportar: así el volcado sigue siendo SQL
+     que SQLite entiende. No traen validaciones nuevas — FECHA no hace
+     aritmética de fechas, es un TEXT con otro nombre. */
+  const TIPOS = {
+    entero: 'INTEGER', entero_corto: 'SMALLINT', entero_largo: 'BIGINT',
+    real: 'REAL', flotante: 'FLOAT', doble: 'DOUBLE',
+    numerico: 'NUMERIC', decimal: 'DECIMAL',
+    texto: 'TEXT', texto_largo: 'CLOB', binario: 'BLOB',
+    caracter: 'CHAR', cadena: 'VARCHAR',
+    logico: 'BOOLEAN',
+    fecha: 'DATE', hora: 'TIME', fecha_hora: 'DATETIME', marca_tiempo: 'TIMESTAMP'
+  };
+
+  /* Las de agregación (CONTAR, SUMAR, PROMEDIO, MINIMO, MAXIMO) son palabras
+     reservadas y están en SINONIMOS; estas otras se reconocen por el nombre
+     al llamarlas, así que se traducen acá. */
+  const FUNCIONES_ESP = {
+    mayusculas: 'upper', minusculas: 'lower', longitud: 'length',
+    recortar: 'trim', redondear: 'round', absoluto: 'abs',
+    subcadena: 'substr', primero_no_nulo: 'coalesce', si_nulo: 'ifnull'
   };
 
   const SIMBOLOS = ['<>', '<=', '>=', '!=', '||', '(', ')', ',', '.', '*', '+', '-', '/',
@@ -92,7 +166,25 @@
     while (j < src.length && /\s/.test(src[j])) j++;
     let k = j;
     while (k < src.length && /[A-Za-z0-9_ñÑáéíóúÁÉÍÓÚ]/.test(src[k])) k++;
-    return { palabra: src.slice(j, k).toLowerCase(), fin: k };
+    return { palabra: sinTildes(src.slice(j, k).toLowerCase()), fin: k };
+  }
+
+  /* ¿La palabra que se acaba de leer empieza una de las frases de FRASES? Se
+     mira sin consumir nada: si no completa, la palabra sigue su camino sola
+     («por» a secas es BY, «por defecto» es DEFAULT). */
+  function buscarFrase(src, desde, primera) {
+    const opciones = FRASES[primera];
+    if (!opciones) return null;
+    for (const op of opciones) {
+      let fin = desde, sirve = true;
+      for (const p of op.palabras) {
+        const sig = siguientePalabra(src, fin);
+        if (sig.palabra !== p) { sirve = false; break; }
+        fin = sig.fin;
+      }
+      if (sirve) return { fin, token: op.token, mas: op.mas, texto: op.texto };
+    }
+    return null;
   }
 
   function tokenizar(src) {
@@ -152,21 +244,18 @@
       if (/[A-Za-z_ñÑáéíóúÁÉÍÓÚ]/.test(c)) {
         let s = '';
         while (i < n && /[A-Za-z0-9_ñÑáéíóúÁÉÍÓÚ]/.test(src[i])) s += src[i++];
-        const b = s.toLowerCase();
-        /* "base de datos", en tres palabras sueltas, es "basededatos" dicho
-           despacio: se juntan acá para que el resto del motor vea un solo
-           token, igual que si se hubiera escrito de una vez. */
-        if (b === 'base') {
-          const p1 = siguientePalabra(src, i);
-          if (p1.palabra === 'de') {
-            const p2 = siguientePalabra(src, p1.fin);
-            if (p2.palabra === 'datos') {
-              i = p2.fin;
-              t.push({ k: 'database', v: 'base de datos' });
-              continue;
-            }
-          }
+        const b = sinTildes(s.toLowerCase());
+        /* "base de datos" o "clave primaria", en palabras sueltas: se juntan
+           acá para que el resto del motor vea el token que le corresponde,
+           igual que si se hubiera escrito en inglés de una sola palabra. */
+        const fr = buscarFrase(src, i, b);
+        if (fr) {
+          i = fr.fin;
+          t.push({ k: fr.token, v: fr.texto });
+          if (fr.mas) t.push({ k: fr.mas, v: fr.texto });
+          continue;
         }
+        if (CONTEXTUALES.has(b)) { t.push({ k: 'id', v: s, esp: b }); continue; }
         const clave = SINONIMOS[b] || b;
         t.push(PALABRAS.has(clave) ? { k: clave, v: s } : { k: 'id', v: s });
         continue;
@@ -209,6 +298,14 @@
       err(`se esperaba ${que || 'un nombre'} y se encontró "${this.tk().v}"`);
     }
 
+    /* «y» y «o» llegan como identificadores (ver CONTEXTUALES). Acá se las
+       lee como operador, que es lo único que pueden ser en este lugar de la
+       gramática: en lugar de operando el parser nunca las mira, así que
+       «ORDENAR POR y» ordena por la columna y. Un nombre entre corchetes o
+       acentos graves no lleva `esp`, así que [y] siempre es la columna. */
+    esEsp(w) { const k = this.tk(); return k.k === 'id' && k.esp === w; }
+    comeEsp(w) { return this.esEsp(w) ? (this.sig(), true) : false; }
+
     /* ------------------------ sentencias ------------------------- */
     sentencia() {
       /* "CREAR BASE DE DATOS x" y "USAR x": ESLE2 BD trabaja con una única
@@ -248,7 +345,7 @@
 
     crearTabla() {
       this.exige('create');
-      this.exige('table', 'la palabra TABLE');
+      this.exige('table', 'la palabra TABLA (TABLE)');
       let siNoExiste = false;
       if (this.come('if')) { this.exige('not'); this.exige('exists'); siNoExiste = true; }
       const nombre = this.nombre('el nombre de la tabla');
@@ -261,7 +358,7 @@
            entenderse para poder volver a cargar un volcado propio. */
         if (this.es('foreign')) {
           this.sig();
-          this.exige('key', 'la palabra KEY');
+          this.exige('key', 'la palabra CLAVE (KEY)');
           this.exige('(', '"(" con la columna que referencia');
           const cual = this.nombre('el nombre de una columna');
           this.exige(')');
@@ -274,7 +371,8 @@
         }
         const c = { nombre: this.nombre('el nombre de una columna'), tipo: 'TEXT', pk: false, noNulo: false, porDefecto: null, refiere: null };
         if (this.es('id')) {
-          c.tipo = this.sig().v.toUpperCase();
+          const escrito = this.sig().v;
+          c.tipo = TIPOS[sinTildes(escrito.toLowerCase())] || escrito.toUpperCase();
           /* Un tipo puede llevar tamaño: VARCHAR(30), DECIMAL(10,2). */
           if (this.come('(')) {
             const dims = [];
@@ -301,7 +399,7 @@
        clave primaria de esa tabla, que es lo que se quiere el 99% de las
        veces y lo que hacen SQLite y PostgreSQL. */
     referencia() {
-      this.exige('references', 'la palabra REFERENCES');
+      this.exige('references', 'la palabra REFERENCIA (REFERENCES)');
       const tabla = this.nombre('el nombre de la tabla a la que apunta');
       let columna = null;
       if (this.come('(')) { columna = this.nombre('el nombre de una columna'); this.exige(')'); }
@@ -318,14 +416,14 @@
 
     borrarTabla() {
       this.exige('drop');
-      this.exige('table', 'la palabra TABLE');
+      this.exige('table', 'la palabra TABLA (TABLE)');
       const siExiste = this.come('if') ? (this.exige('exists'), true) : false;
       return { t: 'drop', nombre: this.nombre('el nombre de la tabla'), siExiste };
     }
 
     insertar() {
       this.exige('insert');
-      this.exige('into', 'la palabra INTO');
+      this.exige('into', 'la palabra DENTRO (INTO)');
       const tabla = this.nombre('el nombre de la tabla');
       let columnas = null;
       if (this.come('(')) {
@@ -333,7 +431,7 @@
         do { columnas.push(this.nombre('el nombre de una columna')); } while (this.come(','));
         this.exige(')');
       }
-      this.exige('values', 'la palabra VALUES');
+      this.exige('values', 'la palabra VALORES (VALUES)');
       const filas = [];
       do {
         /* El pseudocódigo de algunos tutoriales repite la palabra VALUES en
@@ -380,25 +478,30 @@
         q.de = this.fuente();
         for (;;) {
           const izq = this.come('left');
-          if (izq) this.come('inner');
+          /* INTERIOR (INNER) es opcional y puede venir solo: hasta acá se lo
+             consumía únicamente después de IZQUIERDA, así que un «INTERIOR
+             UNIR» suelto dejaba la palabra sin comer y la consulta se cortaba
+             ahí, sin decir por qué. */
+          const interior = this.come('inner');
           if (!this.come('join')) {
-            if (izq) err('después de LEFT se esperaba JOIN');
+            if (izq || interior)
+              err(`después de ${izq ? 'IZQUIERDA (LEFT)' : 'INTERIOR (INNER)'} se esperaba UNIR (JOIN)`);
             break;
           }
           const f = this.fuente();
-          this.exige('on', 'la palabra ON con la condición del JOIN');
+          this.exige('on', 'la palabra SEGUN (ON) con la condición del UNIR');
           q.joins.push({ fuente: f, on: this.expr(), izq });
         }
       }
       if (this.come('where')) q.where = this.expr();
       if (this.come('group')) {
-        this.exige('by', 'la palabra BY');
+        this.exige('by', 'la palabra POR (BY)');
         q.group = [];
         do { q.group.push(this.expr()); } while (this.come(','));
       }
       if (this.come('having')) q.having = this.expr();
       if (this.come('order')) {
-        this.exige('by', 'la palabra BY');
+        this.exige('by', 'la palabra POR (BY)');
         do {
           const e = this.expr();
           const desc = this.come('desc') ? true : (this.come('asc'), false);
@@ -415,7 +518,7 @@
     actualizar() {
       this.exige('update');
       const tabla = this.nombre('el nombre de la tabla');
-      this.exige('set', 'la palabra SET');
+      this.exige('set', 'la palabra CONJUNTO (SET)');
       const sets = [];
       do {
         const c = this.nombre('el nombre de una columna');
@@ -428,7 +531,7 @@
 
     eliminar() {
       this.exige('delete');
-      this.exige('from', 'la palabra FROM');
+      this.exige('from', 'la palabra DE (FROM)');
       const tabla = this.nombre('el nombre de la tabla');
       const where = this.come('where') ? this.expr() : null;
       return { t: 'delete', tabla, where };
@@ -438,12 +541,12 @@
     expr() { return this.nOr(); }
     nOr() {
       let n = this.nAnd();
-      while (this.come('or')) n = { t: 'bin', op: 'or', i: n, d: this.nAnd() };
+      while (this.come('or') || this.comeEsp('o')) n = { t: 'bin', op: 'or', i: n, d: this.nAnd() };
       return n;
     }
     nAnd() {
       let n = this.nNot();
-      while (this.come('and')) n = { t: 'bin', op: 'and', i: n, d: this.nNot() };
+      while (this.come('and') || this.comeEsp('y')) n = { t: 'bin', op: 'and', i: n, d: this.nNot() };
       return n;
     }
     nNot() {
@@ -455,14 +558,14 @@
       for (;;) {
         if (this.come('is')) {
           const neg = this.come('not');
-          this.exige('null', 'la palabra NULL');
+          this.exige('null', 'la palabra NULO (NULL)');
           n = { t: 'esNulo', e: n, neg };
           continue;
         }
         if (this.come('like')) { n = { t: 'bin', op: 'like', i: n, d: this.nAdit() }; continue; }
         if (this.come('between')) {
           const a = this.nAdit();
-          this.exige('and', 'la palabra AND');
+          if (!this.come('and') && !this.comeEsp('y')) this.exige('and', 'la palabra Y (AND)');
           n = { t: 'entre', e: n, a, b: this.nAdit() };
           continue;
         }
@@ -508,8 +611,10 @@
       if (this.es('cad')) return { t: 'cad', v: this.sig().v };
       if (this.come('null')) return { t: 'nulo' };
       if (this.come('(')) { const e = this.expr(); this.exige(')'); return e; }
-      /* Las funciones de agregación son palabras reservadas. */
-      if (['count', 'sum', 'avg', 'min', 'max'].includes(this.k)) {
+      /* Las funciones de agregación son palabras reservadas, pero solo cuando
+         viene el paréntesis: si no, una columna llamada «promedio» o «max»
+         dejaría de poder nombrarse. */
+      if (['count', 'sum', 'avg', 'min', 'max'].includes(this.k) && this.tk(1).k === '(') {
         const f = this.sig().k;
         this.exige('(', `"(" después de ${f.toUpperCase()}`);
         const distinto = this.come('distinct');
@@ -525,7 +630,8 @@
           const args = [];
           if (!this.es(')')) do { args.push(this.expr()); } while (this.come(','));
           this.exige(')');
-          return { t: 'fn', nombre: n1.toLowerCase(), args };
+          const baja = sinTildes(n1.toLowerCase());
+          return { t: 'fn', nombre: FUNCIONES_ESP[baja] || baja, args };
         }
         if (this.come('.')) {
           if (this.come('*')) return { t: 'todo', tabla: n1 };
@@ -737,7 +843,10 @@
       case 'ifnull': return esNulo(a[0]) ? a[1] : a[0];
       default:
         err(`la función "${e.nombre}" no existe`,
-          'Las que hay son: COUNT, SUM, AVG, MIN, MAX, UPPER, LOWER, LENGTH, TRIM, ROUND, ABS, SUBSTR, COALESCE e IFNULL.');
+          'Las que hay son: CONTAR, SUMAR, PROMEDIO, MINIMO, MAXIMO, MAYUSCULAS, MINUSCULAS, '
+          + 'LONGITUD, RECORTAR, REDONDEAR, ABSOLUTO, SUBCADENA, PRIMERO_NO_NULO y SI_NULO — '
+          + 'o su forma en inglés: COUNT, SUM, AVG, MIN, MAX, UPPER, LOWER, LENGTH, TRIM, '
+          + 'ROUND, ABS, SUBSTR, COALESCE e IFNULL.');
     }
   }
 
@@ -762,7 +871,10 @@
     }
     if (e.t === 'fn' && !FUNCIONES.has(e.nombre))
       err(`la función "${e.nombre}" no existe`,
-        'Las que hay son: COUNT, SUM, AVG, MIN, MAX, UPPER, LOWER, LENGTH, TRIM, ROUND, ABS, SUBSTR, COALESCE e IFNULL.');
+        'Las que hay son: CONTAR, SUMAR, PROMEDIO, MINIMO, MAXIMO, MAYUSCULAS, MINUSCULAS, '
+        + 'LONGITUD, RECORTAR, REDONDEAR, ABSOLUTO, SUBCADENA, PRIMERO_NO_NULO y SI_NULO — '
+        + 'o su forma en inglés: COUNT, SUM, AVG, MIN, MAX, UPPER, LOWER, LENGTH, TRIM, '
+        + 'ROUND, ABS, SUBSTR, COALESCE e IFNULL.');
     for (const k of Object.keys(e)) {
       if (k === 't' || k === 'tabla' || k === 'nombre' || k === 'op' || k === 'f') continue;
       const v = e[k];
