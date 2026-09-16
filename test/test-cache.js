@@ -48,5 +48,13 @@ chk(/^esle2-v\d+$/.test(version || ''), 'la VERSION tiene la forma esperada: ' +
 chk(pedidos().size > 100, 'se leyeron las referencias de las páginas: ' + pedidos().size);
 chk(listaDelSw(sw).length === r.enCache.length, 'la lista se lee entera');
 
+/* Y que sw.js siga siendo JavaScript. Una coma que falta lo deja sin instalar,
+   el sitio anda igual con internet, y la prueba de arriba pasa lo mismo porque
+   lee la lista con una expresión regular. Ya pasó de verdad: --arreglar
+   agregaba una entrada abajo de la última, que no tenía coma. */
+let compilaSw = true, porque = '';
+try { new Function(sw); } catch (e) { compilaSw = false; porque = e.message; }
+chk(compilaSw, 'sw.js es JavaScript válido: ' + porque);
+
 console.log(bien + ' bien, ' + mal + ' mal');
 process.exit(mal ? 1 : 0);

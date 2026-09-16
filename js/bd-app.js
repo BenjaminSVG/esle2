@@ -40,6 +40,14 @@
      un lector de pantalla no necesita que le hablen encima. */
   VozUI.iniciar({ editor: editor, guardarClave: 'esle2_voz_bd' });
 
+  /* --------------------------- la salida ------------------------------ */
+  /* Va acá arriba y no más abajo porque AnimoUI y el modo flexible escriben en
+     la consola: declarada después, «consola» todavía no existe cuando se la
+     pasa, y toda esta función se cortaba ahí sin que se viera nada. */
+  const consola = $('#consola');
+  const { crearDiagnostico } = window.ESLE2Consola;
+  const diagnostico = crearDiagnostico(consola, l => editor.getLine(l - 1), () => editor.lineCount());
+
   /* Cuando el mismo error de sintaxis aparece cinco veces seguidas en dos
      minutos, se dice algo. Va en la salida y no en un cartel: no interrumpe. */
   const animo = AnimoUI.iniciar({
@@ -82,10 +90,6 @@
     $('#posCursor').textContent = (c.line + 1) + ' : ' + (c.ch + 1);
   });
 
-  /* --------------------------- la salida ------------------------------ */
-  const consola = $('#consola');
-  const { crearDiagnostico } = window.ESLE2Consola;
-  const diagnostico = crearDiagnostico(consola, l => editor.getLine(l - 1), () => editor.lineCount());
 
   function escribir(texto, clase) {
     const s = document.createElement('span');
@@ -557,6 +561,31 @@
     editor.setValue(compartido.codigo);
     $('#entrada').value = compartido.entrada || '';
     Compartir.limpiarUrl();
+  }
+
+  /* --------------------------- las vistas ----------------------------- */
+  /* Dos: la consola de siempre y el curso. El curso se arma solo desde
+     js/curso-bd-ui.js; de acá se lleva lo único que necesita del editor. */
+  function irA(cual) {
+    document.querySelectorAll('.pest[data-vista]').forEach(b =>
+      b.classList.toggle('activa', b.dataset.vista === cual));
+    document.querySelectorAll('.vista').forEach(v =>
+      v.classList.toggle('activa', v.id === 'vista-' + cual));
+    if (cual === 'ide') editor.refresh();
+  }
+  const nav = $('#nav');
+  if (nav) {
+    nav.addEventListener('click', ev => {
+      const b = ev.target.closest('.pest[data-vista]');
+      if (b) irA(b.dataset.vista);
+    });
+  }
+  if (window.CursoBDUI) {
+    CursoBDUI.arrancar({
+      leer: () => editor.getValue(),
+      escribir: t => { editor.setValue(t); editor.focus(); },
+      irAlIDE: () => irA('ide')
+    });
   }
 
   pintarEsquema();

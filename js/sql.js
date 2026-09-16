@@ -1097,7 +1097,12 @@
   }
 
   /* --------------------------- ejecutar ------------------------------ */
-  function ejecutar(base, texto) {
+  /* `alAnalizar` recibe cada sentencia ya analizada, antes de correrla. Lo usa
+     el corrector del curso: cuando el ejercicio pide practicar una
+     construcción —un EXISTE correlacionado, por ejemplo— hay que mirar lo que
+     el alumno escribió de verdad, y buscar la palabra con una expresión
+     regular encontraría también la que está adentro de un comentario. */
+  function ejecutar(base, texto, alAnalizar) {
     if (String(texto).length > TOPES.textoSQL)
       throw new SQLLimite('la instrucción es demasiado larga',
         `El tope es ${Math.round(TOPES.textoSQL / 1024)} KB de texto en una sola instrucción.`);
@@ -1107,6 +1112,7 @@
       while (p.come(';')) { /* varias instrucciones seguidas */ }
       if (p.es('fin')) break;
       const s = p.sentencia();
+      if (alAnalizar) alAnalizar(s);
       /* Un presupuesto nuevo por sentencia, no por texto: dos consultas
          escritas una abajo de la otra son dos trabajos, no uno. */
       const anterior = gasto;

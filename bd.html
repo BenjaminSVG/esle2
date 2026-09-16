@@ -40,6 +40,7 @@
 
   <nav class="pestanas" id="nav">
     <button class="pest activa" data-vista="ide" type="button">Consola</button>
+    <button class="pest" data-vista="curso" type="button">Curso</button>
     <a class="pest" href="bd-documentacion.html">Documentación BD</a>
     <a class="pest tenue" href="index.html" title="Volver al SLE2 clásico">← SLE2 clásico</a>
     <a class="pest destacada" href="poo.html" title="El mismo lenguaje con clases y objetos">ESLE2 POO</a>
@@ -185,6 +186,38 @@
   </div>
 </main>
 
+<!-- =============================== CURSO ============================== -->
+<main class="vista" id="vista-curso" tabindex="-1">
+  <div class="curso">
+    <aside class="lista-ejercicios">
+      <div class="filtros" id="filtrosBD">
+        <button class="chip activa" data-nivel="todos" type="button">Todos</button>
+        <button class="chip" data-nivel="facil" type="button">Fácil</button>
+        <button class="chip" data-nivel="medio" type="button">Medio</button>
+        <button class="chip" data-nivel="dificil" type="button">Difícil</button>
+      </div>
+      <p class="mini" id="cuentaBD">0 de 50</p>
+      <ol id="listaEjerciciosBD"></ol>
+      <button class="btn borrar" id="btnReiniciarBD" type="button">Reiniciar progreso</button>
+    </aside>
+
+    <article class="detalle" id="detalleEjercicioBD" tabindex="-1">
+      <div class="vacio">
+        <h2>Curso de ESLE2 BD</h2>
+        <p>50 ejercicios que van desde crear una tabla hasta un informe con subconsultas, y se
+           corrigen solos: ESLE2 corre tu programa contra una base <strong>nueva</strong> y después
+           mira cómo quedó —qué tablas hay, qué filas tienen y qué trajo tu consulta—.</p>
+        <p>Por eso no alcanza con escribir la respuesta con <code>imprimir()</code>: lo que se
+           corrige es la base, no el texto.</p>
+        <p>Elegí uno de la lista. Si te trabás, en la
+           <a href="bd-documentacion.html">documentación de ESLE2 BD</a> está todo explicado.</p>
+        <p class="nota">Tu progreso se guarda en una <em>cookie</em> de este navegador, así que
+           podés volver cuando quieras.</p>
+      </div>
+    </article>
+  </div>
+</main>
+
 <!-- ============================== diálogos ============================ -->
 <dialog id="dlgExportar" class="dlg dlg-traduccion">
   <h3 id="tituloExportar">La base, en SQL</h3>
@@ -273,6 +306,10 @@
 <script src="js/voz-ui.js"></script>
 <script src="js/disposicion.js"></script>
 <script src="js/iconos.js"></script>
+<script src="js/verificar-bd.js"></script>
+<script src="js/ejercicios-bd.js"></script>
+<script src="js/curso-bd-ui.js"></script>
+<script src="js/progreso.js"></script>
 <script src="js/bd-ejemplos.js"></script>
 <script src="js/bd-app.js"></script>
 <script src="js/indice.js"></script>

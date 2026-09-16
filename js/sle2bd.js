@@ -194,7 +194,9 @@
      muestre igual que cualquier otro error del programa. */
   function correr(interp, texto, l) {
     try {
-      return SQL.ejecutar(interp.base, texto);
+      /* opts.alAnalizar: lo pone el corrector del curso para poder mirar lo
+         que el alumno escribió de verdad. En una ejecución normal no está. */
+      return SQL.ejecutar(interp.base, texto, interp.opts && interp.opts.alAnalizar);
     } catch (e) {
       if (e && e.sql) errE('SQL: ' + e.message, l, e.sugerencia || '');
       throw e;

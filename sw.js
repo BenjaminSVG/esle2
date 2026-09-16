@@ -137,7 +137,7 @@ const ARCHIVOS = [
   'img/icono-512.png',
   'img/icono-mask-512.png',
   'img/icono-180.png',
-  'manifest.json'
+  'manifest.json',
   'img/poo/hero.svg',
   'img/poo/clase-objeto.svg',
   'img/poo/encapsulamiento.svg',
@@ -155,6 +155,9 @@ const ARCHIVOS = [
   'img/visual/formulario-anatomia.png',
   'img/visual/confirmacion.png',
   'img/visual/temporizador-eventos.png',
+  'js/verificar-bd.js',
+  'js/ejercicios-bd.js',
+  'js/curso-bd-ui.js',
 ];
 
 /* Guarda una copia bajo la dirección pedida.

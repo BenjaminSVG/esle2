@@ -11,7 +11,8 @@
   const COOKIES = {
     sle2: 'esle2_progreso',
     poo: 'esle2_progreso_poo',
-    vis: 'esle2_progreso_vis'
+    vis: 'esle2_progreso_vis',
+    bd: 'esle2_progreso_bd'
   };
   const CURSOS = Object.keys(COOKIES);
 

@@ -121,6 +121,7 @@ const PAGINAS = [
   ['Curso de ESLE2 Visual', 'Página', 'visual.html#curso', '50 ejercicios de ventanas, eventos y dibujo'],
   ['Documentación de ESLE2 Visual', 'Página', 'visual-documentacion.html', 'la referencia de ventanas, controles y lienzo'],
   ['ESLE2 BD', 'Página', 'bd.html', 'bases de datos y SQL con SLE2'],
+  ['Curso de ESLE2 BD', 'Página', 'bd.html#curso', '50 ejercicios de tablas, consultas y subconsultas'],
   ['Documentación de ESLE2 BD', 'Página', 'bd-documentacion.html', 'SQL, NULL y la exportación a SQLite, MySQL y PostgreSQL'],
   ['Diseño', 'Página', 'diseno.html', 'colores del fondo y de la sintaxis']
 ];
@@ -134,6 +135,7 @@ const entradas = [].concat(
   deCurso('js/ejercicios.js', 'CURSO', 'index.html', 'Curso'),
   deCurso('js/ejercicios-poo.js', 'CURSO_POO', 'poo.html', 'Curso POO'),
   deCurso('js/ejercicios-visual.js', 'CURSO_VISUAL', 'visual.html', 'Curso Visual'),
+  deCurso('js/ejercicios-bd.js', 'CURSO_BD', 'bd.html', 'Curso BD'),
   predefinidas()
 );
 

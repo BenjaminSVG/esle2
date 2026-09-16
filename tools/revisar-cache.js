@@ -76,7 +76,22 @@ function arreglar(faltan) {
   const fin = texto.indexOf('\n];', bloque.index);
   const salto = texto.indexOf('\r\n') >= 0 ? '\r\n' : '\n';
   const nuevas = faltan.map(([u]) => `  '${u}',`).join(salto);
-  fs.writeFileSync(SW, texto.slice(0, fin) + salto + nuevas + texto.slice(fin));
+  /* La última entrada puede no tener coma: es válido hasta que se agrega otra
+     abajo, y entonces sw.js deja de ser JavaScript. Pasó de verdad, y no lo
+     agarró ninguna prueba porque el service worker falla callado: el sitio
+     anda perfecto con internet y no arranca sin él. */
+  let antes = texto.slice(0, fin);
+  if (!/,\s*$/.test(antes)) antes += ',';
+  fs.writeFileSync(SW, antes + salto + nuevas + texto.slice(fin));
+}
+
+/* Que sw.js siga siendo JavaScript. Un error de sintaxis acá no lo nota nadie
+   hasta que alguien abre el sitio sin conexión. */
+function compila() {
+  try {
+    new Function(fs.readFileSync(SW, 'utf8').match(/const ARCHIVOS = \[[\s\S]*?\n\];/)[0]);
+    return '';
+  } catch (e) { return e.message; }
 }
 
 if (require.main === module) {
@@ -92,7 +107,10 @@ if (require.main === module) {
     process.exit(r.rotas.length + r.fantasmas.length ? 1 : 0);
   }
 
-  const mal = r.rotas.length + r.faltan.length + r.fantasmas.length;
+  const roto = compila();
+  if (roto) console.error(`SW ROTO   la lista ARCHIVOS no es JavaScript válido: ${roto}`);
+
+  const mal = r.rotas.length + r.faltan.length + r.fantasmas.length + (roto ? 1 : 0);
   console.log(mal
     ? `${mal} problemas en la caché (probá con --arreglar)`
     : `caché completa: ${r.enCache.length} archivos, ${paginas().length} páginas`);
