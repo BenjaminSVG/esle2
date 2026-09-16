@@ -51,7 +51,12 @@
  *   SQL.crear()                       -> base vacía
  *   SQL.ejecutar(base, texto)         -> [{ tipo, columnas, filas, afectadas, mensaje }]
  *   SQL.tablas(base)                  -> [{ nombre, columnas, filas }]
- *   SQL.SQLError
+ *   SQL.SQLError · SQL.SQLLimite · SQL.TOPES
+ *
+ * Cada sentencia tiene un presupuesto (ver TOPES) y una sentencia que lo
+ * supera para con un SQLLimite y deja la base como estaba. Ninguna sentencia
+ * se aplica por la mitad: se calcula cómo va a quedar la tabla y recién
+ * después se publica.
  */
 (function (global) {
   'use strict';
@@ -64,6 +69,63 @@
     }
   }
   const err = (m, s) => { throw new SQLError(m, s); };
+
+  /* ------------------------------------------------------------------ */
+  /* El presupuesto de una sentencia                                     */
+  /* ------------------------------------------------------------------ */
+  /* Una pestaña del navegador tiene la memoria que tiene, y un JOIN de dos
+     tablas grandes puede pedir más de lo que hay sin que nada avise. Sin un
+     tope, «la consulta está pensando» y «la pestaña se colgó» se ven igual, y
+     lo segundo se lleva puesto el programa del alumno.
+
+     Así que cada sentencia tiene un presupuesto, y cuando se le acaba para y
+     lo dice. Nunca devuelve un resultado cortado en silencio: un resultado
+     incompleto que parece completo enseña algo falso. */
+  const TOPES = {
+    filasPorTabla: 100000,
+    filasEnTotal: 500000,
+    filasDeResultado: 100000,
+    trabajo: 10000000,
+    milisegundos: 5000,
+    textoSQL: 1048576
+  };
+
+  /* Cada cuánto se mira el reloj. Mirarlo en cada paso costaría más que el
+     paso; cada 8192 el costo es invisible y la demora extra, imperceptible. */
+  const CADA_CUANTO = 8192;
+
+  class SQLLimite extends SQLError {
+    constructor(msg, sugerencia) { super(msg, sugerencia); this.limite = true; }
+  }
+
+  /* El presupuesto de la sentencia que se está corriendo. Es una variable del
+     módulo y no un parámetro porque el motor es de un solo hilo y hay quince
+     funciones en el camino: pasarlo por todas no lo haría más correcto, solo
+     más largo. ejecutar() lo pone y lo saca siempre, pase lo que pase. */
+  let gasto = null;
+
+  function gastar(n) {
+    if (!gasto) return;
+    gasto.trabajo += n;
+    if (gasto.trabajo > gasto.topes.trabajo)
+      throw new SQLLimite('la consulta superó el límite de trabajo',
+        'Agregá un filtro, reducí el resultado con LIMITE, o dividila en dos. '
+        + 'La base quedó como estaba.');
+    gasto.desdeReloj += n;
+    if (gasto.desdeReloj >= CADA_CUANTO) {
+      gasto.desdeReloj = 0;
+      if (Date.now() > gasto.hasta)
+        throw new SQLLimite(`la consulta tardó más de ${gasto.topes.milisegundos / 1000} segundos`,
+          'Agregá un filtro, reducí el resultado con LIMITE, o dividila en dos. '
+          + 'La base quedó como estaba.');
+    }
+  }
+
+  function tope(cuantas, cual, que) {
+    if (cuantas <= TOPES[cual]) return;
+    throw new SQLLimite(`${que}: el tope de esta sesión es ${TOPES[cual]}`,
+      'Cargá menos filas, o guardá la base con Exportar y seguí en SQLite, MySQL o PostgreSQL.');
+  }
 
   /* ------------------------------------------------------------------ */
   /* Análisis léxico                                                     */
@@ -911,13 +973,21 @@
 
   /* --------------------------- ejecutar ------------------------------ */
   function ejecutar(base, texto) {
+    if (String(texto).length > TOPES.textoSQL)
+      throw new SQLLimite('la instrucción es demasiado larga',
+        `El tope es ${Math.round(TOPES.textoSQL / 1024)} KB de texto en una sola instrucción.`);
     const p = new P(tokenizar(texto));
     const salidas = [];
     for (;;) {
       while (p.come(';')) { /* varias instrucciones seguidas */ }
       if (p.es('fin')) break;
       const s = p.sentencia();
-      salidas.push(correr(base, s));
+      /* Un presupuesto nuevo por sentencia, no por texto: dos consultas
+         escritas una abajo de la otra son dos trabajos, no uno. */
+      const anterior = gasto;
+      gasto = { topes: TOPES, trabajo: 0, desdeReloj: 0, hasta: Date.now() + TOPES.milisegundos };
+      try { salidas.push(correr(base, s)); }
+      finally { gasto = anterior; }
     }
     return salidas;
   }
@@ -1016,6 +1086,7 @@
       if (!c.refiere || esNulo(fila[c.nombre])) continue;
       const otra = base.tablas.get(c.refiere.tabla.toLowerCase());
       if (!otra) continue;                       // la borraron con DROP TABLE
+      gastar(otra.filas.length);
       const hay = otra.filas.some(f => comparar(f[c.refiere.columna], fila[c.nombre]) === 0);
       if (!hay) err(`no hay ninguna fila con ${c.refiere.tabla}.${c.refiere.columna} = ${textoDe(fila[c.nombre])}`,
         `La columna "${t.nombre}.${c.nombre}" apunta a "${c.refiere.tabla}": el valor tiene que existir allá primero. `
@@ -1034,8 +1105,12 @@
       })
       : t.columnas;
 
-    let n = 0;
+    /* Las filas se arman y se revisan enteras antes de tocar la tabla. Antes
+       se empujaban de a una: si la tercera fallaba, las dos primeras quedaban
+       adentro y la instrucción había hecho la mitad de lo que decía. */
+    const nuevas = [];
     for (const valores of s.filas) {
+      gastar(1);
       if (valores.length !== cols.length)
         err(`se dieron ${valores.length} valor(es) para ${cols.length} columna(s)`,
           'Tiene que haber un valor por cada columna nombrada, en el mismo orden.');
@@ -1047,17 +1122,47 @@
         if (c.noNulo && esNulo(fila[c.nombre]))
           err(`la columna "${c.nombre}" no admite NULL`,
             c.pk ? 'Es la clave primaria de la tabla.' : 'Está declarada NOT NULL.');
-        if ((c.pk || c.unico) && !esNulo(fila[c.nombre])) {
-          const repetida = t.filas.some(f => comparar(f[c.nombre], fila[c.nombre]) === 0);
-          if (repetida) err(`ya hay una fila con ${c.nombre} = ${textoDe(fila[c.nombre])}`,
-            c.pk ? 'La clave primaria no se puede repetir.' : 'La columna está declarada UNIQUE.');
-        }
       }
-      controlarRefs(base, t, fila);
-      t.filas.push(fila);
-      n++;
+      nuevas.push(fila);
     }
+
+    tope(t.filas.length + nuevas.length, 'filasPorTabla',
+      `la tabla "${t.nombre}" quedaría con ${t.filas.length + nuevas.length} filas`);
+    tope(cuantasFilas(base) + nuevas.length, 'filasEnTotal',
+      'la base quedaría con más filas de las que entran en una pestaña');
+
+    /* Sobre cómo va a quedar la tabla, no sobre cómo está: si no, dos filas
+       repetidas dentro del mismo INSERT pasarían las dos. */
+    controlarClaves(t, t.filas.concat(nuevas));
+    for (const fila of nuevas) controlarRefs(base, t, fila);
+
+    for (const fila of nuevas) t.filas.push(fila);
+    const n = nuevas.length;
     return { tipo: 'insert', afectadas: n, mensaje: `${n} fila(s) agregada(s) a ${t.nombre}` };
+  }
+
+  function cuantasFilas(base) {
+    let n = 0;
+    for (const t of base.tablas.values()) n += t.filas.length;
+    return n;
+  }
+
+  /* Que no se repita ninguna clave primaria ni ninguna columna UNIQUE, sobre
+     el conjunto de filas con el que va a quedar la tabla. */
+  function controlarClaves(t, filas) {
+    for (const c of t.columnas) {
+      if (!c.pk && !c.unico) continue;
+      gastar(filas.length);
+      const vistos = new Set();
+      for (const f of filas) {
+        const v = f[c.nombre];
+        if (esNulo(v)) continue;
+        const k = typeof v + '|' + textoDe(v);
+        if (vistos.has(k)) err(`ya hay una fila con ${c.nombre} = ${textoDe(v)}`,
+          c.pk ? 'La clave primaria no se puede repetir.' : 'La columna está declarada UNIQUE.');
+        vistos.add(k);
+      }
+    }
   }
 
   /* Arma las filas «anchas» del FROM y los JOIN: cada clave es
@@ -1091,6 +1196,7 @@
       const nuevas = [];
       for (const a of filas) {
         let hubo = false;
+        gastar(der.length);
         for (const b of der) {
           const fila = Object.assign({}, a, b);
           if (verdad(evaluar(j.on, fila, { columnas })) === true) { nuevas.push(fila); hubo = true; }
@@ -1117,6 +1223,7 @@
 
   function calcularAgregados(agrs, filas, ctx) {
     const m = new Map();
+    gastar(agrs.length * filas.length);
     for (const a of agrs) {
       let vals = a.arg && a.arg.t === 'todo' ? filas.map(() => 1)
         : filas.map(f => evaluar(a.arg, f, ctx));
@@ -1166,6 +1273,7 @@
     const { filas, columnas } = filasDe(base, q);
     const ctx = { columnas };
 
+    gastar(filas.length);
     let vivas = q.where
       ? filas.filter(f => verdad(evaluar(q.where, f, ctx)) === true)
       : filas;
@@ -1215,6 +1323,7 @@
          toda la tabla es un grupo solo. */
       const grupos = new Map();
       if (q.group) {
+        gastar(vivas.length * q.group.length);
         for (const f of vivas) {
           const clave = q.group.map(g => {
             const v = evaluar(g, f, ctx);
@@ -1239,10 +1348,17 @@
         resultado.push({ v: salida.map(c => evaluar(c.e, {}, ctxG)), origen: {}, ctx: ctxG });
       }
     } else {
+      gastar(vivas.length * salida.length);
       for (const f of vivas) {
         resultado.push({ v: salida.map(c => evaluar(c.e, f, ctx)), origen: f, ctx });
       }
     }
+
+    /* El tope se mira sobre el resultado entero, antes del LIMITE: una
+       consulta que arma un millón de filas ya gastó la memoria aunque después
+       se pidan diez. */
+    tope(resultado.length, 'filasDeResultado',
+      `la consulta armó ${resultado.length} filas`);
 
     if (q.distinto) {
       const vistos = new Set();
@@ -1255,6 +1371,9 @@
     }
 
     if (q.order.length) {
+      /* Ordenar es n·log n comparaciones y cada una evalúa las expresiones del
+         ORDENAR POR: con medio millón de filas es lo más caro de la consulta. */
+      gastar(resultado.length * Math.max(1, Math.ceil(Math.log2(resultado.length + 2))));
       resultado.sort((a, b) => {
         for (const o of q.order) {
           /* Se puede ordenar por una columna de la salida o por una de la
@@ -1311,19 +1430,33 @@
     });
     if (s.where) validar(s.where, ctx.columnas);
 
-    let n = 0;
+    /* Se calcula cómo va a quedar la tabla entera y recién después se publica.
+       Antes cada fila se modificaba en el lugar, así que un error en la mitad
+       dejaba media tabla cambiada y media no. */
+    const finales = [], tocadas = [];
     for (const f of t.filas) {
+      gastar(1);
       const a = ancha(f);
-      if (s.where && verdad(evaluar(s.where, a, ctx)) !== true) continue;
+      if (s.where && verdad(evaluar(s.where, a, ctx)) !== true) { finales.push(f); continue; }
+      const nueva = Object.assign({}, f);
       s.sets.forEach((set, i) => {
         const c = destinos[i];
         const v = convertir(evaluar(set.e, a, ctx), c.tipo);
         if (c.noNulo && esNulo(v)) err(`la columna "${c.nombre}" no admite NULL`);
-        f[c.nombre] = v;
+        nueva[c.nombre] = v;
       });
-      controlarRefs(base, t, f);
-      n++;
+      finales.push(nueva);
+      tocadas.push(nueva);
     }
+
+    /* Las claves también se controlan acá: hasta ahora un ACTUALIZAR podía
+       dejar dos filas con la misma clave primaria, que es justo lo que la
+       clave primaria promete que no pasa. */
+    controlarClaves(t, finales);
+    for (const nueva of tocadas) controlarRefs(base, t, nueva);
+
+    t.filas = finales;
+    const n = tocadas.length;
     return { tipo: 'update', afectadas: n, mensaje: `${n} fila(s) modificada(s) en ${t.nombre}` };
   }
 
@@ -1342,5 +1475,5 @@
     return { tipo: 'delete', afectadas: n, mensaje: `${n} fila(s) borrada(s) de ${t.nombre}` };
   }
 
-  global.SQL = { crear, ejecutar, tablas, SQLError, textoDe, comparar, tokenizar, afinidad };
+  global.SQL = { crear, ejecutar, tablas, SQLError, SQLLimite, TOPES, textoDe, comparar, tokenizar, afinidad };
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -238,6 +238,7 @@ window.ESLE2Indice = [
   ["Exportar la base","Documentación BD","bd-documentacion.html#s-exportar","A SQLite, MySQL y PostgreSQL."],
   ["Los tres no escriben igual, y eso se ve","Documentación BD · Exportar la base","bd-documentacion.html#s-exportar",""],
   ["Lo que no hace","Documentación BD","bd-documentacion.html#s-limites","Dicho de frente, para que no sorprenda."],
+  ["Hasta dónde llega","Documentación BD · Lo que no hace","bd-documentacion.html#s-limites",""],
   ["Hola, mundo","Curso · Fácil","index.html#ej=f1","Escribí un programa que imprima exactamente el texto Hola, mundo! ."],
   ["Suma de dos números","Curso · Fácil","index.html#ej=f2","Leé dos números e imprimí únicamente su suma. Ejemplo: con la entrada 3,5 debe imprimir 8 ."],
   ["Área de un rectángulo","Curso · Fácil","index.html#ej=f3","Leé la base y la altura de un rectángulo e imprimí su área (solo el número)."],

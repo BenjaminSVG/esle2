@@ -39,8 +39,8 @@ Cada fila se publica sola, con `npm run soltar`, y deja el sitio andando.
 
 | # | Entrega | Qué toca | Cuándo está lista |
 |---|---|---|---|
-| 1 | Español completo | `sql.js`, `sle2bd.js`, `modo-sle2.js`, docs | Español, inglés y mezcla dan lo mismo; los ocho ejemplos y los volcados propios siguen andando |
-| 2 | Presupuesto y cancelación | `sql.js`, `bd-app.js` | Una consulta cara se detiene sin colgar el IDE y sin dejar la base a medias |
+| 1 ✅ | Español completo | `sql.js`, `sle2bd.js`, `modo-sle2.js`, docs | Español, inglés y mezcla dan lo mismo; los ocho ejemplos y los volcados propios siguen andando |
+| 2 ✅ | Presupuesto y cancelación | `sql.js`, `bd-app.js` | Una consulta cara se detiene sin colgar el IDE y sin dejar la base a medias |
 | 3 | Índices de clave | `sql.js` | Buscar por clave primaria deja de recorrer la tabla; índice y datos nunca divergen |
 | 4 | Consultas grandes | `sql.js` | 100.000 × 100.000 por igualdad sin armar el producto cartesiano |
 | 5 | Subconsultas sueltas | `sql.js` | Escalar, `EN`, `EXISTE`, tabla derivada; cardinalidad y nulos cubiertos |
@@ -159,6 +159,15 @@ evaluador, no dos. Ceder con una tarea del navegador, no con
 Un Worker solo se justifica si esto falla la prueba de respuesta: mover el SQL
 solo obligaría a copiar la base de ida y vuelta, y mover todo SL es otro
 proyecto.
+
+> **Lo que se hizo y lo que no.** El presupuesto, los topes y la atomicidad
+> están. El recorrido reanudable **no**: mientras una instrucción corre, la
+> página se queda quieta hasta que termina o hasta que se le acaban los cinco
+> segundos. La falla de verdad —una pestaña colgada para siempre, una sentencia
+> aplicada por la mitad, un resultado cortado que parece completo— ya no está,
+> y eso vale un release. Partir el evaluador en dos entradas es un refactor
+> grande; conviene hacerlo después de la fase 4, cuando el JOIN por hash ya
+> haya cambiado los ciclos que habría que volver reanudables, y no antes.
 
 Cada sentencia se publica entera o no se publica: si se corta a la mitad, la
 base queda como estaba.

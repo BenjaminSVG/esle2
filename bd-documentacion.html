@@ -794,6 +794,31 @@ SELECT nombre FROM gente WHERE edad IS NULL</code></pre>
       <p class="sub">Dicho de frente, para que no sorprenda.</p>
 
       <div class="doc-bloque">
+        <h3>Hasta dónde llega</h3>
+        <p>La base vive en la pestaña, así que tiene la memoria que tiene una pestaña. Cada
+           instrucción tiene un presupuesto, y la que se pasa <strong>para y lo dice</strong>:
+           nunca devuelve un resultado cortado que parezca completo.</p>
+        <table>
+          <tr><th>Tope</th><th>Cuánto</th></tr>
+          <tr><td>Filas en una tabla</td><td>100.000</td></tr>
+          <tr><td>Filas en toda la base</td><td>500.000</td></tr>
+          <tr><td>Filas que puede armar una consulta</td><td>100.000</td></tr>
+          <tr><td>Tiempo de una instrucción</td><td>5 segundos</td></tr>
+        </table>
+        <p>El tope de las filas de una consulta se mira <strong>antes</strong> del
+           <code>LIMITE</code>: un <code>UNIR</code> sin condición entre dos tablas de mil filas
+           arma un millón de filas aunque después se pidan diez, y esa memoria ya se gastó. Por
+           eso el <code>LIMITE</code> no sirve para esquivar el tope; lo que sirve es filtrar.</p>
+        <div class="doc-nota">Una instrucción que falla <strong>no deja nada a medias</strong>.
+          Si el tercer <code>VALORES</code> de un <code>INSERTAR</code> repite la clave, no entra
+          ninguno de los tres; si un <code>ACTUALIZAR</code> falla en la fila del medio, no cambia
+          ninguna. La base queda exactamente como estaba.</div>
+        <p>Mientras una instrucción corre, la página se queda quieta hasta que termina o hasta
+           que se le acaban los cinco segundos. Es la contra de que el motor corra en la misma
+           pestaña que el editor.</p>
+      </div>
+
+      <div class="doc-bloque">
         <p>El motor cubre el SQL de una primera materia. Lo que <strong>no</strong> está:</p>
         <ul>
           <li>subconsultas (<code>SELECT</code> dentro de otro <code>SELECT</code>);</li>

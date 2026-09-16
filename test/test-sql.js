@@ -597,5 +597,84 @@ seccion('Comillas dobles: texto, no identificador');
     SQL.tablas(b).some(t => t.nombre === 'gente'));
 }
 
+/* ------------------------------------------------------------------ */
+seccion('Ninguna sentencia se aplica por la mitad');
+/* ------------------------------------------------------------------ */
+/* Una instrucción que falla tiene que dejar la base como estaba. Si dejara la
+   mitad hecha, el alumno vería un error y datos a medias, y no habría forma de
+   saber cuáles entraron. */
+{
+  const b = SQL.crear();
+  q(b, 'CREAR TABLA t (id ENTERO CLAVE PRIMARIA, n ENTERO NO NULO)');
+  q(b, 'INSERTAR DENTRO t VALORES (1, 10)');
+
+  /* La tercera fila repite la clave: no tiene que entrar ninguna de las tres. */
+  let e = falla(b, 'INSERTAR DENTRO t VALORES (2, 20), (3, 30), (1, 40)');
+  comprobar('un INSERTAR con una fila mala no mete ninguna', e !== null, e);
+  comprobar('y la tabla quedó como estaba', filas(q(b, 'SELECCIONAR id DE t')) === '1',
+    filas(q(b, 'SELECCIONAR id DE t')));
+
+  /* Dos filas repetidas dentro del mismo INSERTAR: antes pasaban las dos,
+     porque cada una se comparaba contra la tabla y no contra la otra. */
+  e = falla(b, 'INSERTAR DENTRO t VALORES (7, 70), (7, 71)');
+  comprobar('dos claves repetidas en el mismo INSERTAR se rechazan',
+    e !== null && /ya hay una fila/.test(e.message), e && e.message);
+  comprobar('y tampoco entró la primera de las dos',
+    filas(q(b, 'SELECCIONAR id DE t')) === '1');
+
+  /* Un ACTUALIZAR que falla en la mitad: antes cambiaba las filas de arriba y
+     dejaba las de abajo sin tocar. */
+  q(b, 'INSERTAR DENTRO t VALORES (2, 20), (3, 30)');
+  e = falla(b, 'ACTUALIZAR t CONJUNTO n = NULO');
+  comprobar('un ACTUALIZAR que viola NO NULO no cambia nada', e !== null, e);
+  comprobar('y ninguna fila quedó con el valor nuevo',
+    filas(q(b, 'SELECCIONAR n DE t ORDENAR POR id')) === '10 ; 20 ; 30',
+    filas(q(b, 'SELECCIONAR n DE t ORDENAR POR id')));
+
+  /* Y lo que no se controlaba: dejar dos filas con la misma clave primaria. */
+  e = falla(b, 'ACTUALIZAR t CONJUNTO id = 1');
+  comprobar('un ACTUALIZAR no puede dejar la clave primaria repetida',
+    e !== null && /ya hay una fila/.test(e.message), e && e.message);
+  comprobar('y las claves quedaron como estaban',
+    filas(q(b, 'SELECCIONAR id DE t ORDENAR POR id')) === '1 ; 2 ; 3');
+
+  /* Cambiar la clave a un valor libre sí tiene que poder. */
+  comprobar('cambiar la clave a un valor que no está sigue andando',
+    q(b, 'ACTUALIZAR t CONJUNTO id = 9 DONDE id = 3').afectadas === 1);
+}
+
+/* ------------------------------------------------------------------ */
+seccion('El presupuesto de una sentencia');
+/* ------------------------------------------------------------------ */
+/* Sin tope, un JOIN de dos tablas grandes no termina y la pestaña se cuelga
+   sin decir nada. Lo que importa es que pare, que lo diga, y que no devuelva
+   un resultado cortado que parezca completo. */
+{
+  const b = SQL.crear();
+  q(b, 'CREAR TABLA g (n ENTERO)');
+  const valores = [];
+  for (let i = 1; i <= 2000; i++) valores.push('(' + i + ')');
+  q(b, 'INSERTAR DENTRO g VALORES ' + valores.join(', '));
+  comprobar('dos mil filas entran sin problema', q(b, 'SELECCIONAR CONTAR(*) DE g').filas[0][0] === 2000);
+
+  /* 2000 × 2000 × 2000 son ocho mil millones de parejas: tiene que parar. */
+  const e = falla(b, 'SELECCIONAR CONTAR(*) DE g UNIR g COMO g2 SEGUN 1 = 1 '
+    + 'UNIR g COMO g3 SEGUN 1 = 1');
+  comprobar('un producto cartesiano gigante para y lo dice',
+    e !== null && e.limite === true, e && e.message);
+  comprobar('y el mensaje dice qué hacer',
+    e && /LIMITE|filtro|dividila/.test(e.sugerencia + e.message), e && e.sugerencia);
+  comprobar('y la base quedó intacta', q(b, 'SELECCIONAR CONTAR(*) DE g').filas[0][0] === 2000);
+
+  /* Una consulta normal sobre la misma tabla sigue andando después: el
+     presupuesto es por sentencia, no se arrastra. */
+  comprobar('el presupuesto no se arrastra de una sentencia a la otra',
+    q(b, 'SELECCIONAR CONTAR(*) DE g DONDE n > 1990').filas[0][0] === 10);
+
+  comprobar('los topes se pueden mirar desde afuera',
+    SQL.TOPES.filasPorTabla === 100000 && SQL.TOPES.milisegundos === 5000);
+  comprobar('un error de límite es un SQLError', e instanceof SQL.SQLError);
+}
+
 console.log(`\n${ok} verificaciones correctas, ${fallos} fallos.`);
 assert.strictEqual(fallos, 0, 'el motor de SQL tiene fallos');
