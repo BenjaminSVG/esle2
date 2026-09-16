@@ -52,7 +52,9 @@
 
   const NOMBRE_LINDO = {
     etiqueta: 'Etiqueta', boton: 'Botón', caja: 'Caja de texto',
-    casilla: 'Casilla', lista: 'Lista', deslizador: 'Deslizador', lienzo: 'Lienzo'
+    casilla: 'Casilla', lista: 'Lista', desplegable: 'Desplegable',
+    numero: 'Número', progreso: 'Barra de progreso',
+    deslizador: 'Deslizador', lienzo: 'Lienzo'
   };
 
   /* Las subrutinas que registran un evento sobre un control. Si se borra el

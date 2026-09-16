@@ -88,7 +88,40 @@
           case 'valor':
             c.props.valor = valor;
             if (c.tipo === 'deslizador') el.querySelector('input').value = valor;
+            else if (c.tipo === 'numero' || c.tipo === 'progreso') el.value = valor;
+            /* En el desplegable el valor es cuál opción está elegida, contando
+               desde 1. El 0 quiere decir «ninguna». */
+            else if (c.tipo === 'desplegable') el.selectedIndex = valor - 1;
             break;
+          case 'rango':
+            c.props.rango = valor;
+            el.min = valor.minimo; el.max = valor.maximo; el.step = valor.paso;
+            /* Si el número que había quedó afuera del rango nuevo, el
+               navegador lo deja igual: hay que traerlo adentro a mano. */
+            if (el.value !== '') {
+              el.value = Math.max(valor.minimo, Math.min(valor.maximo, Number(el.value)));
+            }
+            break;
+          case 'etiquetaDe': {
+            /* La etiqueta pasa a ser el nombre accesible del control. Se usa
+               aria-labelledby y no <label for>, porque la etiqueta de ESLE2 es
+               un <div> suelto y no siempre envuelve a nadie. */
+            const eti = controles.get(valor);
+            if (!eti) break;
+            if (!eti.el.id) eti.el.id = 'ctrl-eti-' + valor;
+            const campo = el.querySelector('input, select') || el;
+            campo.setAttribute('aria-labelledby', eti.el.id);
+            c.props.etiquetaDe = valor;
+            break;
+          }
+          case 'enfocar': {
+            const campo = el.querySelector('input, select, button') || el;
+            /* Un control escondido o apagado no puede recibir el foco: se
+               devuelve «no se pudo» en vez de fingir que sí. */
+            if (c.props.visible === false || campo.disabled) return false;
+            campo.focus();
+            return document.activeElement === campo;
+          }
           case 'marcado':
             c.props.marcado = !!valor;
             el.querySelector('input').checked = !!valor;
@@ -130,12 +163,27 @@
           if (c.tipo === 'casilla') return el.querySelector('span').textContent;
           return el.textContent;
         }
-        if (prop === 'valor') return c.tipo === 'deslizador' ? Number(el.querySelector('input').value) : 0;
+        if (prop === 'valor') {
+          if (c.tipo === 'deslizador') return Number(el.querySelector('input').value);
+          if (c.tipo === 'progreso') return Number(el.value);
+          if (c.tipo === 'desplegable') return el.selectedIndex + 1;
+          if (c.tipo === 'numero') {
+            /* Mientras se escribe, la caja puede estar vacía o a medias. Ahí
+               se devuelve el último número bueno: un programa que lee en ese
+               instante tiene que ver un número, no un vacío. */
+            const x = Number(el.value);
+            if (el.value === '' || !isFinite(x)) return Number(c.props.valor) || 0;
+            c.props.valor = x;
+            return x;
+          }
+          return 0;
+        }
         if (prop === 'marcado') return c.tipo === 'casilla' ? el.querySelector('input').checked : false;
         if (prop === 'elegido') {
           const o = el.selectedOptions && el.selectedOptions[0];
           return o ? o.textContent : '';
         }
+        if (prop === 'items') return el.options ? el.options.length : 0;
         return '';
       },
 
@@ -185,11 +233,15 @@
         const disparar = () => cb([id]);
         if (evento === 'clic') el.addEventListener('click', disparar);
         else if (evento === 'cambio') {
-          const campo = el.querySelector('input') || el;
+          const campo = el.querySelector('input, select') || el;
           campo.addEventListener('change', disparar);
+          /* El deslizador avisa mientras se arrastra: esperar a soltarlo haría
+             que el número de al lado se moviera a los saltos. El «numero» no,
+             porque avisar en cada tecla mientras se escribe «100» dispararía
+             el evento con 1 y con 10. */
           if (campo.tagName === 'INPUT' && campo.type === 'range') campo.addEventListener('input', disparar);
         } else if (evento === 'tecla') {
-          (el.querySelector('input') || el).addEventListener('keyup', disparar);
+          (el.querySelector('input, select') || el).addEventListener('keyup', disparar);
         }
         if (cfg.alCambiar) cfg.alCambiar();
       },
@@ -230,6 +282,26 @@
       const s = document.createElement('select');
       s.size = 4;
       return s;
+    }
+    /* Un desplegable es el mismo <select> sin «size»: el navegador lo muestra
+       cerrado y lo abre solo. Se usa el control nativo a propósito — en un
+       teléfono abre la rueda del sistema, y con lector de pantalla se anuncia
+       como lo que es. Uno dibujado a mano no hace ninguna de las dos cosas. */
+    if (tipo === 'desplegable') {
+      return document.createElement('select');
+    }
+    if (tipo === 'numero') {
+      const i = document.createElement('input');
+      i.type = 'number';
+      i.min = 0; i.max = 100; i.step = 1;
+      i.value = 0;
+      return i;
+    }
+    if (tipo === 'progreso') {
+      const p = document.createElement('progress');
+      p.max = 100;
+      p.value = 0;
+      return p;
     }
     if (tipo === 'deslizador') {
       const cont = document.createElement('div');

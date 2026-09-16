@@ -262,7 +262,7 @@ inicio
     <!-- ============================================================= -->
     <section class="doc-seccion" id="s-controles" data-titulo="Los controles">
       <h2>Los controles</h2>
-      <p class="sub">Los siete que hay, y cómo se crean.</p>
+      <p class="sub">Los diez que hay, y cómo se crean.</p>
 
       <div class="doc-bloque">
         <h3>Crearlos</h3>
@@ -275,6 +275,9 @@ inicio
           <tr><td><code>caja (x, y [, ancho, alto])</code></td><td>Una caja de texto, vacía al principio.</td></tr>
           <tr><td><code>casilla (texto, x, y [, ancho, alto])</code></td><td>Una casilla que se marca y se desmarca.</td></tr>
           <tr><td><code>lista (x, y [, ancho, alto])</code></td><td>Una lista de opciones.</td></tr>
+          <tr><td><code>desplegable (x, y [, ancho, alto])</code></td><td>Una lista que se abre al tocarla y muestra una opción por vez. Ocupa mucho menos que una lista.</td></tr>
+          <tr><td><code>numero (x, y [, ancho, alto])</code></td><td>Una caja que solo acepta números enteros, con flechitas para subir y bajar.</td></tr>
+          <tr><td><code>progreso (x, y [, ancho, alto])</code></td><td>Una barra que se llena de 0 a 100. Solo se mira: no se toca.</td></tr>
           <tr><td><code>deslizador (x, y [, ancho, alto])</code></td><td>Una barra para elegir un número de 0 a 100.</td></tr>
           <tr><td><code>lienzo (x, y [, ancho, alto])</code></td><td>Un rectángulo en blanco para dibujar.</td></tr>
         </table>
@@ -286,10 +289,15 @@ inicio
           <tr><th>Subrutina</th><th>Qué hace</th></tr>
           <tr><td><code>poner_texto (c, texto)</code></td><td>Cambia el texto de una etiqueta, un botón o una caja.</td></tr>
           <tr><td><code>leer_texto (c)</code></td><td>Devuelve el texto que tiene (lo que escribió la persona, si es una caja).</td></tr>
-          <tr><td><code>poner_valor (c, n)</code> / <code>leer_valor (c)</code></td><td>El número de un deslizador.</td></tr>
+          <tr><td><code>poner_valor (c, n)</code> / <code>leer_valor (c)</code></td>
+              <td>El número de un deslizador o de un <code>numero</code>, cuánto se llenó un <code>progreso</code>, o cuál opción está elegida en un <code>desplegable</code> —contando desde 1, igual que los vectores de SL—.</td></tr>
+          <tr><td><code>rango_numero (c, minimo, maximo [, paso])</code></td><td>Hasta dónde llega un <code>numero</code>. El paso es de a cuánto sube con cada flechita; de fábrica va de 0 a 100 de a 1.</td></tr>
+          <tr><td><code>cuantos_items (c)</code></td><td>Cuántas opciones tiene una lista o un desplegable.</td></tr>
+          <tr><td><code>asociar_etiqueta (e, c)</code></td><td>Le dice al navegador que esa etiqueta es el nombre de ese control. Es lo que hace que un lector de pantalla diga «Materia» al llegar al desplegable en vez de «lista, sin nombre».</td></tr>
+          <tr><td><code>enfocar (c)</code></td><td>Manda el cursor a ese control. Devuelve <code>TRUE</code> si se pudo: un control escondido o apagado no recibe el foco.</td></tr>
           <tr><td><code>marcar (c, TRUE)</code> / <code>marcado (c)</code></td><td>Marcar una casilla y preguntar si está marcada.</td></tr>
-          <tr><td><code>agregar_item (c, texto)</code></td><td>Agrega una opción a una lista.</td></tr>
-          <tr><td><code>limpiar_items (c)</code></td><td>Vacía la lista.</td></tr>
+          <tr><td><code>agregar_item (c, texto)</code></td><td>Agrega una opción a una lista o a un desplegable.</td></tr>
+          <tr><td><code>limpiar_items (c)</code></td><td>Vacía la lista o el desplegable.</td></tr>
           <tr><td><code>item_elegido (c)</code></td><td>El texto de la opción elegida.</td></tr>
           <tr><td><code>mover (c, x, y)</code></td><td>Lo cambia de lugar.</td></tr>
           <tr><td><code>redimensionar (c, ancho, alto)</code></td><td>Le cambia el tamaño.</td></tr>

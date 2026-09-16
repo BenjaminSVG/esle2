@@ -62,6 +62,14 @@
 .ctrl-lista { border: 1px solid #7a7a7a; background: #fff; color: #111; }
 .ctrl-deslizador { display: flex; align-items: center; }
 .ctrl-deslizador input { width: 100%; }
+/* Los tres controles nuevos usan el elemento nativo del navegador, así que se
+   los deja casi sin tocar: la flechita del número, la lista que se despliega y
+   la barra que se llena son las del sistema. Pintarlas a mano se vería más
+   «lindo» y perdería el teclado, el lector de pantalla y la rueda del
+   teléfono, que es lo que realmente hace profesional a un formulario. */
+.ctrl-desplegable { border: 1px solid #7a7a7a; background: #fff; color: #111; font: inherit; }
+.ctrl-numero { border: 1px solid #7a7a7a; background: #fff; color: #111; padding: 2px 6px; font: inherit; }
+.ctrl-progreso { display: block; }
 .ctrl-lienzo { background: #fff; border: 1px solid #c0c0c0; }
 .ctrl.desactivado { opacity: .55; pointer-events: none; }
 .ctrl.elegido { outline: 2px solid var(--acento); outline-offset: 1px; }

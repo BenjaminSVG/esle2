@@ -45,16 +45,31 @@
 
   const { errE, fn, PREDEF } = S;
 
-  /* Los controles que se pueden crear, con su tamaño por omisión. */
+  /* Los controles que se pueden crear, con su tamaño por omisión.
+     Esta tabla es la única lista: el diseñador la lee de acá (SLE2VIS.CONTROLES)
+     y el cuadro de herramientas también, así que un control nuevo aparece en
+     los tres lugares o en ninguno. */
   const CONTROLES = {
-    etiqueta:   { ancho: 120, alto: 22, texto: true },
-    boton:      { ancho: 110, alto: 32, texto: true },
-    caja:       { ancho: 160, alto: 26, texto: false },  // una caja de texto arranca vacía
-    casilla:    { ancho: 140, alto: 22, texto: true },
-    lista:      { ancho: 160, alto: 110, texto: false },
-    deslizador: { ancho: 160, alto: 24, texto: false },
-    lienzo:     { ancho: 300, alto: 200, texto: false }
+    etiqueta:    { ancho: 120, alto: 22, texto: true },
+    boton:       { ancho: 110, alto: 32, texto: true },
+    caja:        { ancho: 160, alto: 26, texto: false },  // una caja de texto arranca vacía
+    casilla:     { ancho: 140, alto: 22, texto: true },
+    lista:       { ancho: 160, alto: 110, texto: false },
+    desplegable: { ancho: 160, alto: 30, texto: false },
+    numero:      { ancho: 120, alto: 30, texto: false },
+    progreso:    { ancho: 200, alto: 22, texto: false },
+    deslizador:  { ancho: 160, alto: 24, texto: false },
+    lienzo:      { ancho: 300, alto: 200, texto: false }
   };
+
+  /* Los que guardan una lista de opciones. «lista» las muestra todas y
+     «desplegable» una sola: por dentro son lo mismo, así que agregar_item y
+     compañía valen para los dos. */
+  const CON_ITEMS = ['lista', 'desplegable'];
+
+  /* Los que tienen un valor numérico. Cada uno con lo suyo:
+     el progreso solo se muestra, así que no se puede escribir en él. */
+  const RANGO_POR_OMISION = { minimo: 0, maximo: 100, paso: 1 };
 
   /* Órdenes de dibujo del lienzo. */
   const DIBUJOS = ['pluma', 'relleno', 'grosor', 'linea', 'rectangulo', 'circulo',
@@ -89,7 +104,8 @@
                'subrutinas para ventanas, controles y dibujo.');
     }
 
-    /* Un control que existe de verdad, o un error que se entiende. */
+    /* Un control que existe de verdad, o un error que se entiende.
+       «tipoEsperado» puede ser un tipo o una lista de tipos. */
     control(id, linea, tipoEsperado) {
       const n = Math.trunc(this.aNum(id, linea));
       const c = this.controles.get(n);
@@ -97,8 +113,14 @@
         'Los controles se guardan en una variable cuando se crean:\n' +
         '   b = boton ("Aceptar", 20, 20, 100, 30)\n' +
         'y después se usa esa variable:  poner_texto (b, "Listo")');
-      if (tipoEsperado && c.tipo !== tipoEsperado)
-        errE(`ese control es un "${c.tipo}" y esto solo vale para un "${tipoEsperado}"`, linea);
+      if (tipoEsperado) {
+        const vale = Array.isArray(tipoEsperado) ? tipoEsperado : [tipoEsperado];
+        if (vale.indexOf(c.tipo) < 0) {
+          errE(`ese control es un "${c.tipo}" y esto solo vale para ${
+            vale.length === 1 ? `un "${vale[0]}"` : 'un ' + vale.map(t => `"${t}"`).join(' o un ')
+          }`, linea);
+        }
+      }
       return { n, c };
     }
 
@@ -170,7 +192,13 @@
       const alto = a.length > i ? ent(this, a[i++], l) : def.alto;
 
       const id = this.proximoId++;
-      this.controles.set(id, { tipo });
+      const c = { tipo };
+      /* Los controles con número llevan su rango encima: el intérprete tiene
+         que poder recortar un valor sin preguntarle a la pantalla, porque en
+         las pruebas la pantalla es de mentira. */
+      if (tipo === 'numero') c.rango = Object.assign({}, RANGO_POR_OMISION);
+      if (tipo === 'progreso') c.rango = { minimo: 0, maximo: 100, paso: 1 };
+      this.controles.set(id, c);
       this.gui.crear(id, tipo, { texto, x, y, ancho, alto });
       return id;
     };
@@ -202,6 +230,9 @@
     caja: crearControl('caja'),
     casilla: crearControl('casilla'),
     lista: crearControl('lista'),
+    desplegable: crearControl('desplegable'),
+    numero: crearControl('numero'),
+    progreso: crearControl('progreso'),
     deslizador: crearControl('deslizador'),
     lienzo: crearControl('lienzo'),
 
@@ -214,14 +245,68 @@
       const { n } = this.control(v[0], l);
       return String(this.gui.leer(n, 'texto'));
     }),
+    /* poner_valor / leer_valor valen para todo lo que tiene un número:
+         · deslizador y numero : el número en sí;
+         · progreso            : de 0 a 100, lo que se ve lleno;
+         · desplegable         : cuál opción está elegida, 1 para la primera.
+           Se cuenta desde 1 y no desde 0 porque en SL los vectores también
+           empiezan en 1: dos formas de contar en el mismo lenguaje sería
+           regalarle un error a cada alumno. */
     poner_valor: fn(2, 2, function (v, l) {
-      const { n } = this.control(v[0], l);
-      this.gui.poner(n, 'valor', num(this, v[1], l));
+      const { n, c } = this.control(v[0], l,
+        ['deslizador', 'numero', 'progreso', 'desplegable']);
+      let x = Math.trunc(num(this, v[1], l));
+      if (c.tipo === 'desplegable') {
+        const cuantos = Number(this.gui.leer(n, 'items')) || 0;
+        if (x !== 0 && (x < 1 || x > cuantos)) {
+          errE(`el desplegable no tiene una opción número ${x}`, l,
+            cuantos ? `Tiene ${cuantos}: van de 1 a ${cuantos}. Con 0 no queda ninguna elegida.`
+                    : 'Todavía no tiene ninguna opción: agregalas con agregar_item ().');
+        }
+      } else if (c.rango) {
+        x = Math.max(c.rango.minimo, Math.min(c.rango.maximo, x));
+      }
+      this.gui.poner(n, 'valor', x);
       return true;
     }),
     leer_valor: fn(1, 1, function (v, l) {
-      const { n } = this.control(v[0], l);
+      const { n } = this.control(v[0], l,
+        ['deslizador', 'numero', 'progreso', 'desplegable']);
       return Number(this.gui.leer(n, 'valor')) || 0;
+    }),
+
+    /* Hasta dónde llega un «numero». El paso es de a cuánto sube cada vez que
+       se toca la flechita. */
+    rango_numero: fn(3, 4, function (v, l) {
+      const { n, c } = this.control(v[0], l, 'numero');
+      const minimo = Math.trunc(num(this, v[1], l));
+      const maximo = Math.trunc(num(this, v[2], l));
+      const paso = v.length > 3 ? Math.trunc(num(this, v[3], l)) : 1;
+      if (maximo <= minimo) errE('el máximo tiene que ser mayor que el mínimo', l,
+        `Escribiste  rango_numero (n, ${minimo}, ${maximo}).`);
+      if (paso < 1) errE('el paso tiene que ser 1 o más', l,
+        'El paso es de a cuánto sube el número cada vez: rango_numero (n, 1, 10, 1).');
+      c.rango = { minimo, maximo, paso };
+      this.gui.poner(n, 'rango', c.rango);
+      return true;
+    }),
+
+    /* Le dice al navegador que esa etiqueta es el nombre de ese control. Sin
+       esto, un lector de pantalla llega a la caja de texto y dice «campo de
+       texto» a secas: la etiqueta de al lado la lee antes y ya la olvidó. */
+    asociar_etiqueta: fn(2, 2, function (v, l) {
+      const { n } = this.control(v[0], l, 'etiqueta');
+      const { n: destino } = this.control(v[1], l,
+        ['caja', 'lista', 'desplegable', 'numero', 'deslizador', 'progreso']);
+      this.gui.poner(destino, 'etiquetaDe', n);
+      return true;
+    }),
+
+    /* Manda el cursor a un control. Devuelve si se pudo: un control escondido
+       o apagado no recibe el foco, y el programa tiene derecho a enterarse. */
+    enfocar: fn(1, 1, function (v, l) {
+      const { n } = this.control(v[0], l);
+      return !!this.gui.poner(n, 'enfocar', true);
     }),
     marcado: fn(1, 1, function (v, l) {
       const { n } = this.control(v[0], l, 'casilla');
@@ -233,19 +318,25 @@
       return true;
     }),
 
+    /* Valen para «lista» y para «desplegable»: por dentro son la misma cosa
+       con dos formas de mostrarse. */
     agregar_item: fn(2, 2, function (v, l) {
-      const { n } = this.control(v[0], l, 'lista');
+      const { n } = this.control(v[0], l, CON_ITEMS);
       this.gui.poner(n, 'agregar', cad(this, v[1], l));
       return true;
     }),
     limpiar_items: fn(1, 1, function (v, l) {
-      const { n } = this.control(v[0], l, 'lista');
+      const { n } = this.control(v[0], l, CON_ITEMS);
       this.gui.poner(n, 'limpiar', true);
       return true;
     }),
     item_elegido: fn(1, 1, function (v, l) {
-      const { n } = this.control(v[0], l, 'lista');
+      const { n } = this.control(v[0], l, CON_ITEMS);
       return String(this.gui.leer(n, 'elegido'));
+    }),
+    cuantos_items: fn(1, 1, function (v, l) {
+      const { n } = this.control(v[0], l, CON_ITEMS);
+      return Number(this.gui.leer(n, 'items')) || 0;
     }),
 
     mover: fn(3, 3, function (v, l) {
@@ -387,17 +478,32 @@
         const c = g.controles.get(id);
         if (!c) return;
         if (prop === 'agregar') c.items.push(valor);
-        else if (prop === 'limpiar') c.items = [];
+        else if (prop === 'limpiar') { c.items = []; c.valor = 0; }
         else if (prop === 'posicion') { c.x = valor.x; c.y = valor.y; }
         else if (prop === 'tamano') { c.ancho = valor.ancho; c.alto = valor.alto; }
-        else c[prop] = valor;
+        else if (prop === 'enfocar') {
+          /* Sin pantalla no hay foco de verdad, pero la respuesta tiene que
+             ser la misma que daría el navegador: escondido o apagado, no. */
+          if (c.visible === false || c.habilitado === false) return false;
+          g.enfocado = id;
+          return true;
+        } else c[prop] = valor;
       },
       leer(id, prop) {
         const c = g.controles.get(id) || {};
         if (prop === 'texto') return c.texto === undefined ? '' : c.texto;
         if (prop === 'valor') return c.valor || 0;
         if (prop === 'marcado') return !!c.marcado;
-        if (prop === 'elegido') return c.elegido || '';
+        if (prop === 'items') return (c.items || []).length;
+        /* En un desplegable, lo elegido sale del número: así la pantalla de
+           mentira y la de verdad contestan lo mismo sin repetir el estado. */
+        if (prop === 'elegido') {
+          if (c.tipo === 'desplegable') {
+            const i = (Number(c.valor) || 0) - 1;
+            return (c.items && c.items[i]) || '';
+          }
+          return c.elegido || '';
+        }
         return '';
       },
       dibujar(id, orden, args) {

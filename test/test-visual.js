@@ -383,12 +383,209 @@ fin`);
   await r.fin;
 }
 
+/* ================== los controles de formulario ========================= */
+/* desplegable, numero y progreso. Lo que se comprueba es el contrato que ve
+   el alumno: qué devuelve leer_valor, qué pasa cuando se pide algo imposible,
+   y que el error lo diga en castellano en vez de dejar un NaN suelto. */
+{
+  const r = correr(`var
+   d, n, pr, e : numerico
+inicio
+   ventana ("Formulario", 460, 320)
+   e = etiqueta ("Materia:", 20, 20)
+   d = desplegable (20, 44, 200, 30)
+   n = numero (20, 90, 120, 30)
+   pr = progreso (20, 140, 200, 22)
+   agregar_item (d, "Álgebra")
+   agregar_item (d, "Física")
+   agregar_item (d, "Química")
+   asociar_etiqueta (e, d)
+   rango_numero (n, 1, 10, 1)
+   poner_valor (d, 2)
+   poner_valor (n, 7)
+   poner_valor (pr, 40)
+   esperar_eventos ()
+fin`);
+  const gui = await r.listo();
+
+  const tipos = [...gui.controles.values()].map(c => c.tipo).join();
+  comprobar('se crean los tres controles nuevos',
+    tipos === 'etiqueta,desplegable,numero,progreso', tipos);
+  comprobar('el desplegable toma su tamaño de fábrica',
+    gui.controles.get(2).alto === 30, String(gui.controles.get(2).alto));
+
+  /* Desplegable: se cuenta desde 1, igual que los vectores de SL. */
+  comprobar('el desplegable guarda sus opciones',
+    gui.controles.get(2).items.join() === 'Álgebra,Física,Química');
+  comprobar('cuantos_items las cuenta', gui.leer(2, 'items') === 3);
+  comprobar('elegir la 2 devuelve 2', gui.leer(2, 'valor') === 2);
+  comprobar('y item_elegido devuelve su texto', gui.leer(2, 'elegido') === 'Física',
+    gui.leer(2, 'elegido'));
+
+  comprobar('el numero guarda lo que se le puso', gui.leer(3, 'valor') === 7);
+  comprobar('el progreso también', gui.leer(4, 'valor') === 40);
+  comprobar('el rango llega al backend',
+    JSON.stringify(gui.controles.get(3).rango) === '{"minimo":1,"maximo":10,"paso":1}',
+    JSON.stringify(gui.controles.get(3).rango));
+  comprobar('la etiqueta queda asociada al desplegable',
+    gui.controles.get(2).etiquetaDe === 1, String(gui.controles.get(2).etiquetaDe));
+
+  r.control.detener();
+  await r.fin;
+}
+
+/* ------------- lo que pasa cuando se pide algo imposible ---------------- */
+{
+  /* Un valor fuera del rango se recorta, no rompe: un programa que sube de a
+     uno hasta pasarse tiene que quedarse en el máximo, como una barra real. */
+  const r = correr(`var
+   n, pr : numerico
+inicio
+   ventana ("Topes", 400, 200)
+   n = numero (20, 20, 120, 30)
+   pr = progreso (20, 60, 200, 22)
+   rango_numero (n, 0, 10)
+   poner_valor (n, 999)
+   poner_valor (pr, 250)
+   esperar_eventos ()
+fin`);
+  const gui = await r.listo();
+  comprobar('un número más grande que el máximo se recorta', gui.leer(1, 'valor') === 10,
+    String(gui.leer(1, 'valor')));
+  comprobar('el progreso no pasa de 100', gui.leer(2, 'valor') === 100,
+    String(gui.leer(2, 'valor')));
+  r.control.detener();
+  await r.fin;
+}
+
+{
+  /* Elegir una opción que no existe SÍ es un error: al revés que el rango,
+     acá recortar en silencio dejaría al programa mostrando otra materia. */
+  const r = correr(`var
+   d : numerico
+inicio
+   ventana ("Mal", 400, 200)
+   d = desplegable (20, 20)
+   agregar_item (d, "uno")
+   poner_valor (d, 5)
+   esperar_eventos ()
+fin`);
+  await r.fin.catch(() => {});
+  const err = r.gui.errores[0] || r.error();
+  comprobar('elegir una opción que no existe avisa',
+    !!err && /no tiene una opción número 5/.test(err.message || String(err)),
+    err && (err.message || String(err)));
+  comprobar('y dice cuántas hay',
+    !!err && /Tiene 1/.test(err.sugerencia || ''), err && err.sugerencia);
+}
+
+{
+  const r = correr(`var
+   n : numerico
+inicio
+   ventana ("Mal", 400, 200)
+   n = numero (20, 20)
+   rango_numero (n, 10, 3)
+   esperar_eventos ()
+fin`);
+  await r.fin.catch(() => {});
+  const err = r.gui.errores[0] || r.error();
+  comprobar('un rango al revés avisa',
+    !!err && /mayor que el mínimo/.test(err.message || String(err)),
+    err && (err.message || String(err)));
+}
+
+{
+  /* Usar una función de lista sobre un botón tiene que decir los dos tipos
+     que sí valen, no solo el primero. */
+  const r = correr(`var
+   b : numerico
+inicio
+   ventana ("Mal", 400, 200)
+   b = boton ("Hola", 20, 20)
+   agregar_item (b, "uno")
+   esperar_eventos ()
+fin`);
+  await r.fin.catch(() => {});
+  const err = r.gui.errores[0] || r.error();
+  const m = err && (err.message || String(err));
+  comprobar('agregar_item sobre un botón avisa', !!m && /es un "boton"/.test(m), m);
+  comprobar('y nombra los dos tipos que valen',
+    !!m && /"lista"/.test(m) && /"desplegable"/.test(m), m);
+}
+
+/* --------------------------- enfocar ------------------------------------ */
+{
+  const r = correr(`var
+   c, b : numerico
+   pudo : logico
+inicio
+   ventana ("Foco", 400, 200)
+   c = caja (20, 20, 200, 26)
+   b = boton ("Ir", 20, 60, 80, 30)
+   pudo = enfocar (c)
+   si (pudo)
+   {
+      mensaje ("fui a la caja")
+   }
+   habilitar (b, FALSE)
+   si (not enfocar (b))
+   {
+      mensaje ("al boton apagado no")
+   }
+   esperar_eventos ()
+fin`);
+  const gui = await r.listo();
+  comprobar('enfocar devuelve que sí cuando se pudo',
+    gui.mensajes[0] === 'fui a la caja', gui.mensajes.join(' | '));
+  comprobar('y que no sobre un control apagado',
+    gui.mensajes[1] === 'al boton apagado no', gui.mensajes.join(' | '));
+  r.control.detener();
+  await r.fin;
+}
+
+/* ------------- los programas viejos siguen andando igual ---------------- */
+{
+  /* La razón de ser de esta prueba: agregar controles no puede cambiar lo que
+     ya hacía una lista, que es lo que usan los 50 ejercicios del curso. */
+  const r = correr(`var
+   li : numerico
+inicio
+   ventana ("Lista de siempre", 400, 300)
+   li = lista (20, 20, 200, 120)
+   agregar_item (li, "uno")
+   agregar_item (li, "dos")
+   limpiar_items (li)
+   agregar_item (li, "tres")
+   esperar_eventos ()
+fin`);
+  const gui = await r.listo();
+  comprobar('la lista de toda la vida no cambió',
+    gui.controles.get(1).items.join() === 'tres', gui.controles.get(1).items.join());
+  r.control.detener();
+  await r.fin;
+}
+
 /* --------------------- el catálogo que usa la página -------------------- */
 {
-  comprobar('hay siete controles', Object.keys(SLE2VIS.CONTROLES).length === 7,
+  /* El catálogo se compara contra la lista entera y no contra un número: un
+     control nuevo tiene que obligar a mirar esta línea, y un control que
+     DESAPARECE —que rompería programas ya escritos— tiene que gritar. */
+  comprobar('el catálogo de controles es el esperado',
+    Object.keys(SLE2VIS.CONTROLES).join() ===
+      'etiqueta,boton,caja,casilla,lista,desplegable,numero,progreso,deslizador,lienzo',
     Object.keys(SLE2VIS.CONTROLES).join());
   comprobar('cada uno declara su tamaño por omisión',
     Object.values(SLE2VIS.CONTROLES).every(c => c.ancho > 0 && c.alto > 0));
+  /* El diseñador y el cuadro de herramientas leen esta misma tabla: si un
+     control está acá y no tiene nombre para mostrar, aparece como «numero». */
+  {
+    require(require('path').join(__dirname, '..', 'js', 'disenador.js'));
+    const lindos = (global.Disenador || {}).NOMBRE_LINDO || {};
+    const sinNombre = Object.keys(SLE2VIS.CONTROLES).filter(t => !lindos[t]);
+    comprobar('todos tienen nombre para mostrar en el diseñador',
+      sinNombre.length === 0, sinNombre.join());
+  }
   const nuevas = Object.keys(SLE2VIS.PREDEF).filter(n => !SLE2.PREDEF[n]);
   comprobar('el dialecto agrega más de treinta subrutinas', nuevas.length >= 30, String(nuevas.length));
   comprobar('y no pisa ninguna del lenguaje base',

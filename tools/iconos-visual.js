@@ -38,6 +38,33 @@ const ICONOS = [
   ['borrar',     'hf_20260902_190134_d42a818a-c202-4d11-9cb0-34d24629f291.svg']
 ];
 
+/* Tres iconos dibujados a mano, en la misma convención de dos tintas:
+   «currentColor» es el trazo y «var(--hueco)» es el hueco. Se dibujan acá y no
+   se bajan porque los de arriba salieron de un generador de imágenes que hoy
+   puede no estar, y porque estos tres son cuatro líneas cada uno: pedirle a
+   una máquina que dibuje un rectángulo con un triangulito sería absurdo.
+   El lienzo es de 2048×2048, como el de los otros. */
+const A_MANO = {
+  /* Desplegable: un rectángulo con el triangulito de abrir a la derecha. */
+  desplegable: '<svg viewBox="0 0 2048 2048">'
+    + '<path fill="currentColor" d="M 256 704 L 1792 704 L 1792 1344 L 256 1344 z"/>'
+    + '<path fill="var(--hueco)" d="M 352 800 L 1696 800 L 1696 1248 L 352 1248 z"/>'
+    + '<path fill="currentColor" d="M 1344 960 L 1600 960 L 1472 1136 z"/>'
+    + '<path fill="currentColor" d="M 480 992 L 1216 992 L 1216 1056 L 480 1056 z"/></svg>',
+  /* Número: un rectángulo con las dos flechitas de subir y bajar. */
+  numero: '<svg viewBox="0 0 2048 2048">'
+    + '<path fill="currentColor" d="M 256 704 L 1792 704 L 1792 1344 L 256 1344 z"/>'
+    + '<path fill="var(--hueco)" d="M 352 800 L 1696 800 L 1696 1248 L 352 1248 z"/>'
+    + '<path fill="currentColor" d="M 1408 848 L 1568 1008 L 1248 1008 z"/>'
+    + '<path fill="currentColor" d="M 1408 1200 L 1248 1040 L 1568 1040 z"/>'
+    + '<path fill="currentColor" d="M 480 992 L 928 992 L 928 1056 L 480 1056 z"/></svg>',
+  /* Progreso: una barra llena hasta poco más de la mitad. */
+  progreso: '<svg viewBox="0 0 2048 2048">'
+    + '<path fill="currentColor" d="M 192 832 L 1856 832 L 1856 1216 L 192 1216 z"/>'
+    + '<path fill="var(--hueco)" d="M 288 928 L 1760 928 L 1760 1120 L 288 1120 z"/>'
+    + '<path fill="currentColor" d="M 288 928 L 1216 928 L 1216 1120 L 288 1120 z"/></svg>'
+};
+
 const bajar = url => new Promise((ok, mal) => {
   https.get(url, r => {
     if (r.statusCode !== 200) { mal(new Error(url + ' -> ' + r.statusCode)); return; }
@@ -70,18 +97,47 @@ function limpiar(svg) {
   return s.replace(/\s+/g, ' ').replace(/> </g, '><').trim();
 }
 
+/* Lo que ya está generado. Sirve de red: los iconos viejos vinieron de un
+   servicio de imágenes que puede no contestar más, y perder los diecisiete
+   que ya andan por agregar tres nuevos sería un mal negocio. */
+function yaGenerados() {
+  const hechos = {};
+  try {
+    const viejo = fs.readFileSync(SALIDA, 'utf8');
+    for (const m of viejo.matchAll(/^    ([a-z_]+): ("(?:[^"\\]|\\.)*")/gm)) {
+      hechos[m[1]] = JSON.parse(m[2]);
+    }
+  } catch (e) { /* la primera vez no hay nada */ }
+  return hechos;
+}
+
+const SALIDA = 'c:/Users/benja/OneDrive/Desktop/ESLE2/js/iconos-visual.js';
+
 (async () => {
   const partes = [];
+  const viejos = yaGenerados();
   for (const [nombre, archivo] of ICONOS) {
-    const limpio = limpiar(await bajar(BASE + archivo));
+    let limpio;
+    try {
+      limpio = limpiar(await bajar(BASE + archivo));
+    } catch (e) {
+      if (!viejos[nombre]) throw e;
+      limpio = viejos[nombre];
+      console.log(nombre.padEnd(12), 'no se pudo bajar: se deja el que ya estaba');
+    }
     const huecos = (limpio.match(/--hueco/g) || []).length;
     console.log(nombre.padEnd(12), (limpio.length / 1024).toFixed(1) + ' KB', huecos + ' huecos');
+    partes.push('    ' + nombre + ': ' + JSON.stringify(limpio));
+  }
+  for (const nombre of Object.keys(A_MANO)) {
+    const limpio = A_MANO[nombre].replace(/\s+/g, ' ').replace(/> </g, '><').trim();
+    console.log(nombre.padEnd(12), (limpio.length / 1024).toFixed(1) + ' KB', 'a mano');
     partes.push('    ' + nombre + ': ' + JSON.stringify(limpio));
   }
 
   const salida =
 `/*
- * Iconos de ESLE2 Visual: los siete controles y las diez órdenes de dibujo.
+ * Iconos de ESLE2 Visual: los diez controles y las diez órdenes de dibujo.
  *
  * Son dibujos vectoriales de dos tintas. El trazo es «currentColor», así que
  * el icono toma el color del texto que lo rodea y sigue al tema claro u
@@ -114,6 +170,6 @@ ${partes.join(',\n')}
   global.VISUAL_ICONOS = { lista: ICONOS, poner: poner };
 })(typeof window !== 'undefined' ? window : globalThis);
 `;
-  fs.writeFileSync('c:/Users/benja/OneDrive/Desktop/ESLE2/js/iconos-visual.js', salida);
+  fs.writeFileSync(SALIDA, salida);
   console.log('js/iconos-visual.js: ' + (salida.length / 1024).toFixed(1) + ' KB');
 })();

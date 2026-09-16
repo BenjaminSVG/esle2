@@ -424,16 +424,21 @@
     caja: n => n + ' = caja (20, 100, 160, 26)',
     casilla: n => n + ' = casilla ("Opción", 20, 140)',
     lista: n => n + ' = lista (20, 170, 160, 110)',
+    desplegable: n => n + ' = desplegable (20, 170, 160, 30)',
+    numero: n => n + ' = numero (20, 210, 120, 30)',
+    progreso: n => n + ' = progreso (20, 250, 200, 22)',
     deslizador: n => n + ' = deslizador (20, 290, 200, 24)',
     lienzo: n => n + ' = lienzo (200, 20, 240, 180)'
   };
   const LETRA = {
     etiqueta: 'e', boton: 'b', caja: 'c', casilla: 'k',
-    lista: 'li', deslizador: 'd', lienzo: 'l'
+    lista: 'li', desplegable: 'dp', numero: 'nu', progreso: 'pr',
+    deslizador: 'd', lienzo: 'l'
   };
   const GLIFOS = {
     etiqueta: 'A', boton: 'B', caja: '▭', casilla: '☑',
-    lista: '≡', deslizador: '⇔', lienzo: '◨'
+    lista: '≡', desplegable: '▾', numero: '#', progreso: '▮',
+    deslizador: '⇔', lienzo: '◨'
   };
 
   /* Las órdenes de dibujo no crean nada: se pegan tal cual, sobre el lienzo

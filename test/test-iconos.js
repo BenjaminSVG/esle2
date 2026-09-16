@@ -189,8 +189,8 @@ for (const p of CON_MENUS) {
   const dibujos = Array.from(
     /const DIBUJO = \[([\s\S]*?)\];/.exec(app)[1].matchAll(/\['([^']+)'/g), m => m[1]);
 
-  comprobar('hay siete controles y diez órdenes de dibujo',
-    controles.length === 7 && dibujos.length === 10,
+  comprobar('hay diez controles y diez órdenes de dibujo',
+    controles.length === 10 && dibujos.length === 10,
     controles.length + ' y ' + dibujos.length);
 
   for (const n of controles.concat(dibujos))
