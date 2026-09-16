@@ -209,6 +209,11 @@ inicio
 
 <section class="doc-seccion" id="s-disenador" data-titulo="Diseñar la ventana arrastrando">
   <h2>Diseñar la ventana arrastrando</h2>
+
+      <figure class="doc-figura ancha">
+        <a class="doc-ampliar" href="img/visual/diseno-y-ejecucion.png" target="_blank" rel="noopener" title="Ver el dibujo a tamaño completo"><img src="img/visual/diseno-y-ejecucion.png" width="1586" height="992" loading="lazy" alt="Dos paneles. En «Diseño», un botón se arrastra a otro lugar y los dos números de su línea de código cambian. En «Ejecución», el botón cambia de color pero la línea de código queda igual y apagada."></a>
+        <figcaption>Arrastrar en el <strong>diseñador</strong> cambia los números de tu programa y queda. Cambiar algo en las <strong>propiedades</strong> mientras el programa corre es para probar: se pierde en la próxima ejecución.</figcaption>
+      </figure>
   <p>El botón <strong>Diseñar</strong> de la barra de herramientas
      (<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>D</kbd>) abre tu ventana a tamaño real y te deja
      acomodar los controles con el mouse, en vez de ir probando números hasta que queden
@@ -237,6 +242,11 @@ inicio
 <section class="doc-seccion" id="s-ventana" data-titulo="La ventana">
       <h2>La ventana</h2>
       <p class="sub">Dónde viven los controles.</p>
+      <figure class="doc-figura ancha">
+        <a class="doc-ampliar" href="img/visual/coordenadas-formulario.png" target="_blank" rel="noopener" title="Ver el dibujo a tamaño completo"><img src="img/visual/coordenadas-formulario.png" width="1586" height="992" loading="lazy" alt="Una ventana vacía con el punto (0, 0) en la esquina de arriba a la izquierda, una flecha «x» hacia la derecha y una flecha «y» hacia abajo, y un botón con sus medidas «ancho» y «alto» marcadas."></a>
+        <figcaption>El (0, 0) está arriba a la izquierda y la <strong>y crece hacia abajo</strong>. Es al revés que en la clase de matemática, y es el error más frecuente las primeras veces.</figcaption>
+      </figure>
+
       <div class="doc-bloque">
         <table>
           <tr><th>Subrutina</th><th>Qué hace</th></tr>
@@ -263,6 +273,11 @@ inicio
     <section class="doc-seccion" id="s-controles" data-titulo="Los controles">
       <h2>Los controles</h2>
       <p class="sub">Los diez que hay, y cómo se crean.</p>
+
+      <figure class="doc-figura ancha">
+        <a class="doc-ampliar" href="img/visual/formulario-anatomia.png" target="_blank" rel="noopener" title="Ver el dibujo a tamaño completo"><img src="img/visual/formulario-anatomia.png" width="1586" height="992" loading="lazy" alt="Una ventana con una caja de texto, un desplegable, un campo numérico, una barra de progreso y un botón, cada uno señalado con el nombre de la subrutina que lo crea."></a>
+        <figcaption>Los controles de formulario y la subrutina que crea cada uno. El desplegable ocupa el lugar de una sola línea; la lista, el de varias.</figcaption>
+      </figure>
 
       <div class="doc-bloque">
         <h3>Crearlos</h3>
@@ -361,6 +376,11 @@ fin</code></pre>
 
       <div class="doc-bloque">
         <h3>La pregunta</h3>
+
+      <figure class="doc-figura ancha">
+        <a class="doc-ampliar" href="img/visual/confirmacion.png" target="_blank" rel="noopener" title="Ver el dibujo a tamaño completo"><img src="img/visual/confirmacion.png" width="1586" height="992" loading="lazy" alt="Una ventana «Mis tareas» atenuada y, delante, un cartel que pregunta «¿Borrar todas las tareas?» con los botones No —con el cursor puesto encima— y Sí."></a>
+        <figcaption>Mientras el cartel está abierto la ventana no se puede tocar, y el programa espera. El cursor arranca en <strong>No</strong>.</figcaption>
+      </figure>
         <p><code>confirmar (pregunta)</code> abre un cartel con <strong>Sí</strong> y <strong>No</strong>
            y <strong>detiene el programa hasta que la persona conteste</strong>. Devuelve
            <code>TRUE</code> o <code>FALSE</code>.</p>
@@ -408,6 +428,11 @@ fin</code></pre>
 
       <div class="doc-bloque">
         <h3>Dos cosas que conviene saber</h3>
+
+      <figure class="doc-figura ancha">
+        <a class="doc-ampliar" href="img/visual/temporizador-eventos.png" target="_blank" rel="noopener" title="Ver el dibujo a tamaño completo"><img src="img/visual/temporizador-eventos.png" width="1586" height="992" loading="lazy" alt="Una línea de tiempo con tics azules parejos, un tramo gris marcado «en pausa» sin ningún tic, tics parejos otra vez después, y una cruz roja marcada «detener» sin nada después."></a>
+        <figcaption>Los tics salen parejos. En pausa no hay ninguno, y al reanudar <strong>no se recuperan los que faltaron</strong>: después de «detener» no queda ninguno en camino.</figcaption>
+      </figure>
         <p><strong>No es un cronómetro exacto.</strong> Un temporizador de 1000 milisegundos llama a
            tu subrutina <em>más o menos</em> cada segundo: si el navegador está ocupado, llega un
            poco tarde. Para medir tiempo de verdad no sirve; para que algo se mueva, sí.</p>
