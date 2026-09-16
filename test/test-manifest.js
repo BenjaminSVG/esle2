@@ -126,27 +126,37 @@ for (const p of PAGINAS) {
   /* Una captura rota deja la documentación con un hueco y nadie se entera:
      acá se revisa que existan, que midan lo que dice el HTML, que tengan un
      texto alternativo de verdad y que el service worker las guarde. */
-  const html = leer('visual-documentacion.html');
   const sw = leer('sw.js');
-  const usadas = [...html.matchAll(/<img src="(img\/visual\/[^"]+)"\s+width="(\d+)"\s+height="(\d+)"[^>]*?alt="([^"]*)"/g)];
-  comprobar('la documentación Visual muestra la interfaz', usadas.length >= 8, String(usadas.length));
+  const DOCS = [
+    ['visual-documentacion.html', 'img/visual', 8, 'Visual'],
+    ['bd-documentacion.html', 'img/bd', 3, 'BD']
+  ];
 
-  for (const [, ruta, ancho, alto, alt] of usadas) {
-    const t = tamanoPNG(ruta);
-    comprobar(`${ruta} existe y es un PNG`, !!t);
-    if (!t) continue;
-    comprobar(`${ruta} mide lo que dice el HTML`,
-      String(t.ancho) === ancho && String(t.alto) === alto,
-      `${t.ancho}x${t.alto} contra ${ancho}x${alto}`);
-    comprobar(`${ruta} describe lo que se ve`, alt.length > 40, alt.slice(0, 50));
-    comprobar(`el service worker guarda ${ruta}`, sw.includes(`'${ruta}'`));
+  for (const [pagina, carpeta, minimo, comoSeLlama] of DOCS) {
+    const html = leer(pagina);
+    const re = new RegExp('<img src="(' + carpeta.replace('/', '\\/')
+      + '\\/[^"]+)"\\s+width="(\\d+)"\\s+height="(\\d+)"[^>]*?alt="([^"]*)"', 'g');
+    const usadas = [...html.matchAll(re)];
+    comprobar(`la documentación ${comoSeLlama} muestra lo que explica`,
+      usadas.length >= minimo, String(usadas.length));
+
+    for (const [, ruta, ancho, alto, alt] of usadas) {
+      const t = tamanoPNG(ruta);
+      comprobar(`${ruta} existe y es un PNG`, !!t);
+      if (!t) continue;
+      comprobar(`${ruta} mide lo que dice el HTML`,
+        String(t.ancho) === ancho && String(t.alto) === alto,
+        `${t.ancho}x${t.alto} contra ${ancho}x${alto}`);
+      comprobar(`${ruta} describe lo que se ve`, alt.length > 40, alt.slice(0, 50));
+      comprobar(`el service worker guarda ${ruta}`, sw.includes(`'${ruta}'`));
+    }
+
+    /* Y al revés: ninguna imagen guardada de más. */
+    const enDisco = fs.readdirSync(path.join(RAIZ, carpeta)).map(f => carpeta + '/' + f);
+    const enHtml = new Set(usadas.map(u => u[1]));
+    for (const f of enDisco)
+      comprobar(`${f} se usa en alguna página`, enHtml.has(f));
   }
-
-  /* Y al revés: ninguna captura guardada de más. */
-  const enDisco = fs.readdirSync(path.join(RAIZ, 'img/visual')).map(f => 'img/visual/' + f);
-  const enHtml = new Set(usadas.map(u => u[1]));
-  for (const f of enDisco)
-    comprobar(`${f} se usa en alguna página`, enHtml.has(f));
 }
 
 /* --------------------- lo que el CSS promete en el teléfono ------------- */

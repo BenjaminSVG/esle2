@@ -47,7 +47,7 @@ Cada fila se publica sola, con `npm run soltar`, y deja el sitio andando.
 | 6 ✅ | Subconsultas correlacionadas | `sql.js` | Correlación a varios niveles, con el mismo presupuesto compartido |
 | 7 ✅ | Diez ejemplos | `bd-ejemplos.js` | Los diez corren desde una base limpia |
 | 8 ✅ | Curso de cincuenta | `ejercicios-bd.js`, `verificar-bd.js`, `curso-bd-ui.js` | Las cincuenta soluciones pasan y las respuestas tramposas no |
-| 9 | Documentación ilustrada | `bd-documentacion.html`, `img/bd/` | Referencia completa, tres dibujos, ayuda regenerada, anda sin conexión |
+| 9 ✅ | Documentación ilustrada | `bd-documentacion.html`, `img/bd/` | Referencia completa, tres dibujos, ayuda regenerada, anda sin conexión |
 
 **El orden importa.** El presupuesto (fase 2) va *antes* que las subconsultas
 (5 y 6): una correlacionada multiplica el trabajo por la cantidad de filas de

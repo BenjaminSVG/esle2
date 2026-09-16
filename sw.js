@@ -157,7 +157,10 @@ const ARCHIVOS = [
   'img/visual/temporizador-eventos.png',
   'js/verificar-bd.js',
   'js/ejercicios-bd.js',
-  'js/curso-bd-ui.js',
+  'js/curso-bd-ui.js',
+  'img/bd/subconsulta-suelta-vs-correlacionada.png',
+  'img/bd/no-en-vs-no-existe.png',
+  'img/bd/unir-por-clave.png',
 ];
 
 /* Guarda una copia bajo la dirección pedida.

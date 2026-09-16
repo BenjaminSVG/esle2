@@ -74,6 +74,9 @@
          con extensión <code>.sldb</code>. Si es la primera vez, empezá por
          <a href="#s-bases">Qué es una base de datos</a>, que explica de qué se trata todo esto
          antes de escribir una línea.</p>
+    <p>Y si preferís aprender haciendo, está el
+       <a href="bd.html#curso">curso de ESLE2 BD</a>: 50 ejercicios que se corrigen solos,
+       de crear una tabla a un informe con subconsultas.</p>
     </div>
 
     <!-- ============================================================= -->
@@ -717,6 +720,10 @@ SEGUN t.cliente = c.id</code></pre>
 
       <div class="doc-bloque">
         <h3>Suelta o correlacionada</h3>
+        <figure class="doc-figura ancha">
+          <a class="doc-ampliar" href="img/bd/subconsulta-suelta-vs-correlacionada.png" target="_blank" rel="noopener" title="Ver el dibujo a tamaño completo"><img src="img/bd/subconsulta-suelta-vs-correlacionada.png" width="1586" height="992" loading="lazy" alt="A la izquierda, una consulta interna con el resultado 6,75 y una sola flecha que llega a las cuatro filas de la tabla. A la derecha, la misma tabla con cuatro consultas internas, una por fila, cada una recibiendo el id de su fila y devolviendo un resultado distinto."></a>
+          <figcaption>La <strong>suelta</strong> se calcula una vez y su valor sirve para todas las filas. La <strong>correlacionada</strong> recibe algo de cada fila, así que se calcula una vez por fila: con mil clientes son mil consultas.</figcaption>
+        </figure>
         <p>Una subconsulta <strong>suelta</strong> no nombra nada de la consulta de afuera, así
            que da lo mismo siempre: el promedio de todas las compras es uno solo.</p>
         <p>Una <strong>correlacionada</strong> sí la nombra —el <code>c.id</code> del ejemplo del
@@ -745,6 +752,10 @@ SEGUN t.cliente = c.id</code></pre>
 
       <div class="doc-bloque">
         <h3><code>NO EN</code> y el nulo: la trampa clásica</h3>
+        <figure class="doc-figura ancha">
+          <a class="doc-ampliar" href="img/bd/no-en-vs-no-existe.png" target="_blank" rel="noopener" title="Ver el dibujo a tamaño completo"><img src="img/bd/no-en-vs-no-existe.png" width="1586" height="992" loading="lazy" alt="A la izquierda, NO EN: los valores 1, 2 y NULO, la pregunta «¿el 3 está entre 1, 2 y no se sabe?», la respuesta «No se sabe» en rojo y un resultado vacío. A la derecha, NO EXISTE: los mismos valores, la pregunta «¿vino alguna fila?» y la respuesta «Sí, vinieron filas»."></a>
+          <figcaption>Las dos preguntas parecen la misma y no lo son. <code>NO EN</code> compara valores, así que un <code>NULO</code> la vuelve <em>desconocida</em>; <code>NO EXISTE</code> solo pregunta si hay filas, y el nulo no le cambia nada.</figcaption>
+        </figure>
         <p>Esta es la que más cuesta de todo SQL, y no es un capricho del motor: sale sola de lo
            que significa <a href="#s-null">NULO</a>.</p>
         <pre><code>-- Los clientes que NO compraron… y no devuelve ninguno:
@@ -842,6 +853,11 @@ SELECT nombre FROM gente WHERE edad IS NULL</code></pre>
           <li><b>Base → Diagrama de la base</b> y <b>Base → Dibujar el diagrama…</b>: ver el
               diagrama entidad-relación y bajarlo, o dibujarlo y que salga el código. Están
               explicados en <a href="#s-diagrama">El diagrama de la base</a>.</li>
+          <li>La pestaña <b>Curso</b>: 50 ejercicios por nivel. Se corrigen mirando
+              <strong>la base que quedó</strong>, no lo que el programa imprime: cada ejercicio
+              corre contra una base nueva y después se revisa qué tablas hay, qué filas tienen y
+              qué trajo tu consulta. Por eso no alcanza con escribir la respuesta con
+              <code>imprimir()</code>. Tu avance se guarda en una cookie de este navegador.</li>
           <li><b>Base → Vaciar</b> borra todo y empieza de nuevo. La base <strong>no</strong> se
               vacía al ejecutar: si se vaciara, no podrías escribir un programa que consulta lo que
               dejó otro, que es como se trabaja de verdad.</li>
@@ -892,6 +908,10 @@ SELECT nombre FROM gente WHERE edad IS NULL</code></pre>
 
       <div class="doc-bloque">
         <h3>Hasta dónde llega</h3>
+        <figure class="doc-figura ancha">
+          <a class="doc-ampliar" href="img/bd/unir-por-clave.png" target="_blank" rel="noopener" title="Ver el dibujo a tamaño completo"><img src="img/bd/unir-por-clave.png" width="1586" height="992" loading="lazy" alt="A la izquierda, dos tablas de cuatro filas unidas por dieciséis líneas grises cruzadas, con el pie «4 x 4 = 16 comparaciones». A la derecha, la segunda tabla repartida en tres cajas rotuladas Clave 1, Clave 2 y Clave 3, y cada fila de la primera con una sola flecha azul que va derecho a su caja."></a>
+          <figcaption>Por qué un <code>UNIR</code> entre dos tablas grandes termina: cuando el <code>SEGUN</code> es una igualdad, las filas se agrupan por esa clave y cada una va derecho a las que le tocan, en vez de compararse con todas.</figcaption>
+        </figure>
         <p>La base vive en la pestaña, así que tiene la memoria que tiene una pestaña. Cada
            instrucción tiene un presupuesto, y la que se pasa <strong>para y lo dice</strong>:
            nunca devuelve un resultado cortado que parezca completo.</p>
