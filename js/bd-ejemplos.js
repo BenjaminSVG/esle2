@@ -4,6 +4,11 @@
  * El primero es el que aparece al entrar: tiene que crear una tabla, meter
  * datos y consultarlos en pocas líneas, para que se entienda de qué se trata
  * sin leer la documentación.
+ *
+ * Están todos escritos en español, de punta a punta, porque es como se enseña
+ * y porque un ejemplo mitad y mitad enseña a escribir mitad y mitad. El motor
+ * sigue entendiendo el inglés: quien lo quiera ver, está en «Base → Datos de
+ * ejemplo», que es un volcado tal como sale de Exportar.
  */
 (function (global) {
   'use strict';
@@ -15,13 +20,13 @@
    Las instrucciones de la base se escriben solas, como una sentencia más.
    Un SELECCIONAR suelto imprime su tabla.
 
-   Las palabras van en español o en inglés, como se prefiera: CREAR TABLA
-   o CREATE TABLE, SELECCIONAR ... DE o SELECT ... FROM.
+   Todo va en español. Lo mismo en inglés —CREATE TABLE, SELECT ... FROM—
+   también se entiende, y se pueden mezclar en la misma consulta.
 */
 inicio
    CREAR TABLA alumnos (
-      id     INTEGER PRIMARY KEY,
-      nombre TEXT NOT NULL,
+      id     ENTERO CLAVE PRIMARIA,
+      nombre TEXTO NO NULO,
       nota   REAL
    )
 
@@ -29,11 +34,11 @@ inicio
       (1, 'Ana',  9),
       (2, 'Beto', 6),
       (3, 'Cata', 8),
-      (4, 'Dani', NULL)
+      (4, 'Dani', NULO)
 
    SELECCIONAR nombre, nota
    DE alumnos
-   ORDER BY nota DESC
+   ORDENAR POR nota DESCENDENTE
 fin
 `
     },
@@ -47,10 +52,10 @@ fin
 var
    i : numerico
 inicio
-   CREAR TABLA alumnos (nombre TEXT, nota REAL)
+   CREAR TABLA alumnos (nombre TEXTO, nota REAL)
    INSERTAR DENTRO alumnos VALORES ('Ana', 9), ('Beto', 6), ('Cata', 8)
 
-   consultar ("SELECCIONAR nombre, nota DE alumnos ORDER BY nombre")
+   consultar ("SELECCIONAR nombre, nota DE alumnos ORDENAR POR nombre")
    imprimir ("Vinieron ", filas (), " filas\\n\\n")
 
    desde i = 1 hasta filas ()
@@ -71,12 +76,15 @@ fin
    Adentro de una instrucción, «@nombre» es el valor de esa variable de SL.
    ESLE2 BD lo cita como corresponde: los números van tal cual y el texto
    entre comillas simples, sin que haya que acordarse de ponerlas.
+
+   Por eso no hace falta armar la consulta a mano con + y str(), que es
+   donde se cuelan las comillas mal puestas.
 */
 var
    i : numerico
    par : cadena
 inicio
-   CREAR TABLA numeros (n INTEGER, cuadrado INTEGER, par TEXT)
+   CREAR TABLA numeros (n ENTERO, cuadrado ENTERO, par TEXTO)
 
    desde i = 1 hasta 10
    {
@@ -89,37 +97,37 @@ inicio
       INSERTAR DENTRO numeros VALORES (@i, @i * @i, @par)
    }
 
-   SELECCIONAR * DE numeros DONDE par = 'sí' ORDER BY n
+   SELECCIONAR * DE numeros DONDE par = 'sí' ORDENAR POR n
 
    imprimir ("\\nLa suma de los cuadrados pares:\\n")
-   SELECCIONAR SUM (cuadrado) DE numeros DONDE par = 'sí'
+   SELECCIONAR SUMAR (cuadrado) DE numeros DONDE par = 'sí'
 fin
 `
     },
     {
-      nombre: 'NULL no es cero ni vacío',
+      nombre: 'NULO no es cero ni vacío',
       codigo: `/*
-   NULL quiere decir "no se sabe", y no es lo mismo que 0 ni que "".
-   Por eso NULL = NULL no da verdadero: hay que preguntar IS NULL.
+   NULO quiere decir "no se sabe", y no es lo mismo que 0 ni que "".
+   Por eso NULO = NULO no da verdadero: hay que preguntar ES NULO.
    En SL no existe el nulo, así que para distinguirlo está hay_dato().
 */
 var
    i : numerico
 inicio
-   CREAR TABLA gente (nombre TEXT, edad INTEGER)
-   INSERTAR DENTRO gente VALORES ('Ana', 30), ('Beto', NULL), ('Cata', 0)
+   CREAR TABLA gente (nombre TEXTO, edad ENTERO)
+   INSERTAR DENTRO gente VALORES ('Ana', 30), ('Beto', NULO), ('Cata', 0)
 
-   imprimir ("Con = NULL no encuentra a nadie:\\n")
-   SELECCIONAR nombre DE gente DONDE edad = NULL
+   imprimir ("Con = NULO no encuentra a nadie:\\n")
+   SELECCIONAR nombre DE gente DONDE edad = NULO
 
-   imprimir ("\\nCon IS NULL sí:\\n")
-   SELECCIONAR nombre DE gente DONDE edad IS NULL
+   imprimir ("\\nCon ES NULO sí:\\n")
+   SELECCIONAR nombre DE gente DONDE edad ES NULO
 
    imprimir ("\\nY el promedio ignora los nulos, no los cuenta como cero:\\n")
-   SELECCIONAR AVG (edad), COUNT (edad), COUNT (*) DE gente
+   SELECCIONAR PROMEDIO (edad), CONTAR (edad), CONTAR (*) DE gente
 
    imprimir ("\\nDesde el programa:\\n")
-   consultar ("SELECCIONAR nombre, edad DE gente ORDER BY nombre")
+   consultar ("SELECCIONAR nombre, edad DE gente ORDENAR POR nombre")
    desde i = 1 hasta filas ()
    {
       imprimir (dato (i, 1), ": ")
@@ -134,46 +142,46 @@ fin
 `
     },
     {
-      nombre: 'Dos tablas y un JOIN',
+      nombre: 'Dos tablas y un UNIR',
       codigo: `/*
-   REFERENCES dice que la columna «ciudad» no guarda un nombre de ciudad sino
+   REFERENCIA dice que la columna «ciudad» no guarda un nombre de ciudad sino
    el id de una fila de la tabla ciudades. Eso es una relación, y es lo que
    dibuja la flecha en «Base → Diagrama de la base».
 
-   Además se hace cumplir: un id de ciudad que no existe se rechaza. NULL sí
+   Además se hace cumplir: un id de ciudad que no existe se rechaza. NULO sí
    se admite, y quiere decir «todavía no se sabe en cuál vive».
 */
 inicio
    CREAR TABLA ciudades (
-      id     INTEGER PRIMARY KEY,
-      nombre TEXT
+      id     ENTERO CLAVE PRIMARIA,
+      nombre TEXTO
    )
    CREAR TABLA gente (
-      nombre TEXT,
-      ciudad INTEGER REFERENCES ciudades (id)
+      nombre TEXTO,
+      ciudad ENTERO REFERENCIA ciudades (id)
    )
 
    INSERTAR DENTRO ciudades VALORES (1, 'Asunción'), (2, 'Encarnación'), (3, 'Luque')
-   INSERTAR DENTRO gente VALORES ('Ana', 1), ('Beto', 2), ('Cata', 1), ('Dani', NULL)
+   INSERTAR DENTRO gente VALORES ('Ana', 1), ('Beto', 2), ('Cata', 1), ('Dani', NULO)
 
-   imprimir ("Con JOIN, Dani no aparece porque no tiene ciudad:\\n")
+   imprimir ("Con UNIR, Dani no aparece porque no tiene ciudad:\\n")
    SELECCIONAR g.nombre, c.nombre
    DE gente g
-   JOIN ciudades c ON g.ciudad = c.id
-   ORDER BY g.nombre
+   UNIR ciudades c SEGUN g.ciudad = c.id
+   ORDENAR POR g.nombre
 
-   imprimir ("\\nCon LEFT JOIN sí, con la ciudad en NULL:\\n")
+   imprimir ("\\nCon IZQUIERDA UNIR sí, con la ciudad en NULO:\\n")
    SELECCIONAR g.nombre, c.nombre
    DE gente g
-   LEFT JOIN ciudades c ON g.ciudad = c.id
-   ORDER BY g.nombre
+   IZQUIERDA UNIR ciudades c SEGUN g.ciudad = c.id
+   ORDENAR POR g.nombre
 
    imprimir ("\\nCuánta gente por ciudad:\\n")
-   SELECCIONAR c.nombre, COUNT (*) AS cuantos
+   SELECCIONAR c.nombre, CONTAR (*) COMO cuantos
    DE gente g
-   JOIN ciudades c ON g.ciudad = c.id
-   GROUP BY c.nombre
-   ORDER BY cuantos DESC
+   UNIR ciudades c SEGUN g.ciudad = c.id
+   AGRUPAR POR c.nombre
+   ORDENAR POR cuantos DESCENDENTE
 fin
 `
     },
@@ -181,8 +189,8 @@ fin
       nombre: 'Agrupar, filtrar grupos y ordenar',
       codigo: `inicio
    CREAR TABLA ventas (
-      producto TEXT,
-      rubro    TEXT,
+      producto TEXTO,
+      rubro    TEXTO,
       monto    REAL
    )
    INSERTAR DENTRO ventas VALORES
@@ -194,24 +202,24 @@ fin
       ('jabón',    'limpieza',   8000)
 
    imprimir ("Total por rubro:\\n")
-   SELECCIONAR rubro, COUNT (*) AS productos, SUM (monto) AS total
+   SELECCIONAR rubro, CONTAR (*) COMO productos, SUMAR (monto) COMO total
    DE ventas
-   GROUP BY rubro
-   ORDER BY total DESC
+   AGRUPAR POR rubro
+   ORDENAR POR total DESCENDENTE
 
-   imprimir ("\\nSolo los rubros que pasan de 20000 (eso es HAVING):\\n")
-   SELECCIONAR rubro, SUM (monto) AS total
+   imprimir ("\\nSolo los rubros que pasan de 20000 (eso es TENIENDO):\\n")
+   SELECCIONAR rubro, SUMAR (monto) COMO total
    DE ventas
-   GROUP BY rubro
-   HAVING SUM (monto) > 20000
-   ORDER BY rubro
+   AGRUPAR POR rubro
+   TENIENDO SUMAR (monto) > 20000
+   ORDENAR POR rubro
 
-   imprimir ("\\nWHERE filtra filas, HAVING filtra grupos:\\n")
-   SELECCIONAR rubro, SUM (monto) AS total
+   imprimir ("\\nDONDE filtra filas, TENIENDO filtra grupos:\\n")
+   SELECCIONAR rubro, SUMAR (monto) COMO total
    DE ventas
    DONDE monto > 10000
-   GROUP BY rubro
-   ORDER BY rubro
+   AGRUPAR POR rubro
+   ORDENAR POR rubro
 fin
 `
     },
@@ -223,36 +231,41 @@ fin
 */
 inicio
    CREAR TABLA stock (
-      id       INTEGER PRIMARY KEY,
-      producto TEXT,
-      cantidad INTEGER
+      id       ENTERO CLAVE PRIMARIA,
+      producto TEXTO,
+      cantidad ENTERO
    )
    INSERTAR DENTRO stock VALORES (1, 'pan', 10), (2, 'leche', 0), (3, 'queso', 3)
 
    ACTUALIZAR stock CONJUNTO cantidad = cantidad + 5 DONDE cantidad < 5
    imprimir ("Se repusieron ", afectadas (), " producto(s)\\n\\n")
 
-   SELECCIONAR * DE stock ORDER BY id
+   SELECCIONAR * DE stock ORDENAR POR id
 
    BORRAR DE stock DONDE cantidad > 9
    imprimir ("\\nSe sacaron ", afectadas (), " producto(s) de la lista\\n\\n")
 
-   SELECCIONAR * DE stock ORDER BY id
+   SELECCIONAR * DE stock ORDENAR POR id
 fin
 `
     },
     {
       nombre: 'Armar la consulta con el programa',
       codigo: `/*
-   Cuando lo que cambia no es un valor sino la consulta entera —la columna
-   por la que se ordena, por ejemplo— la instrucción se arma como cadena y
-   se la manda con sql() o consultar().
+   Para un valor que cambia está «@variable», y alcanza casi siempre. Pero
+   «@» solo funciona en una instrucción escrita suelta: adentro de un texto
+   es un arroba y nada más.
+
+   Y cuando lo que cambia no es un valor sino la consulta entera —la columna
+   por la que se ordena, por ejemplo— tampoco serviría: un nombre de columna
+   no se cita como un texto. Ahí la instrucción se arma como cadena y se la
+   manda con sql() o consultar().
 */
 var
    orden : cadena
    i : numerico
 inicio
-   CREAR TABLA alumnos (nombre TEXT, nota REAL)
+   CREAR TABLA alumnos (nombre TEXTO, nota REAL)
    INSERTAR DENTRO alumnos VALORES ('Ana', 9), ('Beto', 6), ('Cata', 8)
 
    desde i = 1 hasta 2
@@ -261,20 +274,144 @@ inicio
       {
          orden = "nombre"
       sino
-         orden = "nota DESC"
+         orden = "nota DESCENDENTE"
       }
       imprimir ("Ordenado por ", orden, ":\\n")
-      sql ("SELECCIONAR * DE alumnos ORDER BY " + orden)
+      sql ("SELECCIONAR * DE alumnos ORDENAR POR " + orden)
       mostrar ()
       imprimir ("\\n")
    }
+fin
+`
+    },
+    {
+      nombre: 'Ventas por encima del promedio',
+      codigo: `/*
+   Una subconsulta es una consulta adentro de otra, entre paréntesis.
+
+   Esta es «suelta»: no nombra nada de la consulta de afuera, así que se
+   calcula una sola vez y vale para todas las filas. El promedio de todas
+   las ventas es uno solo.
+*/
+inicio
+   CREAR TABLA ventas (
+      id       ENTERO CLAVE PRIMARIA,
+      vendedor TEXTO,
+      monto    REAL
+   )
+   INSERTAR DENTRO ventas VALORES
+      (1, 'Ana',  120000),
+      (2, 'Ana',   45000),
+      (3, 'Beto', 380000),
+      (4, 'Cata',  90000),
+      (5, 'Cata',  15000),
+      (6, 'Dani',  60000)
+
+   imprimir ("El promedio de una venta:\\n")
+   SELECCIONAR REDONDEAR (PROMEDIO (monto), 0) COMO promedio DE ventas
+
+   imprimir ("\\nLas ventas que lo pasan:\\n")
+   SELECCIONAR vendedor, monto
+   DE ventas
+   DONDE monto > (SELECCIONAR PROMEDIO (monto) DE ventas)
+   ORDENAR POR monto DESCENDENTE
+
+   /*
+      Una tabla derivada es una consulta puesta en el DE, como si fuera una
+      tabla. El alias no es opcional: el resultado no tiene nombre propio, y
+      sin nombre no habría cómo escribir sus columnas.
+
+      Sirve justo para esto: agrupar primero y recién después filtrar por lo
+      que salió de agrupar.
+   */
+   imprimir ("\\nVendedores cuyo total pasa el total promedio:\\n")
+   SELECCIONAR t.vendedor, t.total
+   DE (SELECCIONAR vendedor, SUMAR (monto) COMO total
+       DE ventas
+       AGRUPAR POR vendedor) COMO t
+   DONDE t.total > (SELECCIONAR PROMEDIO (monto) * 2 DE ventas)
+   ORDENAR POR t.total DESCENDENTE
+fin
+`
+    },
+    {
+      nombre: 'Quiénes compraron y quiénes no',
+      codigo: `/*
+   Una subconsulta «correlacionada» sí nombra la fila de afuera —acá el
+   c.id— y entonces se calcula una vez por cada fila. Es lo que la hace
+   poderosa y también lo que la hace cara.
+
+   Y de paso, la trampa más clásica de SQL: NO EN contra una columna que
+   tiene nulos no devuelve nada.
+*/
+inicio
+   CREAR TABLA clientes (
+      id     ENTERO CLAVE PRIMARIA,
+      nombre TEXTO
+   )
+   CREAR TABLA compras (
+      id      ENTERO CLAVE PRIMARIA,
+      cliente ENTERO REFERENCIA clientes (id),
+      monto   REAL
+   )
+   INSERTAR DENTRO clientes VALORES (1, 'Ana'), (2, 'Beto'), (3, 'Cata'), (4, 'Dani')
+
+   /* La última todavía no se sabe de quién es: el cliente quedó en NULO. */
+   INSERTAR DENTRO compras VALORES
+      (10, 1, 100000),
+      (11, 1,  50000),
+      (12, 2, 300000),
+      (13, NULO, 7000)
+
+   imprimir ("Los que compraron (EXISTE):\\n")
+   SELECCIONAR c.nombre
+   DE clientes COMO c
+   DONDE EXISTE (SELECCIONAR 1 DE compras COMO p DONDE p.cliente = c.id)
+   ORDENAR POR c.nombre
+
+   imprimir ("\\nLos que no compraron (NO EXISTE):\\n")
+   SELECCIONAR c.nombre
+   DE clientes COMO c
+   DONDE NO EXISTE (SELECCIONAR 1 DE compras COMO p DONDE p.cliente = c.id)
+   ORDENAR POR c.nombre
+
+   /*
+      Lo mismo con NO EN parece igual, y no lo es. Hay una compra con el
+      cliente en NULO, así que la pregunta «¿el 3 está entre 1, 2 y no se
+      sabe?» no tiene respuesta: puede que ese que no se sabe sea el 3.
+
+      La respuesta es «desconocido», y una fila con condición desconocida no
+      entra en el resultado. Por eso esto no devuelve a nadie.
+   */
+   imprimir ("\\nLo mismo con NO EN, y el nulo se lleva puesto el resultado:\\n")
+   SELECCIONAR c.nombre
+   DE clientes COMO c
+   DONDE c.id NO EN (SELECCIONAR p.cliente DE compras COMO p)
+
+   imprimir ("(no salió ninguno)\\n")
+
+   imprimir ("\\nSacando los nulos, NO EN sí anda:\\n")
+   SELECCIONAR c.nombre
+   DE clientes COMO c
+   DONDE c.id NO EN (SELECCIONAR p.cliente DE compras COMO p DONDE p.cliente ES NO NULO)
+   ORDENAR POR c.nombre
+
+   imprimir ("\\nCuánto compró cada uno (escalar correlacionada):\\n")
+   SELECCIONAR c.nombre,
+              (SELECCIONAR SUMAR (p.monto) DE compras COMO p DONDE p.cliente = c.id) COMO total
+   DE clientes COMO c
+   ORDENAR POR c.nombre
 fin
 `
     }
   ];
 
   /* Los datos que crea «Base → Datos de ejemplo»: sirven para practicar
-     consultas sin tener que escribir los INSERT cada vez. */
+     consultas sin tener que escribir los INSERT cada vez.
+
+     Van en inglés a propósito, y son los únicos: es un volcado tal como sale
+     de Exportar, y que se cargue sin tocar nada es la prueba de que un archivo
+     de SQLite, MySQL o PostgreSQL entra acá tal cual. */
   global.BD_DATOS_EJEMPLO = `
 DROP TABLE IF EXISTS alumnos;
 DROP TABLE IF EXISTS materias;

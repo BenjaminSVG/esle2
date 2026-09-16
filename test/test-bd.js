@@ -486,6 +486,31 @@ fin
       comprobar('y no deja avisos del revisor: ' + e.nombre,
         SLE2BD.revisar(e.codigo).length === 0, JSON.stringify(SLE2BD.revisar(e.codigo)));
     }
+    comprobar('son diez', global.BD_EJEMPLOS.length === 10, global.BD_EJEMPLOS.length);
+
+    /* Que corran sin error no alcanza: un ejemplo puede imprimir cualquier
+       cosa y pasar igual. Los dos que enseñan subconsultas dicen algo
+       concreto, así que se comprueba que lo digan. */
+    const porNombre = n => global.BD_EJEMPLOS.find(e => e.nombre === n);
+
+    let r = await correr(porNombre('Ventas por encima del promedio').codigo);
+    comprobar('las ventas sobre el promedio son las dos que corresponden',
+      !r.error && /Beto/.test(r.salida) && /Ana/.test(r.salida) && !/Dani/.test(r.salida),
+      r.error ? r.error.message : r.salida);
+
+    r = await correr(porNombre('Quiénes compraron y quiénes no').codigo);
+    comprobar('EXISTE y NO EXISTE parten la lista en dos',
+      !r.error && /no salió ninguno/.test(r.salida), r.error ? r.error.message : r.salida);
+    /* Lo que el ejemplo promete: con el nulo adentro, NO EN no devuelve nada,
+       y sacándolo sí. Si alguna vez dejara de ser cierto, el ejemplo estaría
+       enseñando algo falso. */
+    const trozo = r.salida.split('y el nulo se lleva puesto el resultado')[1] || '';
+    const antesDelAviso = trozo.split('(no salió ninguno)')[0] || '';
+    comprobar('NO EN con el nulo no trae ningún nombre',
+      !/Cata|Dani/.test(antesDelAviso), antesDelAviso);
+    comprobar('y sacando los nulos sí los trae',
+      /Cata[\s\S]*Dani/.test(r.salida.split('(no salió ninguno)')[1] || ''),
+      r.salida.split('(no salió ninguno)')[1]);
   }
 
   console.log(`\n${ok} verificaciones correctas, ${fallos} fallos.`);
