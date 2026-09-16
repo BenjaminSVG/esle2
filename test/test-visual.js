@@ -44,7 +44,7 @@ function correr(fuente, op) {
   const salida = [];
   const control = {};
   let error = null;
-  const fin = SLE2VIS.ejecutar(fuente, io(salida), { gui, control })
+  const fin = SLE2VIS.ejecutar(fuente, io(salida), Object.assign({ gui, control }, op || {}))
     .catch(e => { error = e; });
   return {
     gui, salida, control, fin,
@@ -564,6 +564,228 @@ fin`);
     gui.controles.get(1).items.join() === 'tres', gui.controles.get(1).items.join());
   r.control.detener();
   await r.fin;
+}
+
+/* ===================== preguntar antes de borrar ======================== */
+/* confirmar() detiene el programa hasta que la persona conteste. En una
+   prueba nadie puede tocar un botón, así que las respuestas se dejan puestas
+   de antemano: gui.respuestas = [true, false]. */
+{
+  const r = correr(`var
+   li, b : numerico
+inicio
+   ventana ("Lista", 400, 300)
+   li = lista (20, 20, 200, 120)
+   agregar_item (li, "uno")
+   agregar_item (li, "dos")
+   b = boton ("Vaciar", 20, 160, 100, 32)
+   al_hacer_clic (b, "vaciar")
+   esperar_eventos ()
+fin
+
+subrutina vaciar (id : numerico)
+inicio
+   si (confirmar ("¿Vaciar la lista?"))
+   {
+      limpiar_items (li)
+      mensaje ("vaciada")
+   sino
+      mensaje ("no se tocó")
+   }
+fin`);
+  const gui = await r.listo();
+
+  /* Primero se contesta que NO. El botón es el control 2: la lista es el 1. */
+  gui.respuestas = [false];
+  await gui.disparar(2, 'clic');
+  comprobar('con «no» no se toca nada',
+    gui.controles.get(1).items.join() === 'uno,dos', gui.controles.get(1).items.join());
+  comprobar('y el programa se entera', gui.mensajes.join() === 'no se tocó', gui.mensajes.join());
+  comprobar('la pregunta llegó tal cual', gui.preguntas[0] === '¿Vaciar la lista?', gui.preguntas[0]);
+
+  /* Y ahora que sí. */
+  gui.respuestas = [true];
+  await gui.disparar(2, 'clic');
+  comprobar('con «sí» se vacía', gui.controles.get(1).items.length === 0,
+    gui.controles.get(1).items.join());
+  comprobar('se preguntó las dos veces', gui.preguntas.length === 2, String(gui.preguntas.length));
+
+  r.control.detener();
+  await r.fin;
+}
+
+{
+  /* Sin respuesta puesta se contesta que no. Es lo mismo que hace Escape, y
+     es el lado seguro: lo que se iba a borrar no se borra. */
+  const r = correr(`var
+   b : numerico
+inicio
+   ventana ("P", 300, 200)
+   b = boton ("Dale", 20, 20)
+   al_hacer_clic (b, "probar")
+   esperar_eventos ()
+fin
+
+subrutina probar (id : numerico)
+inicio
+   si (confirmar ("¿Seguro?"))
+   {
+      mensaje ("dijo que sí")
+   sino
+      mensaje ("dijo que no")
+   }
+fin`);
+  const gui = await r.listo();
+  await gui.disparar(1, 'clic');
+  comprobar('sin respuesta, se contesta que no', gui.mensajes.join() === 'dijo que no',
+    gui.mensajes.join());
+  r.control.detener();
+  await r.fin;
+}
+
+/* ========================== el temporizador ============================= */
+/* Con un reloj de mentira: esperar segundos de verdad haría la prueba lenta
+   y, peor, inestable. El reloj guarda lo agendado y la prueba decide cuándo
+   pasa el tiempo. */
+function relojFalso() {
+  const pendientes = [];
+  const reloj = (ms, que) => pendientes.push({ ms, que });
+  /* Un tic: corre lo que estaba agendado y espera a que la cola se vacíe. */
+  reloj.tic = async (veces) => {
+    for (let i = 0; i < (veces || 1); i++) {
+      const ahora = pendientes.splice(0, pendientes.length);
+      for (const p of ahora) p.que();
+      await new Promise(r => setTimeout(r, 5));
+    }
+  };
+  reloj.cuantosPendientes = () => pendientes.length;
+  return reloj;
+}
+
+{
+  const reloj = relojFalso();
+  const r = correr(`var
+   t, cuenta, e : numerico
+inicio
+   ventana ("Contador", 300, 200)
+   e = progreso (20, 20, 200, 22)
+   cuenta = 0
+   t = temporizador (1000, "avanzar")
+   activar_temporizador (t, TRUE)
+   esperar_eventos ()
+fin
+
+subrutina avanzar (id : numerico)
+inicio
+   cuenta = cuenta + 1
+   poner_valor (e, cuenta)
+fin`, { reloj });
+  const gui = await r.listo();
+
+  comprobar('al arrancar ya hay un tic agendado', reloj.cuantosPendientes() === 1,
+    String(reloj.cuantosPendientes()));
+  await reloj.tic();
+  comprobar('el primer tic corre la subrutina', gui.leer(1, 'valor') === 1,
+    String(gui.leer(1, 'valor')));
+  await reloj.tic();
+  await reloj.tic();
+  comprobar('y sigue solo', gui.leer(1, 'valor') === 3, String(gui.leer(1, 'valor')));
+  comprobar('siempre hay uno solo agendado, nunca una pila',
+    reloj.cuantosPendientes() === 1, String(reloj.cuantosPendientes()));
+
+  r.control.detener();
+  await r.fin;
+  await reloj.tic();
+  comprobar('después de detener el programa, un tic atrasado no hace nada',
+    gui.leer(1, 'valor') === 3, String(gui.leer(1, 'valor')));
+}
+
+{
+  /* Apagarlo y volver a prenderlo. Lo que estaba agendado de antes no puede
+     colarse: por eso cada activación lleva su generación. */
+  const reloj = relojFalso();
+  const r = correr(`var
+   t, cuenta, e, b : numerico
+inicio
+   ventana ("Pausa", 300, 220)
+   e = progreso (20, 20, 200, 22)
+   b = boton ("Pausa", 20, 60, 100, 30)
+   cuenta = 0
+   t = temporizador (100, "avanzar")
+   activar_temporizador (t, TRUE)
+   al_hacer_clic (b, "pausar")
+   esperar_eventos ()
+fin
+
+subrutina avanzar (id : numerico)
+inicio
+   cuenta = cuenta + 1
+   poner_valor (e, cuenta)
+fin
+
+subrutina pausar (id : numerico)
+inicio
+   si (temporizador_andando (t))
+   {
+      activar_temporizador (t, FALSE)
+   sino
+      activar_temporizador (t, TRUE)
+   }
+fin`, { reloj });
+  const gui = await r.listo();
+
+  await reloj.tic();
+  comprobar('va uno', gui.leer(1, 'valor') === 1, String(gui.leer(1, 'valor')));
+
+  await gui.disparar(2, 'clic');           // pausa
+  const quedaban = reloj.cuantosPendientes();
+  await reloj.tic();
+  comprobar('en pausa no avanza', gui.leer(1, 'valor') === 1, String(gui.leer(1, 'valor')));
+  comprobar('el tic viejo se descarta en vez de correrse', quedaban >= 0);
+
+  await gui.disparar(2, 'clic');           // sigue
+  await reloj.tic();
+  comprobar('al volver a prender, sigue de donde estaba',
+    gui.leer(1, 'valor') === 2, String(gui.leer(1, 'valor')));
+
+  r.control.detener();
+  await r.fin;
+}
+
+{
+  /* Lo que no se permite. */
+  const r = correr(`var
+   t : numerico
+inicio
+   ventana ("Mal", 300, 200)
+   t = temporizador (5, "nada")
+   esperar_eventos ()
+fin
+
+subrutina nada (id : numerico)
+inicio
+   mensaje ("hola")
+fin`);
+  await r.fin.catch(() => {});
+  const err = r.gui.errores[0] || r.error();
+  comprobar('un temporizador demasiado rápido avisa',
+    !!err && /no puede ir más rápido/.test(err.message || String(err)),
+    err && (err.message || String(err)));
+}
+
+{
+  const r = correr(`var
+   t : numerico
+inicio
+   ventana ("Mal", 300, 200)
+   t = temporizador (1000, "queNoExiste")
+   esperar_eventos ()
+fin`);
+  await r.fin.catch(() => {});
+  const err = r.gui.errores[0] || r.error();
+  comprobar('un temporizador sin subrutina avisa',
+    !!err && /no hay ninguna subrutina/.test(err.message || String(err)),
+    err && (err.message || String(err)));
 }
 
 /* --------------------- el catálogo que usa la página -------------------- */

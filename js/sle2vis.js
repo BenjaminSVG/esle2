@@ -88,6 +88,35 @@
       this.esperando = null;          // resolvedor de esperar_eventos()
       this.cola = Promise.resolve();  // los eventos se atienden de a uno
       this.hayVentana = false;
+      this.temporizadores = new Map();
+      this.proximoTemporizador = 1;
+    }
+
+    /* Agenda el próximo tic de un temporizador.
+       Se agenda de a uno y recién después de que el anterior terminó: con
+       setInterval, un programa lento acumularía tics atrasados y los correría
+       todos juntos cuando se desocupara. Un reloj que se atrasa es molesto;
+       uno que de golpe da diez vueltas seguidas es un error imposible de
+       entender para quien recién aprende. */
+    agendar(id) {
+      const t = this.temporizadores.get(id);
+      if (!t || !t.andando || this.abortar) return;
+      const generacion = t.generacion;
+      const reloj = (this.opts && this.opts.reloj) || relojDeVerdad;
+      reloj(t.ms, () => {
+        const ahora = this.temporizadores.get(id);
+        /* Se comprueba al EJECUTAR y no al agendar: entre medio pueden haber
+           apagado el temporizador, detenido el programa o cerrado la ventana. */
+        if (!ahora || !ahora.andando || ahora.generacion !== generacion) return;
+        if (this.abortar || !this.esperando) return;
+        /* Por la misma cola que los clics: dos cosas del programa no pueden
+           estar corriendo a la vez. */
+        this.encolar(ahora.sub, [id]).then(() => this.agendar(id));
+      });
+    }
+
+    pararTodosLosTemporizadores() {
+      for (const t of this.temporizadores.values()) { t.andando = false; t.generacion++; }
     }
 
     /* Las subrutinas visuales se resuelven antes que las del lenguaje base
@@ -386,15 +415,80 @@
     },
 
     cerrar_ventana: fn(0, 0, function () {
+      this.pararTodosLosTemporizadores();
       this.terminarEspera();
       if (this.gui.cerrar) this.gui.cerrar();
       return true;
+    }),
+
+    /* ---------------------------- temporizador ------------------------ */
+    /* Un reloj que llama a una subrutina cada tantos milisegundos. Es lo que
+       falta para un contador, un juego o una barra que avanza sola.
+
+       Arranca apagado a propósito: crearlo y que ya empiece a correr deja al
+       programa haciendo cosas antes de terminar de armar la ventana. */
+    temporizador: fn(2, 2, function (v, l) {
+      const ms = Math.trunc(num(this, v[0], l));
+      const sub = cad(this, v[1], l);
+      if (ms < MINIMO_MS) errE(`el temporizador no puede ir más rápido que ${MINIMO_MS} milisegundos`, l,
+        'Un reloj más rápido que eso no se ve y traba el navegador. ' +
+        'Para algo que pasa cada segundo:  t = temporizador (1000, "avanzar")');
+      if (!this.subs.has(sub)) {
+        const cerca = S.parecido(sub, [...this.subs.keys()]);
+        errE(`no hay ninguna subrutina que se llame "${sub}"`, l,
+          cerca ? `¿Quisiste decir "${cerca}"?`
+                : 'El nombre va entre comillas y tiene que ser el de una subrutina del programa.');
+      }
+      const id = this.proximoTemporizador++;
+      this.temporizadores.set(id, { ms, sub, andando: false, generacion: 0 });
+      return id;
+    }),
+
+    activar_temporizador: fn(2, 2, function (v, l) {
+      const id = ent(this, v[0], l);
+      const t = this.temporizadores.get(id);
+      if (!t) errE(`no hay ningún temporizador con el número ${id}`, l,
+        'Se guarda en una variable cuando se crea:\n' +
+        '   t = temporizador (1000, "avanzar")\n' +
+        'y después:  activar_temporizador (t, TRUE)');
+      const prender = this.aLogico(v[1], l);
+      t.generacion++;              // lo que estuviera agendado ya no vale
+      t.andando = prender;
+      if (prender) this.agendar(id);
+      return true;
+    }),
+
+    temporizador_andando: fn(1, 1, function (v, l) {
+      const t = this.temporizadores.get(ent(this, v[0], l));
+      return !!(t && t.andando);
     }),
 
     mensaje: fn(1, 1, function (v, l) {
       this.gui.mensaje(cad(this, v[0], l));
       return true;
     }),
+
+    /* Preguntar antes de hacer algo que no se puede deshacer.
+       El programa se queda esperando la respuesta, como en cualquier
+       formulario de verdad: es la primera vez que el alumno escribe código
+       que se detiene esperando a una persona y después sigue.
+
+       La respuesta NO se encola detrás del evento que la pidió: el clic que
+       abrió la pregunta todavía está corriendo, y ponerse en la fila detrás
+       de sí mismo dejaría el programa trabado para siempre. */
+    confirmar: async function (n) {
+      const l = n.linea;
+      const a = [];
+      for (const x of n.args) a.push(await this.eval(x));
+      if (a.length !== 1) errE('confirmar() necesita la pregunta', l,
+        'Se escribe así:  si (confirmar ("¿Vaciar la lista?")) { ... }');
+      if (!this.gui.confirmar) return false;
+      const respuesta = await this.gui.confirmar(cad(this, a[0], l));
+      /* Si mientras la pregunta estaba abierta se detuvo el programa, no se
+         sigue: el «sí» sería de una ejecución que ya no existe. */
+      if (this.abortar) return false;
+      return !!respuesta;
+    },
 
     /* ------------------------------- dibujo --------------------------- */
     pluma: fn(4, 4, function (v, l) { return dibujar(this, v, l, 'pluma', [color(this, v, l)]); }),
@@ -426,6 +520,13 @@
     raton_x: fn(0, 0, function () { return Number(this.gui.raton('x')) || 0; }),
     raton_y: fn(0, 0, function () { return Number(this.gui.raton('y')) || 0; })
   });
+
+  /* Más lento que esto no se ve, y más rápido traba el navegador. */
+  const MINIMO_MS = 50;
+
+  /* El reloj de verdad. Las pruebas pasan el suyo por opts.reloj: esperar
+     segundos de verdad en una prueba la vuelve lenta y, peor, inestable. */
+  const relojDeVerdad = (ms, que) => setTimeout(que, ms);
 
   /* Ayudas compartidas por varias subrutinas. */
   function color(interp, v, l) {
@@ -513,6 +614,17 @@
       },
       alEvento(id, evento, cb) { g.eventos.set(id + ':' + evento, cb); },
       mensaje(t) { g.mensajes.push(t); g.registro.push(['mensaje', t]); },
+      /* Las preguntas se contestan de antemano: g.respuestas = [TRUE, FALSE].
+         Una prueba no puede tocar un botón, y esperar a que alguien lo toque
+         la dejaría colgada. Si no quedan respuestas, se contesta que no —que
+         es lo que hace Escape, y lo más seguro para lo que se iba a borrar. */
+      respuestas: [],
+      confirmar(t) {
+        g.preguntas.push(t);
+        g.registro.push(['confirmar', t]);
+        return Promise.resolve(g.respuestas.length ? !!g.respuestas.shift() : false);
+      },
+      preguntas: [],
       aviso(t) { g.avisos.push(t); },
       error(e) { g.errores.push(e); },
       listo() { g.registro.push(['listo']); g.esperando = true; },
@@ -540,6 +652,7 @@
     if (!interp.gui) interp.gui = guiDeMentira();
     if (o.control) o.control.detener = () => {
       interp.abortar = true;
+      interp.pararTodosLosTemporizadores();
       interp.terminarEspera();
     };
     await interp.run();

@@ -247,6 +247,63 @@
       },
 
       mensaje(t) { if (cfg.mensaje) cfg.mensaje(t); },
+
+      /* La pregunta de Sí/No. Devuelve una promesa: el programa se queda
+         esperando ahí hasta que la persona conteste.
+
+         Es un <dialog> modal de verdad y no un div: el navegador se encarga
+         de atrapar el foco adentro, de devolverlo al salir y de anunciarlo
+         como diálogo. El foco arranca en «No» a propósito — quien apura un
+         Enter no tiene que borrar nada sin querer. */
+      confirmar(texto) {
+        return new Promise(listo => {
+          const dlg = document.createElement('dialog');
+          dlg.className = 'dlg dlg-confirmar';
+          const p = document.createElement('p');
+          p.textContent = texto;
+          const fila = document.createElement('div');
+          fila.className = 'dlg-fila derecha';
+          const no = document.createElement('button');
+          no.type = 'button';
+          no.className = 'btn';
+          no.textContent = 'No';
+          const si = document.createElement('button');
+          si.type = 'button';
+          si.className = 'btn primario';
+          si.textContent = 'Sí';
+          fila.append(no, si);
+          dlg.append(p, fila);
+          document.body.appendChild(dlg);
+
+          let contestado = false;
+          const contestar = r => {
+            if (contestado) return;
+            contestado = true;
+            try { dlg.close(); } catch (e) { /* ya estaba cerrado */ }
+            dlg.remove();
+            g.preguntaAbierta = null;
+            listo(r);
+          };
+          no.addEventListener('click', () => contestar(false));
+          si.addEventListener('click', () => contestar(true));
+          /* Escape cierra el <dialog> y eso cuenta como «no». Se atiende acá
+             y no se deja subir, porque el Escape de la página detiene el
+             programa entero. */
+          dlg.addEventListener('cancel', ev => { ev.preventDefault(); contestar(false); });
+          dlg.addEventListener('keydown', ev => { if (ev.key === 'Escape') ev.stopPropagation(); });
+
+          /* Si se detiene el programa con la pregunta abierta, se contesta que
+             no y se cierra: no puede quedar un diálogo de una ejecución que
+             ya terminó. */
+          g.preguntaAbierta = () => contestar(false);
+
+          dlg.showModal();
+          no.focus();
+        });
+      },
+
+      /* La llama la página al detener o al volver a ejecutar. */
+      cerrarPregunta() { if (g.preguntaAbierta) g.preguntaAbierta(); },
       aviso(t) { if (cfg.aviso) cfg.aviso(t); },
       error(e) { if (cfg.error) cfg.error(e); },
       listo() { if (cfg.listo) cfg.listo(); },

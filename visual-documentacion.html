@@ -355,6 +355,74 @@ fin</code></pre>
     </section>
 
     <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-preguntar" data-titulo="Preguntar y esperar">
+      <h2>Preguntar y esperar</h2>
+      <p class="sub">Confirmar antes de hacer algo que no se puede deshacer.</p>
+
+      <div class="doc-bloque">
+        <h3>La pregunta</h3>
+        <p><code>confirmar (pregunta)</code> abre un cartel con <strong>Sí</strong> y <strong>No</strong>
+           y <strong>detiene el programa hasta que la persona conteste</strong>. Devuelve
+           <code>TRUE</code> o <code>FALSE</code>.</p>
+        <pre><code>subrutina vaciar (id : numerico)
+inicio
+   si (confirmar ("¿Vaciar la lista?"))
+   {
+      limpiar_items (li)
+   }
+fin</code></pre>
+        <p>Es la primera vez que escribís código que se frena esperando a una persona y después
+           sigue. Mientras el cartel está abierto, la ventana no se puede tocar: es lo mismo que hace
+           cualquier programa cuando te pregunta si querés guardar.</p>
+        <p>El cursor arranca en <strong>No</strong>, y <kbd>Escape</kbd> también contesta que no. No
+           es casualidad: quien apura un <kbd>Enter</kbd> no tiene que borrar nada sin querer.</p>
+        <table>
+          <tr><th>Subrutina</th><th>Qué hace</th></tr>
+          <tr><td><code>confirmar (pregunta)</code></td><td>Pregunta Sí o No y devuelve la respuesta. El programa espera.</td></tr>
+          <tr><td><code>mensaje (texto)</code></td><td>Muestra un aviso. No pregunta nada y no espera.</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <section class="doc-seccion" id="s-temporizador" data-titulo="El temporizador">
+      <h2>El temporizador</h2>
+      <p class="sub">Que algo pase solo, cada tantos segundos.</p>
+
+      <div class="doc-bloque">
+        <h3>Un reloj que llama a una subrutina</h3>
+        <p>Hasta acá todo pasaba porque alguien tocaba algo. El temporizador es lo que falta para un
+           contador, un juego o una barra que avanza sola.</p>
+        <pre><code>   t = temporizador (1000, "avanzar")
+   activar_temporizador (t, TRUE)</code></pre>
+        <p><strong>Arranca apagado.</strong> Se crea primero y se prende cuando la ventana ya está
+           armada: si empezara solo, el programa estaría haciendo cosas antes de terminar de
+           dibujarse.</p>
+        <table>
+          <tr><th>Subrutina</th><th>Qué hace</th></tr>
+          <tr><td><code>temporizador (milisegundos, "subrutina")</code></td><td>Crea el reloj y devuelve su número. Mínimo 50 milisegundos. Todavía no anda.</td></tr>
+          <tr><td><code>activar_temporizador (t, TRUE/FALSE)</code></td><td>Lo prende o lo apaga. Apagarlo cancela también el tic que estuviera por venir.</td></tr>
+          <tr><td><code>temporizador_andando (t)</code></td><td>Si está prendido. Sirve para un botón que hace Pausa y Seguir con el mismo código.</td></tr>
+        </table>
+      </div>
+
+      <div class="doc-bloque">
+        <h3>Dos cosas que conviene saber</h3>
+        <p><strong>No es un cronómetro exacto.</strong> Un temporizador de 1000 milisegundos llama a
+           tu subrutina <em>más o menos</em> cada segundo: si el navegador está ocupado, llega un
+           poco tarde. Para medir tiempo de verdad no sirve; para que algo se mueva, sí.</p>
+        <p><strong>Nunca se te van a amontonar los tics.</strong> El próximo se agenda recién cuando
+           el anterior terminó. Si tu subrutina tarda más que el intervalo, el reloj se atrasa — que
+           es molesto— pero no se guarda los que faltaron para correrlos todos juntos, que sería
+           imposible de entender.</p>
+        <p><strong>Cerrar la ventana no para el reloj.</strong> Cerrarla la esconde, como cuando
+           minimizás un programa: el tuyo sigue corriendo y la volvés a abrir con el botón
+           <em>Ventana</em> tal como estaba. Para cortar de verdad está <em>Detener</em>, que apaga
+           todos los temporizadores.</p>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
     <section class="doc-seccion" id="s-lienzo" data-titulo="Dibujar en el lienzo">
       <h2>Dibujar en el lienzo</h2>
       <p class="sub">Líneas, figuras y texto con coordenadas.</p>

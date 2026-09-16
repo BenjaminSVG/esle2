@@ -235,3 +235,10 @@
   .dis-herr { flex-direction: row; flex-wrap: wrap; }
   .dis-lienzo-caja { max-height: 48vh; }
 }
+
+/* ------------------------- la pregunta de Sí/No ------------------------- */
+/* Es un <dialog> del navegador: el foco queda atrapado adentro, Escape lo
+   cierra y el lector de pantalla lo anuncia como diálogo, sin que tengamos
+   que programar nada de eso. */
+.dlg-confirmar { max-width: min(420px, 92vw); }
+.dlg-confirmar p { margin: .2rem 0 1rem; font-size: 1rem; line-height: 1.5; }

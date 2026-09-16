@@ -286,6 +286,7 @@
        otra vez: es lo que uno espera al tocar «Ejecutar» dos veces. */
     if (control) { detener(); await new Promise(r => setTimeout(r, 40)); }
     limpiarSalida();
+    if (gui.cerrarPregunta) gui.cerrarPregunta();   // no queda nada de la corrida anterior
     gui.limpiar();
     elegido = null;
     $('#formaMarco').classList.add('oculto');
@@ -330,6 +331,10 @@
   function detener() {
     if (!control) return;
     detenido = true;
+    /* Primero se contesta la pregunta que haya quedado abierta —que no— y
+       recién después se corta: si no, el programa queda esperando para
+       siempre una respuesta que ya nadie va a dar. */
+    if (gui.cerrarPregunta) gui.cerrarPregunta();
     control.detener();
     verVentana(false);
     cancelarEsperas();

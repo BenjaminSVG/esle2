@@ -93,7 +93,13 @@ function ayudas() {
      son las mismas tablas que lee una persona, así que la ayuda del
      autocompletado nunca se desfasa de la documentación. */
   const visual = leer('visual-documentacion.html');
-  for (const id of ['s-ventana', 's-controles', 's-eventos', 's-lienzo']) {
+  /* Ojo: esta lista hay que ampliarla cuando se agrega una sección con
+     subrutinas nuevas. Si falta, la función queda sin ayuda y sin entrada en
+     el buscador, y nadie se entera hasta que alguien la escribe en el editor.
+     test/test-autocompletar.js lo caza: comprueba que TODA predefinida tenga
+     su ayuda. */
+  for (const id of ['s-ventana', 's-controles', 's-eventos', 's-lienzo',
+                    's-preguntar', 's-temporizador']) {
     const i = visual.indexOf('id="' + id + '"');
     if (i < 0) continue;
     deTrozo(visual.slice(i, visual.indexOf('</section>', i)));
