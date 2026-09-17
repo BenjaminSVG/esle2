@@ -141,7 +141,7 @@ for (const p of CON_MENUS) {
     const html = leer(p);
     comprobar(`${p}: tiene la cabecera del sitio`, html.includes('<header class="barra">'));
     comprobar(`${p}: con la marca y su logo de 30 px`,
-      /<img class="logo" src="img\/logo(-poo)?\.svg" alt="" width="30" height="30">/.test(html));
+      /<img class="logo" src="img\/logo(-poo|-visual|-bd)?\.svg" alt="" width="30" height="30">/.test(html));
     comprobar(`${p}: con las pestañas`, /<nav class="pestanas"/.test(html));
     comprobar(`${p}: y las acciones agrupadas`, html.includes('<div class="barra-acciones">'));
 
@@ -150,6 +150,51 @@ for (const p of CON_MENUS) {
     const suyos = p === 'vivo.html' ? ['btnTema'] : ['btnInstalar', 'btnBuscar', 'btnTema'];
     for (const id of suyos)
       comprobar(`${p}: «${id}» está adentro del grupo de acciones`, grupo.includes('id="' + id + '"'));
+  }
+}
+
+/* --------------------- un logo por dialecto ----------------------------- */
+/* Los cuatro logos son la misma ventana y cambia solo lo que pasa adentro del
+   panel azul. Si alguien retoca uno y le mueve el marco, dejan de leerse como
+   una familia; y si una página se queda con el logo de otro dialecto, la
+   pestaña del navegador miente. */
+{
+  const DE_CADA_UNO = {
+    'index.html': 'img/logo.svg',
+    'documentacion.html': 'img/logo.svg',
+    'poo.html': 'img/logo-poo.svg',
+    'poo-documentacion.html': 'img/logo-poo.svg',
+    'visual.html': 'img/logo-visual.svg',
+    'visual-documentacion.html': 'img/logo-visual.svg',
+    'bd.html': 'img/logo-bd.svg',
+    'bd-documentacion.html': 'img/logo-bd.svg'
+  };
+  for (const [pagina, logo] of Object.entries(DE_CADA_UNO)) {
+    const html = leer(pagina);
+    comprobar(`${pagina}: lleva ${logo} en la marca`,
+      html.includes(`<img class="logo" src="${logo}"`));
+    comprobar(`${pagina}: y el mismo de favicon`,
+      html.includes(`<link rel="icon" href="${logo}"`));
+  }
+
+  /* Las piezas que ningún dialecto puede cambiar: marco, pantalla, barra de
+     título y barra de estado. */
+  const COMUNES = [
+    '<rect x="1" y="3" width="62" height="58" rx="5" fill="none" stroke="#7b7b76" stroke-width="1.5"/>',
+    '<rect x="5" y="7" width="54" height="50" rx="2" fill="#0b0b0b"/>',
+    '<rect x="7" y="9" width="50" height="6" fill="#808080"/>',
+    '<rect x="7" y="17" width="50" height="28" fill="#0000c0"/>',
+    '<rect x="7" y="47" width="50" height="8" fill="#008080"/>'
+  ];
+  for (const logo of ['logo.svg', 'logo-poo.svg', 'logo-visual.svg', 'logo-bd.svg']) {
+    const svg = leer('img/' + logo);
+    comprobar(`${logo}: es de 64×64`, svg.includes('viewBox="0 0 64 64"'));
+    comprobar(`${logo}: tiene nombre accesible`, /aria-label="[^"]+"/.test(svg) && /<title>/.test(svg));
+    /* Sin texto: a 16 px una letra es una mancha, y además arrastraría una
+       fuente que el SVG no tiene. */
+    comprobar(`${logo}: no dibuja texto`, !/<text[\s>]/.test(svg));
+    for (const pieza of COMUNES)
+      comprobar(`${logo}: conserva ${pieza.slice(12, 34)}…`, svg.includes(pieza));
   }
 }
 

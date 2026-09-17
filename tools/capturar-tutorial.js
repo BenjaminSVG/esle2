@@ -426,11 +426,13 @@ function guardarMedidas(medidas) {
   const salto = texto.indexOf('\r\n') >= 0 ? '\r\n' : '\n';
   const filas = Object.keys(medidas).sort()
     .map(a => `    '${a}': [${medidas[a][0]}, ${medidas[a][1]}],`).join(salto);
-  const nuevo = texto.replace(
-    /(\/\* capturas:inicio \*\/)[\s\S]*?(\/\* capturas:fin \*\/)/,
-    `$1${salto}${filas}${salto}    $2`);
-  if (nuevo === texto) throw new Error('no encontré las marcas capturas:inicio/fin en js/tutorial.js');
-  fs.writeFileSync(MODELO, nuevo);
+  const marcas = /(\/\* capturas:inicio \*\/)[\s\S]*?(\/\* capturas:fin \*\/)/;
+  /* Que falten las marcas es un error; que las medidas sean las mismas de
+     antes no lo es —pasa cada vez que se sacan las capturas dos veces sin
+     tocar la interfaz—, y compararlo con el texto viejo confundía las dos
+     cosas. */
+  if (!marcas.test(texto)) throw new Error('no encontré las marcas capturas:inicio/fin en js/tutorial.js');
+  fs.writeFileSync(MODELO, texto.replace(marcas, `$1${salto}${filas}${salto}    $2`));
 }
 
 /* ------------------------------------------------------------------ */

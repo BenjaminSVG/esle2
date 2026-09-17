@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="ESLE2 BD">
+  <title>ESLE2 BD</title>
+  <!--
+    Misma ventana del icono clásico de SLE2, pero adentro del editor azul
+    están los tres discos apilados de siempre —el mismo dibujo que el icono
+    «base» de la barra de herramientas— y al lado las filas que devuelve una
+    consulta.
+  -->
+  <defs>
+    <linearGradient id="marcoBdB" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e9e9e6"/>
+      <stop offset="1" stop-color="#b9b9b4"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="1" y="3" width="62" height="58" rx="5" fill="url(#marcoBdB)"/>
+  <rect x="1" y="3" width="62" height="58" rx="5" fill="none" stroke="#7b7b76" stroke-width="1.5"/>
+  <path d="M3.5 58.5V8a2 2 0 0 1 2-2h55" fill="none" stroke="#ffffff" stroke-width="1.4" opacity=".85"/>
+
+  <rect x="5" y="7" width="54" height="50" rx="2" fill="#0b0b0b"/>
+
+  <rect x="7" y="9" width="50" height="6" fill="#808080"/>
+  <rect x="9" y="11" width="20" height="2" fill="#e8e8e8"/>
+  <rect x="51" y="11" width="4" height="2" fill="#e8e8e8"/>
+
+  <!-- panel azul: el cilindro y las filas que vuelven -->
+  <rect x="7" y="17" width="50" height="28" fill="#0000c0"/>
+  <g fill="#ffff55">
+    <path d="M11 23.5c0-2 4-3.5 9-3.5s9 1.5 9 3.5-4 3.5-9 3.5-9-1.5-9-3.5Z"/>
+    <path d="M11 26.5v5c0 2 4 3.5 9 3.5s9-1.5 9-3.5v-5c0 2-4 3.5-9 3.5s-9-1.5-9-3.5Z"/>
+    <path d="M11 34.5v4c0 2 4 3.5 9 3.5s9-1.5 9-3.5v-4c0 2-4 3.5-9 3.5s-9-1.5-9-3.5Z"/>
+  </g>
+  <g fill="#55ffff">
+    <rect x="34" y="21" width="19" height="4"/>
+  </g>
+  <g fill="#c8ffff">
+    <rect x="34" y="27" width="19" height="3"/>
+    <rect x="34" y="32" width="19" height="3"/>
+    <rect x="34" y="37" width="13" height="3"/>
+  </g>
+
+  <rect x="7" y="47" width="50" height="8" fill="#008080"/>
+  <g fill="#c8ffff">
+    <rect x="10" y="50" width="10" height="2.2"/>
+    <rect x="23" y="50" width="7" height="2.2"/>
+    <rect x="33" y="50" width="12" height="2.2"/>
+  </g>
+</svg>

@@ -1611,6 +1611,7 @@ la copia vieja y el cambio no llega a nadie. `npm run revisar` compara las fecha
 | `vendor/codemirror/` | CodeMirror 5.65.16 y sus addons (paréntesis, autocompletado) servidos desde el propio sitio. |
 | `css/estilo.css` | Estilos, con variables para ambos temas. |
 | `img/logo.svg` | Logo, reinterpretación del icono original de SLE2. |
+| `img/logo-poo.svg` · `logo-visual.svg` · `logo-bd.svg` | El mismo logo para cada dialecto: cambia solo lo que pasa adentro del panel azul. |
 | `ejemplos/*.sl` | Programas de ejemplo (boletín, pantalla, archivos). |
 | `documentos sle2/*.md` | Los dos manuales originales convertidos a Markdown. |
 | `js/sle2poo.js` | El dialecto ESLE2 POO: clases, objetos, herencia y polimorfismo. |
@@ -1684,6 +1685,23 @@ El icono original de SLE2 es una ventana de programa de Windows 9x: marco gris b
 pantalla negra, editor azul con código amarillo y barra de estado turquesa. `img/logo.svg`
 rehace ese mismo icono en vectorial, con la misma paleta EGA, para que se lea bien desde
 20 px hasta cualquier tamaño.
+
+Cada dialecto tiene el suyo, y la regla es siempre la misma: **marco, pantalla, barra de título y
+barra de estado idénticos; lo único que cambia es qué pasa adentro del panel azul**, que es donde
+el icono original tenía las seis líneas de código. Así los cuatro se leen como una familia y, a la
+vez, se distinguen de un vistazo en la pestaña del navegador.
+
+| Archivo | Adentro del panel azul | Qué cuenta |
+| --- | --- | --- |
+| `img/logo.svg` | seis renglones de código amarillo | el lenguaje de siempre |
+| `img/logo-poo.svg` | una clase arriba y dos objetos abajo, unidos | jerarquía de objetos |
+| `img/logo-visual.svg` | una ventana con su caja de texto y su botón | programas con ventana |
+| `img/logo-bd.svg` | los tres discos apilados y, al lado, las filas que vuelven | datos y consultas |
+
+El cilindro de ESLE2 BD es el mismo dibujo que el icono `base` de la barra de herramientas
+(`js/iconos.js`): el sitio cuenta la misma historia en los dos lados. Cada logo es también el
+favicon de su IDE y de su documentación, con la paleta EGA y sin un solo texto, para que a 16 px
+quede la silueta y no una mancha.
 
 ## Nota sobre el manual
 

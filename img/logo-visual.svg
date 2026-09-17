@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="ESLE2 Visual">
+  <title>ESLE2 Visual</title>
+  <!--
+    Misma ventana del icono clásico de SLE2, pero adentro del editor azul hay
+    un formulario: la ventana que el programa dibuja, con su caja de texto y
+    su botón. Es lo que hace el dialecto: programas con ventana.
+  -->
+  <defs>
+    <linearGradient id="marcoVis" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e9e9e6"/>
+      <stop offset="1" stop-color="#b9b9b4"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="1" y="3" width="62" height="58" rx="5" fill="url(#marcoVis)"/>
+  <rect x="1" y="3" width="62" height="58" rx="5" fill="none" stroke="#7b7b76" stroke-width="1.5"/>
+  <path d="M3.5 58.5V8a2 2 0 0 1 2-2h55" fill="none" stroke="#ffffff" stroke-width="1.4" opacity=".85"/>
+
+  <rect x="5" y="7" width="54" height="50" rx="2" fill="#0b0b0b"/>
+
+  <rect x="7" y="9" width="50" height="6" fill="#808080"/>
+  <rect x="9" y="11" width="20" height="2" fill="#e8e8e8"/>
+  <rect x="51" y="11" width="4" height="2" fill="#e8e8e8"/>
+
+  <!-- panel azul con el formulario -->
+  <rect x="7" y="17" width="50" height="28" fill="#0000c0"/>
+  <rect x="12.5" y="21.5" width="39" height="19" fill="none" stroke="#55ffff" stroke-width="3"/>
+  <rect x="17" y="26" width="30" height="5" fill="#e8e8e8"/>
+  <rect x="31" y="34" width="16" height="5" fill="#ffff55"/>
+
+  <rect x="7" y="47" width="50" height="8" fill="#008080"/>
+  <g fill="#c8ffff">
+    <rect x="10" y="50" width="10" height="2.2"/>
+    <rect x="23" y="50" width="7" height="2.2"/>
+    <rect x="33" y="50" width="12" height="2.2"/>
+  </g>
+</svg>
