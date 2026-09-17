@@ -123,7 +123,11 @@ h1, h2, h3, h4 { font-weight: 600; letter-spacing: -.01em; }
    fila con ocho controles distintos se lea como una sola cosa. */
 .barra {
   --alto-ctrl: 32px;
-  display: flex; align-items: center; gap: 14px;
+  /* Se permite una segunda fila: lo que no entra baja, no se recorta. Antes
+     las pestañas se quedaban con el espacio que sobraba y las últimas —ESLE2
+     BD, Diseño— quedaban tapadas por los botones de la derecha, sin ninguna
+     señal de que estaban ahí. */
+  display: flex; flex-wrap: wrap; align-items: center; gap: 14px;
   padding: 8px 18px; min-height: 52px;
   background: var(--panel);
   border-bottom: 1px solid var(--linea);
@@ -161,6 +165,21 @@ h1, h2, h3, h4 { font-weight: 600; letter-spacing: -.01em; }
 .barra-acciones {
   display: flex; align-items: center; gap: 6px; flex: 0 0 auto;
   padding-left: 14px; border-left: 1px solid var(--linea-2);
+}
+
+/* Las pestañas de un dialecto son largas —«Documentación Visual», «← SLE2
+   clásico», «ESLE2 POO»— y con los botones de la derecha no entran en una sola
+   fila en una pantalla común: las últimas quedaban recortadas y no había forma
+   de saber que estaban ahí. Antes de los 1400 px se llevan una fila propia,
+   que es lo mismo que ya hacían en el teléfono. El subtítulo de la marca, que
+   no dice nada que el logo no diga, se va un poco antes y estira el momento en
+   que hace falta esa segunda fila. */
+@media (max-width: 1500px) {
+  .marca p { display: none; }
+}
+@media (max-width: 1400px) {
+  .pestanas { order: 5; flex: 1 0 100%; margin-left: 0; }
+  .barra-acciones { margin-left: auto; }
 }
 
 /* ------------------------- página de Diseño -------------------------- */
@@ -1297,8 +1316,7 @@ html[data-tema="oscuro"] mark { background: #5c4b21; color: #f2e6cd; }
   /* Apilado, el explorador necesita alto propio o la lista queda en nada. */
   .panel.explorador { min-height: 190px; max-height: 40vh; }
   .curso { grid-template-columns: 1fr; }
-  .barra { flex-wrap: wrap; gap: 10px; }
-  .pestanas { margin-left: 0; }
+  .barra { gap: 10px; }
   .doc { grid-template-columns: 1fr; }
   .doc-lateral { height: auto; border-right: 0; border-bottom: 1px solid var(--linea); }
   .doc-cuerpo { padding: 22px 18px 60px; }
@@ -1323,6 +1341,15 @@ html[data-tema="oscuro"] mark { background: #5c4b21; color: #f2e6cd; }
   .pestanas {
     order: 5; flex: 1 0 100%; margin: 0; overflow-x: auto; overflow-y: hidden;
     flex-wrap: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none;
+    /* hay más pestañas para ese lado */
+    /* Las dos primeras capas van pegadas al contenido (local) y tapan a las
+       otras dos cuando la lista está al principio o al final: así la sombra
+       aparece solo mientras queda algo para ese lado. Sin JavaScript. */
+    background:
+      linear-gradient(to right, var(--panel) 60%, transparent) left / 22px 100% no-repeat local,
+      linear-gradient(to left, var(--panel) 60%, transparent) right / 22px 100% no-repeat local,
+      linear-gradient(to right, var(--linea), transparent) left / 12px 100% no-repeat scroll,
+      linear-gradient(to left, var(--linea), transparent) right / 12px 100% no-repeat scroll;
   }
   .pestanas::-webkit-scrollbar { display: none; }
   .pest { padding: 7px 10px; font-size: 13.5px; white-space: nowrap; }
