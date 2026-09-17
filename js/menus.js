@@ -17,7 +17,30 @@
   const todos = () => Array.from(document.querySelectorAll(SELECTOR));
   const cerrarTodos = menos => todos().forEach(d => { if (d !== menos) d.open = false; });
 
+  /* Mientras hay un diálogo modal abierto, los atajos de la página de atrás no
+     corresponden: quien está leyendo el historial y aprieta Escape quiere
+     cerrar ese cuadro, no cortar el programa que está corriendo; y F9 no tiene
+     que arrancar una ejecución que no se ve.
+
+     Se frena acá, en la fase de captura, porque el problema es de todos los
+     diálogos —son diez, en cuatro páginas— y no de uno. Solo estas cuatro
+     teclas: frenar todo el teclado rompería escribir adentro del diálogo.
+     Escape sigue cerrando el diálogo, que eso lo hace el navegador solo y no
+     pasa por acá. */
+  const TECLAS_DE_LA_PAGINA = new Set(['Escape', 'F8', 'F9', 'F10']);
+  function frenarAtajosConUnDialogoAbierto() {
+    document.addEventListener('keydown', ev => {
+      if (!TECLAS_DE_LA_PAGINA.has(ev.key)) return;
+      /* :modal es viejo pero no eterno: si el navegador no lo entiende, se da
+         por modal cualquier diálogo abierto, que es el caso de todos los
+         nuestros. */
+      const esModal = d => { try { return d.matches(':modal'); } catch (e) { return true; } };
+      if ([...document.querySelectorAll('dialog[open]')].some(esModal)) ev.stopPropagation();
+    }, true);
+  }
+
   function iniciar() {
+    frenarAtajosConUnDialogoAbierto();
     const menus = todos();
     if (!menus.length) return;
 

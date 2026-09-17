@@ -26,10 +26,22 @@ function paginas() {
   return fs.readdirSync(RAIZ).filter(f => f.endsWith('.html')).sort();
 }
 
+/* El modelo del tutorial dice qué capturas usa; se le pregunta a él y no se
+   leen nombres de archivo con una expresión regular, que se desincroniza. */
+function capturasDelTutorial() {
+  global.window = global;
+  require(path.join(RAIZ, 'js', 'tutorial.js'));
+  return global.Tutorial.capturas();
+}
+
 /* Todo lo local que piden las páginas: scripts, hojas de estilo, imágenes,
-   el manifiesto y los enlaces entre páginas. */
+   el manifiesto y los enlaces entre páginas. Y además las imágenes que pide
+   un módulo desde JavaScript: las capturas del tutorial no figuran en ningún
+   HTML —las arma js/tutorial-ui.js— y sin esto quedarían fuera de la caché,
+   que es justo el error que este archivo existe para agarrar. */
 function pedidos() {
   const encontrados = new Map();   // ruta -> quién la pide
+  for (const ruta of capturasDelTutorial()) encontrados.set(ruta, 'js/tutorial.js');
   for (const pagina of paginas()) {
     const texto = fs.readFileSync(path.join(RAIZ, pagina), 'utf8');
     for (const m of texto.matchAll(/(?:src|href)="([^"]*)"/g)) {

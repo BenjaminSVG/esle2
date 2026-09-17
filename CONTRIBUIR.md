@@ -149,6 +149,29 @@ página, y auditá con axe.
 Módulos chicos y buenos para copiar como plantilla: `js/racha.js`, `js/cobertura.js`,
 `js/perfil.js`.
 
+### Tocar la interfaz: acordate del tutorial
+
+Si agregaste, sacaste o renombraste un botón, un panel o un menú, el tutorial quedó viejo. Son dos
+cosas, y las dos avisan solas:
+
+1. **el texto**, en `js/tutorial.js`: un `CONTROLES[id]` con qué hace, cuándo usarlo y qué necesita,
+   y el id en la sección que corresponda (`cambios` dice qué entorno agrega o quita cuál).
+   `test/test-tutorial.js` compara los ids que empiezan con `btn` o `sel` contra el HTML de cada
+   página, así que un botón que ya no existe hace fallar la prueba;
+2. **la captura**:
+
+   ```
+   node tools/capturar-tutorial.js --verificar    ¿siguen estando esas regiones?
+   node tools/capturar-tutorial.js                las saca de nuevo, las 53
+   ```
+
+   Necesita Playwright, que **no** es dependencia del sitio: instalalo aparte
+   (`npm i -D playwright`) o pasale dónde está con `--playwright <ruta a node_modules>`. Levanta el
+   sitio en un servidor propio, así que no hace falta tener nada corriendo. Al terminar escribe solo
+   las medidas de cada imagen en `js/tutorial.js`.
+
+Después, `npm run revisar` mete las capturas nuevas en la caché y te avisa que subas `VERSION`.
+
 ### Publicar
 
 `npm run soltar`. Publica en Vercel y anota la versión en `tools/publicado.json`, que es contra lo

@@ -40,6 +40,36 @@ la pantalla, se lo escribe y saluda. En cinco minutos alguien que nunca program�
 correr y contestarle. `test/test-bienvenida.js` prueba sobre todo lo contrario —a quién **no** tiene
 que aparecerle—, y la verificación en el navegador hace esa vuelta completa hasta el saludo.
 
+## Tutorial: toda la interfaz, con capturas
+
+Los cuatro carteles de arriba son para arrancar, aparecen una sola vez y no explican la mitad de lo
+que hay. Lo otro que hacía falta era una **referencia de la interfaz**: qué es cada panel, qué hace
+cada botón y cuándo conviene usarlo. Eso es el botón **Tutorial** de la barra de arriba, en los
+cuatro IDE.
+
+Se abre un cuadro con el índice a la izquierda y una parte de la pantalla por vez a la derecha: la
+**captura** de esa parte y, debajo, una línea por control con qué hace, cuándo usarlo y qué necesita.
+Lo que borra algo lo dice ahí mismo. Cada entorno muestra el suyo: en Visual está *Diseñar* y
+*Ventana*, en BD están *Base* y *Exportar*, y ninguno de los dos explica *Grabar ejecución*, que en
+esas barras no existe.
+
+Es un cuadro y no un recorrido sobre la pantalla de verdad a propósito: el recorrido obliga a ir en
+orden, tapa justo lo que hay que mirar y no se puede consultar mientras se trabaja. Abrirlo no
+cambia nada —ni el programa, ni la base, ni los paneles—, se cierra con `Escape` y el foco vuelve al
+botón. Mientras está abierto, los atajos de atrás quedan frenados: `Escape` cierra el cuadro y no
+corta el programa que esté corriendo, y `F9` no arranca una ejecución que nadie ve. Eso se arregló
+en `js/menus.js` para **todos** los diálogos, que tenían el mismo problema.
+
+Las 53 capturas no están hechas a mano: las saca `tools/capturar-tutorial.js` con Playwright contra
+el sitio levantado en un servidor propio, preparando cada estado —cargar un ejemplo, ejecutar, abrir
+el menú, abrir el diálogo— y recortando la región. Volver a sacarlas todas es un comando, y
+`--verificar` avisa si alguna región ya no existe sin tocar las imágenes. Pesan 1,6 MiB en total y
+están en `sw.js`, así que el tutorial también anda sin internet.
+
+`test/test-tutorial.js` ata el texto a la realidad: que ningún entorno explique un botón que esa
+página no tiene (compara contra el HTML), que ninguna captura falte ni sobre, que todas tengan sus
+medidas y que el total entre en el presupuesto.
+
 ## Modo flexible: compilar con errores
 
 El compilador es estricto a propósito: al primer error para y lo cuenta bien. Eso está perfecto
