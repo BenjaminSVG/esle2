@@ -18,6 +18,7 @@
 <meta name="apple-mobile-web-app-title" content="ESLE2">
 <link rel="apple-touch-icon" href="img/icono-180.png">
 <link rel="stylesheet" href="css/estilo.css">
+<script src="js/seguro.js"></script>
 <script src="js/tema.js"></script>
 <script src="js/diseno.js"></script>
 </head>
@@ -275,14 +276,6 @@ fin</code></pre>
         <h3>Anatomía de una clase</h3>
         <figure class="doc-figura ancha">
           <svg viewBox="0 0 620 300" role="img" aria-label="Partes de una clase">
-            <style>
-              .cj-caja  { fill: var(--panel-2); stroke: var(--linea); stroke-width: 1.5; }
-              .cj-tit   { fill: var(--acento-sua); stroke: var(--acento); stroke-width: 1.5; }
-              .cj-t     { font: 600 13px "IBM Plex Mono", monospace; fill: var(--texto); }
-              .cj-c     { font: 12.5px "IBM Plex Mono", monospace; fill: var(--texto-2); }
-              .cj-n     { font: 12px "Source Sans 3", sans-serif; fill: var(--tenue); }
-              .cj-l     { stroke: var(--tenue); stroke-width: 1; stroke-dasharray: 3 3; fill: none; }
-            </style>
             <rect class="cj-caja" x="20" y="16" width="330" height="268" rx="6"/>
             <rect class="cj-tit" x="20" y="16" width="330" height="34" rx="6"/>
             <text class="cj-t" x="36" y="38">clase CUENTA</text>
@@ -502,13 +495,6 @@ metodo mostrar (v : vector [*] numerico)        // recibe una copia</code></pre>
 <pre><code>c = nuevo CUENTA ("Ana", 1000)</code></pre>
         <figure class="doc-figura ancha">
           <svg viewBox="0 0 640 150" role="img" aria-label="Ciclo de vida de un objeto">
-            <style>
-              .cv-b { fill: var(--panel-2); stroke: var(--linea); stroke-width: 1.5; }
-              .cv-b2{ fill: var(--acento-sua); stroke: var(--acento); stroke-width: 1.5; }
-              .cv-t { font: 600 12.5px "Source Sans 3", sans-serif; fill: var(--texto); }
-              .cv-s { font: 11.5px "IBM Plex Mono", monospace; fill: var(--texto-2); }
-              .cv-f { stroke: var(--tenue); stroke-width: 1.5; fill: none; marker-end: url(#pf); }
-            </style>
             <defs>
               <marker id="pf" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
                 <path d="M0 0 L8 4 L0 8 z" fill="var(--tenue)"/>
@@ -831,14 +817,6 @@ fin</code></pre>
         <h3>Cómo elige el lenguaje qué método ejecutar</h3>
         <figure class="doc-figura ancha">
           <svg viewBox="0 0 640 230" role="img" aria-label="Búsqueda del método en la cadena de clases">
-            <style>
-              .dp-b { fill: var(--panel-2); stroke: var(--linea); stroke-width: 1.5; }
-              .dp-hit { fill: var(--ok-sua); stroke: var(--ok); stroke-width: 2; }
-              .dp-t { font: 600 12.5px "IBM Plex Mono", monospace; fill: var(--texto); }
-              .dp-s { font: 11.5px "IBM Plex Mono", monospace; fill: var(--texto-2); }
-              .dp-n { font: 12px "Source Sans 3", sans-serif; fill: var(--tenue); }
-              .dp-f { stroke: var(--acento); stroke-width: 1.8; fill: none; marker-end: url(#pf2); }
-            </style>
             <defs>
               <marker id="pf2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
                 <path d="M0 0 L8 4 L0 8 z" fill="var(--acento)"/>
@@ -955,16 +933,6 @@ imprimir (clase_de (f))                // el nombre exacto de su clase, como cad
         <h3>Qué guarda realmente una variable de objeto</h3>
         <figure class="doc-figura ancha">
           <svg viewBox="0 0 640 250" role="img" aria-label="Objetos por referencia frente a registros por copia">
-            <style>
-              .rf-v { fill: var(--panel-2); stroke: var(--linea); stroke-width: 1.5; }
-              .rf-o { fill: var(--acento-sua); stroke: var(--acento); stroke-width: 1.8; }
-              .rf-r { fill: var(--aviso-sua); stroke: var(--aviso); stroke-width: 1.8; }
-              .rf-t { font: 600 12.5px "IBM Plex Mono", monospace; fill: var(--texto); }
-              .rf-s { font: 11.5px "IBM Plex Mono", monospace; fill: var(--texto-2); }
-              .rf-n { font: 12px "Source Sans 3", sans-serif; fill: var(--tenue); }
-              .rf-f { stroke: var(--acento); stroke-width: 1.6; fill: none; marker-end: url(#pf3); }
-              .rf-d { stroke: var(--linea); stroke-width: 1.5; stroke-dasharray: 4 4; }
-            </style>
             <defs>
               <marker id="pf3" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
                 <path d="M0 0 L8 4 L0 8 z" fill="var(--acento)"/>

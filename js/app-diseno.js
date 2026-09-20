@@ -143,10 +143,16 @@ fin`
       const b = document.createElement('button');
       b.className = 'muestra' + (f.id === actual ? ' elegida' : '');
       b.type = 'button';
-      b.innerHTML = `<span class="mini-fondo" style="background:${f.muestra};border-color:${f.vars.linea}">
-                       <i style="background:${f.vars.panel}"></i>
-                       <i style="background:${f.vars['texto-2']}"></i>
-                     </span><span class="muestra-nombre"></span>`;
+      /* Los colores se ponen por CSSOM y no pegados adentro de un style="…":
+         el valor sale de la configuración guardada, que es texto, y así no hay
+         forma de escribir CSS que no sea un color. */
+      b.innerHTML = '<span class="mini-fondo"><i></i><i></i></span><span class="muestra-nombre"></span>';
+      const caja = b.querySelector('.mini-fondo');
+      caja.style.background = f.muestra;
+      caja.style.borderColor = f.vars.linea;
+      const tiras = caja.querySelectorAll('i');
+      tiras[0].style.background = f.vars.panel;
+      tiras[1].style.background = f.vars['texto-2'];
       b.querySelector('.muestra-nombre').textContent = f.nombre;
       b.addEventListener('click', () => actualizar({ fondo: f.id }));
       cont.appendChild(b);
@@ -162,10 +168,12 @@ fin`
       b.className = 'muestra' + (p.id === c.sintaxis ? ' elegida' : '');
       b.type = 'button';
       const fondo = p.fondo || (p.tema === 'oscuro' ? '#23272e' : '#ffffff');
-      const tiras = ['control', 'cadena', 'funcion', 'clase', 'numero', 'comentario']
-        .map(k => `<i style="background:${p.colores[k]}"></i>`).join('');
-      b.innerHTML = `<span class="mini-paleta" style="background:${fondo}">${tiras}</span>
-                     <span class="muestra-nombre"></span>`;
+      const cuales = ['control', 'cadena', 'funcion', 'clase', 'numero', 'comentario'];
+      b.innerHTML = '<span class="mini-paleta">' + cuales.map(() => '<i></i>').join('') +
+                    '</span><span class="muestra-nombre"></span>';
+      const paleta = b.querySelector('.mini-paleta');
+      paleta.style.background = fondo;
+      paleta.querySelectorAll('i').forEach((i, n) => { i.style.background = p.colores[cuales[n]]; });
       b.querySelector('.muestra-nombre').textContent = p.nombre;
       b.addEventListener('click', () => actualizar({ sintaxis: p.id, colores: {} }));
       cont.appendChild(b);
@@ -195,9 +203,13 @@ fin`
     CATEGORIAS.forEach(cat => {
       const fila = document.createElement('label');
       fila.className = 'categoria';
-      fila.innerHTML = `<input type="color" value="${col[cat.id]}" aria-label="Color de ${cat.nombre}">
-                        <span class="cat-nombre"></span>
-                        <code class="cat-ejemplo" style="color:${col[cat.id]};background:${fondo}"></code>`;
+      fila.innerHTML = '<input type="color"><span class="cat-nombre"></span><code class="cat-ejemplo"></code>';
+      const entrada = fila.querySelector('input');
+      entrada.value = col[cat.id];
+      entrada.setAttribute('aria-label', 'Color de ' + cat.nombre);
+      const ejemplo = fila.querySelector('.cat-ejemplo');
+      ejemplo.style.color = col[cat.id];
+      ejemplo.style.background = fondo;
       fila.querySelector('.cat-nombre').textContent = cat.nombre;
       fila.querySelector('.cat-ejemplo').textContent = cat.ejemplo;
       fila.querySelector('input').addEventListener('input', ev => {

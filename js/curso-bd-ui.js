@@ -25,7 +25,7 @@
   function grabarProgreso(p) {
     document.cookie = COOKIE + '=' + encodeURIComponent(JSON.stringify(p))
       + '; expires=' + new Date(Date.now() + 365 * 864e5).toUTCString()
-      + '; path=/; SameSite=Lax';
+      + '; path=/' + '; SameSite=Lax' + (location.protocol === 'https:' ? '; Secure' : '');
   }
 
   function arrancar(api) {
@@ -79,7 +79,9 @@
 
       const enun = document.createElement('div');
       enun.className = 'enunciado';
-      enun.innerHTML = e.enunciado;
+      /* Por js/seguro.js, como en los otros tres cursos: hoy los ejercicios de
+         BD son todos nuestros, pero el que pinta no tiene por qué saberlo. */
+      enun.innerHTML = Seguro.html(e.enunciado);
       detalle.appendChild(enun);
 
       /* La pista arranca cerrada: leerla antes de intentar es la forma más
@@ -90,7 +92,7 @@
       resumen.textContent = 'Una pista';
       pista.appendChild(resumen);
       const cuerpo = document.createElement('div');
-      cuerpo.innerHTML = e.pista;
+      cuerpo.innerHTML = Seguro.html(e.pista);
       pista.appendChild(cuerpo);
       detalle.appendChild(pista);
 

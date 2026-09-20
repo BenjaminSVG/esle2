@@ -59,7 +59,7 @@
           </label>
           <label>Código de la batalla
             <input type="text" data-campo="codigo" maxlength="12" autocomplete="off"
-              placeholder="RIO-482" style="text-transform:uppercase">
+              placeholder="RIO-482" class="control mayusculas">
           </label>
         </div>
 

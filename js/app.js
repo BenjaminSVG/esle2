@@ -34,7 +34,7 @@
   }
   function grabarCookie(nombre, valor, dias) {
     const f = new Date(Date.now() + dias * 864e5).toUTCString();
-    document.cookie = `${nombre}=${encodeURIComponent(valor)}; expires=${f}; path=/; SameSite=Lax`;
+    document.cookie = `${nombre}=${encodeURIComponent(valor)}; expires=${f}; path=/; SameSite=Lax${location.protocol === 'https:' ? '; Secure' : ''}`;
   }
 
   const progreso = (() => {
@@ -846,6 +846,7 @@ fin
   $('#archivo').addEventListener('change', ev => {
     const f = ev.target.files[0];
     if (!f) return;
+    if (!Seguro.cabe(f)) { alert(Seguro.AVISO_GRANDE); return; }
     const r = new FileReader();
     r.onload = () => {
       historial.registrar('previa', 'Antes de abrir ' + f.name);
@@ -917,9 +918,10 @@ fin
     EJERCICIOS.filter(e => filtro === 'todos' || e.nivel === filtro).forEach(e => {
       const li = document.createElement('li');
       li.className = (progreso[e.id] ? 'hecho ' : '') + (seleccionado === e.id ? 'sel' : '');
+      const nivel = Seguro.deLista(e.nivel, Seguro.NIVELES, 'facil');
       li.innerHTML = `<span class="marca-ok">${progreso[e.id] ? '●' : '○'}</span>
                       <span class="tit"></span>
-                      <span class="etq ${e.nivel}">${NIVELES[e.nivel]}</span>`;
+                      <span class="etq ${nivel}">${NIVELES[nivel]}</span>`;
       li.querySelector('.tit').textContent = e.titulo;
       li.addEventListener('click', () => mostrarEjercicio(e.id));
       ol.appendChild(li);
@@ -934,20 +936,25 @@ fin
     pintarLista();
   });
 
-  const escapar = s => s.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+  /* Todo lo que se pinta pasa por js/seguro.js. El enunciado y la pista de un
+     ejercicio del curso son nuestros, pero los de una guía de clase o de «Mis
+     ejercicios» vienen de un enlace que cualquiera pudo armar, y terminan en
+     esta misma pantalla. */
+  const escapar = Seguro.escapar;
+  const nivelDe = e => Seguro.deLista(e.nivel, Seguro.NIVELES, 'facil');
 
   function mostrarEjercicio(id) {
     const e = EJERCICIOS.find(x => x.id === id);
     seleccionado = id;
     pintarLista();
-    const casos = e.pruebas.map(p => `<tr>
+    const casos = (e.pruebas || []).map(p => `<tr>
         <td>${p.entrada ? escapar(p.entrada) : '(sin datos)'}</td>
         <td>${escapar(p.salida)}</td></tr>`).join('');
     $('#detalleEjercicio').innerHTML = `
-      <span class="etq ${e.nivel}">${NIVELES[e.nivel]}</span>
+      <span class="etq ${nivelDe(e)}">${NIVELES[nivelDe(e)]}</span>
       <h2></h2>
-      <div class="enunciado">${e.enunciado}</div>
-      ${e.pista ? `<div class="pista"><strong>Pista:</strong> ${e.pista}</div>` : ''}
+      <div class="enunciado">${Seguro.html(e.enunciado)}</div>
+      ${e.pista ? `<div class="pista"><strong>Pista:</strong> ${Seguro.html(e.pista)}</div>` : ''}
       <div class="acciones">
         <button class="btn primario" id="btnAbrirEjercicio">Abrir en el IDE</button>
         ${progreso[id] ? '<span class="nota">✔ Ya resolviste este ejercicio.</span>' : ''}
@@ -988,9 +995,13 @@ fin
     historial.registrar('previa', 'Antes de abrir «' + e.titulo + '»');
     ejercicioActivo = e;
     const guardado = Guardado.leer('esle2_ej_' + e.id);
-    editor.setValue(codigoInicial !== undefined ? codigoInicial : (guardado || e.plantilla));
-    $('#entrada').value = e.pruebas[0].entrada;
-    Guardado.escribir('esle2_entrada', e.pruebas[0].entrada);
+    editor.setValue(codigoInicial !== undefined ? codigoInicial : (guardado || e.plantilla || ''));
+    /* Un ejercicio sin casos de prueba no debería existir, pero uno que llegó
+       en una guía puede venir así: abrirlo tiene que dejar la entrada vacía,
+       no tirar el curso abajo. */
+    const primero = (e.pruebas && e.pruebas[0]) || { entrada: '' };
+    $('#entrada').value = primero.entrada;
+    Guardado.escribir('esle2_entrada', primero.entrada);
     $('#bannerTitulo').textContent = `${e.titulo} (${NIVELES[e.nivel]})`;
     $('#bannerEjercicio').classList.remove('oculto');
     limpiarConsola();
@@ -1096,6 +1107,7 @@ fin
     const f = ev.target.files[0];
     ev.target.value = '';
     if (!f) return;
+    if (!Seguro.cabe(f)) { alert(Seguro.AVISO_GRANDE); return; }
     const lector = new FileReader();
     lector.onload = () => {
       let sumados;
@@ -1213,7 +1225,7 @@ fin
     caja.innerHTML = '<h3>Para repasar hoy</h3>' +
       '<p class="nota">Los resolviste hace unos días: rehacerlos de memoria es lo que los fija.</p>' +
       '<ul class="repaso-lista">' + lista.map(r =>
-        `<li><button class="repaso-item" data-repasar="${r.id}">${escapar(r.titulo)}</button>
+        `<li><button class="repaso-item" data-repasar="${escapar(r.id)}">${escapar(r.titulo)}</button>
            <span class="nota">hace ${r.dias} día(s)${r.hechos ? ' · repasado ' + r.hechos + ' vez(ces)' : ''}</span></li>`
       ).join('') + '</ul>';
   }

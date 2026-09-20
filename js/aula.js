@@ -52,16 +52,29 @@
     return Uint8Array.from(bin, c => c.charCodeAt(0));
   };
 
-  async function pasar(bytes, Clase, formato) {
+  /* `tope` existe por el gzip: un enlace de 40 KB puede descomprimirse en
+     cientos de megas si alguien lo arma para eso (la vieja «bomba zip»). Se
+     corta mientras se lee, no después: contar al final no evita nada. */
+  async function pasar(bytes, Clase, formato, tope) {
     const flujo = new Clase(formato);
     const escritor = flujo.writable.getWriter();
-    escritor.write(bytes);
-    escritor.close();
+    /* Con un enlace que no es gzip, estas dos promesas terminan rechazadas y
+       nadie las mira: el navegador lo cuenta como error no atendido y ensucia
+       la consola de una página que por lo demás está bien. El error que
+       importa —el que hay que mostrar— sale igual al leer. */
+    escritor.write(bytes).catch(() => {});
+    escritor.close().catch(() => {});
     const partes = [];
     const lector = flujo.readable.getReader();
+    let cuanto = 0;
     for (;;) {
       const { done, value } = await lector.read();
       if (done) break;
+      cuanto += value.length;
+      if (tope && cuanto > tope) {
+        try { await lector.cancel(); } catch (e) { /* ya está cortado */ }
+        throw new Error('la guía es demasiado grande');
+      }
       partes.push(value);
     }
     const total = partes.reduce((n, p) => n + p.length, 0);
@@ -95,12 +108,23 @@
     };
   }
 
-  const limpiar = e => {
+  /* Un ejercicio que viaja en un enlace no es de nadie conocido: se arma uno
+     nuevo con los campos conocidos, cada uno acotado y pasado a texto. Antes
+     se copiaban tal cual y el enunciado terminaba pegado como HTML en la
+     pantalla del alumno. Lo hace js/seguro.js, que es donde están los límites
+     y las pruebas de los ataques. */
+  const limpiar = e => (global.Seguro ? global.Seguro.ejercicio(e) : basico(e));
+
+  /* Sin js/seguro.js cargado —una página vieja, una prueba suelta— se hace lo
+     mínimo antes que nada: string, y nada de campos de más. */
+  function basico(e) {
     const o = {};
-    for (const c of CAMPOS) if (e[c] !== undefined) o[c] = e[c];
-    o.pruebas = (e.pruebas || []).map(p => ({ entrada: String(p.entrada || ''), salida: String(p.salida || '') }));
+    for (const c of CAMPOS) if (e && e[c] !== undefined) o[c] = String(e[c]);
+    o.pruebas = ((e && e.pruebas) || []).map(p => ({
+      entrada: String((p && p.entrada) || ''), salida: String((p && p.salida) || '')
+    }));
     return o;
-  };
+  }
 
   async function codificar(guia) {
     const bytes = new TextEncoder().encode(JSON.stringify(guia));
@@ -111,21 +135,31 @@
     return 'p' + aBase64(bytes);
   }
 
+  const LIMITES = () => (global.Seguro ? global.Seguro.LIMITES : { enlace: 512 * 1024, guia: 2 * 1024 * 1024, ejercicios: 100 });
+
   async function decodificar(texto) {
     if (typeof texto !== 'string' || texto.length < 2) return null;
+    /* Antes de decodificar nada: un hash de cinco megas no es una guía, y
+       atob() sobre eso ya cuesta caro. */
+    if (texto.length > LIMITES().enlace) return null;
+    if (texto[0] !== 'z' && texto[0] !== 'p') return null;
     try {
       const bytes = deBase64(texto.slice(1));
       const crudo = texto[0] === 'z'
-        ? await pasar(bytes, DecompressionStream, 'gzip')
+        ? await pasar(bytes, DecompressionStream, 'gzip', LIMITES().guia)
         : bytes;
+      if (crudo.length > LIMITES().guia) return null;
       const guia = JSON.parse(new TextDecoder().decode(crudo));
       return valida(guia) ? guia : null;
     } catch (e) { return null; }
   }
 
   function valida(g) {
-    return !!g && typeof g === 'object' && g.v === VERSION
-      && typeof g.n === 'string' && Array.isArray(g.e);
+    return !!g && typeof g === 'object' && !Array.isArray(g) && g.v === VERSION
+      && typeof g.n === 'string' && Array.isArray(g.e)
+      && g.e.length <= LIMITES().ejercicios
+      && (g.m === undefined || typeof g.m === 'string')
+      && (g.l === undefined || typeof g.l === 'string');
   }
 
   async function enlace(guia, base) {
@@ -161,9 +195,10 @@
         continue;
       }
       propio++;
+      /* El nivel ya vino limpio de limpiar(): volver a tomarlo de la entrada
+         cruda era deshacer el filtro justo después de aplicarlo. */
       ejercicios.push(Object.assign(limpiar(entrada), {
         id: 'a' + marca + '-' + propio,
-        nivel: entrada.nivel || 'facil',
         deLaGuia: true
       }));
     }

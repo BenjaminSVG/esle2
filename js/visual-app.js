@@ -45,8 +45,12 @@
   }
   function grabarCookie(nombre, valor, dias) {
     const f = new Date(Date.now() + dias * 864e5).toUTCString();
+    /* Secure cuando la página va por https: una cookie que también viaja por
+       http se la puede leer cualquiera en la red del colegio. En localhost no,
+       porque ahí el navegador descartaría la cookie y no se guardaría nada. */
     document.cookie = nombre + '=' + encodeURIComponent(valor) +
-      '; expires=' + f + '; path=/; SameSite=Lax';
+      '; expires=' + f + '; path=/; SameSite=Lax' +
+      (location.protocol === 'https:' ? '; Secure' : '');
   }
 
   const progreso = (() => {
@@ -652,7 +656,9 @@
   let seleccionado = null;
   let ejercicioActivo = null;
 
-  const escapar = s => String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+  /* Lo que se pinta pasa por js/seguro.js: acá también entran guías de clase
+     ajenas, con el enunciado y la pista que quien armó el enlace haya puesto. */
+  const escapar = Seguro.escapar;
 
   function pintarLista() {
     const ol = $('#listaEjercicios');
@@ -667,8 +673,9 @@
       tit.className = 'tit';
       tit.textContent = e.titulo;
       const etq = document.createElement('span');
-      etq.className = 'etq ' + e.nivel;
-      etq.textContent = NIVELES[e.nivel];
+      const nivel = Seguro.deLista(e.nivel, Seguro.NIVELES, 'facil');
+      etq.className = 'etq ' + nivel;
+      etq.textContent = NIVELES[nivel];
       li.append(marca, tit, etq);
       li.addEventListener('click', () => mostrarEjercicio(e.id));
       ol.appendChild(li);
@@ -757,10 +764,11 @@
     }).join('');
 
     $('#detalleEjercicio').innerHTML =
-      '<span class="etq ' + e.nivel + '">' + NIVELES[e.nivel] + '</span>' +
+      '<span class="etq ' + Seguro.deLista(e.nivel, Seguro.NIVELES, 'facil') + '">' +
+      NIVELES[Seguro.deLista(e.nivel, Seguro.NIVELES, 'facil')] + '</span>' +
       '<h2></h2>' +
-      '<div class="enunciado">' + e.enunciado + '</div>' +
-      '<div class="pista"><strong>Pista:</strong> ' + e.pista + '</div>' +
+      '<div class="enunciado">' + Seguro.html(e.enunciado) + '</div>' +
+      '<div class="pista"><strong>Pista:</strong> ' + Seguro.html(e.pista) + '</div>' +
       '<div class="acciones">' +
       '<button class="btn primario" id="btnAbrirEjercicio" type="button">Abrir en el diseñador</button>' +
       (progreso[id] ? '<span class="nota">✔ Ya resolviste este ejercicio.</span>' : '') +
@@ -885,7 +893,7 @@
     caja.innerHTML = '<h3>Para repasar hoy</h3>' +
       '<p class="nota">Los resolviste hace unos días: rehacerlos de memoria es lo que los fija.</p>' +
       '<ul class="repaso-lista">' + lista.map(r =>
-        '<li><button class="repaso-item" type="button" data-repasar="' + r.id + '">' +
+        '<li><button class="repaso-item" type="button" data-repasar="' + escapar(r.id) + '">' +
         escapar(r.titulo) + '</button> <span class="nota">hace ' + r.dias + ' día(s)' +
         (r.hechos ? ' · repasado ' + r.hechos + ' vez(ces)' : '') + '</span></li>').join('') + '</ul>';
   }
@@ -945,6 +953,7 @@
     const f = ev.target.files[0];
     ev.target.value = '';
     if (!f) return;
+    if (!Seguro.cabe(f)) { alert(Seguro.AVISO_GRANDE); return; }
     const r = new FileReader();
     r.onload = () => { editor.setValue(String(r.result)); irA('ide'); };
     r.readAsText(f, 'utf-8');
@@ -997,6 +1006,7 @@
     ev.target.value = '';
     let quedan = files.length;
     for (const f of files) {
+      if (!Seguro.cabe(f)) { alert(Seguro.AVISO_GRANDE); quedan--; continue; }
       const r = new FileReader();
       r.onload = () => { archivos.set(f.name, String(r.result)); if (!--quedan) pintarArchivos(); };
       r.readAsText(f, 'utf-8');
@@ -1019,6 +1029,7 @@
     const f = ev.target.files[0];
     ev.target.value = '';
     if (!f) return;
+    if (!Seguro.cabe(f)) { alert(Seguro.AVISO_GRANDE); return; }
     const lector = new FileReader();
     lector.onload = () => {
       let sumados;

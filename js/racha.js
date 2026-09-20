@@ -47,7 +47,7 @@
   };
   const grabarCookie = v => {
     document.cookie = `${COOKIE}=${encodeURIComponent(JSON.stringify(v))}; ` +
-      `expires=${new Date(Date.now() + 365 * DIA).toUTCString()}; path=/; SameSite=Lax`;
+      `expires=${new Date(Date.now() + 365 * DIA).toUTCString()}; path=/; SameSite=Lax${location.protocol === 'https:' ? '; Secure' : ''}`;
   };
 
   function pintar() {

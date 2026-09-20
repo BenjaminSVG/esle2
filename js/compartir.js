@@ -31,10 +31,20 @@
   function leer() {
     const m = /[#&]p=([A-Za-z0-9\-_]+)/.exec(location.hash);
     if (!m) return null;
+    /* Un enlace legítimo trae un programa; cinco megas de base64 en el hash no
+       son un programa, y decodificarlos cuesta antes de poder mirarlos. Los
+       topes están en js/seguro.js, junto con los demás. */
+    const topes = (typeof Seguro !== 'undefined' && Seguro.LIMITES)
+      || { enlace: 512 * 1024, codigo: 256 * 1024, entrada: 64 * 1024 };
+    if (m[1].length > topes.enlace) return null;
     try {
       const d = JSON.parse(deBase64(m[1]));
-      if (typeof d.c !== 'string') return null;
-      return { codigo: d.c, entrada: typeof d.e === 'string' ? d.e : '' };
+      if (!d || typeof d !== 'object' || typeof d.c !== 'string') return null;
+      if (d.c.length > topes.codigo) return null;
+      return {
+        codigo: d.c,
+        entrada: typeof d.e === 'string' ? d.e.slice(0, topes.entrada) : ''
+      };
     } catch (e) { return null; }
   }
 

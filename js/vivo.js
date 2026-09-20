@@ -92,13 +92,18 @@
 
   /* Del camino de la dirección al nombre. Sirve tanto para /live/juan como
      para el enlace con «?» de un servidor que no reescriba direcciones. */
+  /* decodeURIComponent tira TypeError con un «%» suelto —/live/100%— y eso
+     cortaba el arranque de la página entera antes de mostrar nada. Una
+     dirección mal escrita es «no hay nombre», no un error. */
+  const desArmar = s => { try { return decodeURIComponent(s); } catch (e) { return s; } };
+
   function leerUrl(ruta, busqueda) {
     const r = ruta === undefined && typeof location !== 'undefined' ? location.pathname : (ruta || '');
     const m = /\/live\/([^/?#]+)/.exec(r);
-    if (m) return limpiarNombre(decodeURIComponent(m[1])) || null;
+    if (m) return limpiarNombre(desArmar(m[1])) || null;
     const b = busqueda === undefined && typeof location !== 'undefined' ? location.search : (busqueda || '');
     const q = /[?&]vivo=([^&#]+)/.exec(b);
-    if (q) return limpiarNombre(decodeURIComponent(q[1])) || null;
+    if (q) return limpiarNombre(desArmar(q[1])) || null;
     return null;
   }
 

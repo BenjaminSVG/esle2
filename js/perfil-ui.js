@@ -32,15 +32,16 @@
         },
         grabar: (n, v) => {
           document.cookie = v
-            ? `${n}=${encodeURIComponent(v)}; expires=${new Date(Date.now() + 365 * 864e5).toUTCString()}; path=/; SameSite=Lax`
+            ? `${n}=${encodeURIComponent(v)}; expires=${new Date(Date.now() + 365 * 864e5).toUTCString()}; path=/; SameSite=Lax${location.protocol === 'https:' ? '; Secure' : ''}`
             : `${n}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
         }
       }
     });
 
     let dlg = null;
-    const escapar = s => String(s).replace(/[&<>"]/g, c =>
-      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    /* El de js/seguro.js: escapa también la comilla simple, que es la que
+       quedaba afuera y alcanza para cerrar un atributo. */
+    const escapar = global.Seguro.escapar;
 
     function pintarBoton() {
       const quien = perfil.actual();

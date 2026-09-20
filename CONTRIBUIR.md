@@ -149,6 +149,25 @@ página, y auditá con axe.
 Módulos chicos y buenos para copiar como plantilla: `js/racha.js`, `js/cobertura.js`,
 `js/perfil.js`.
 
+### Pintar algo que vino de afuera
+
+Tres reglas, y las tres las prueba `test/test-cabeceras.js`:
+
+1. **Texto ajeno va con `textContent`.** Un título, un nombre, un error, una celda: nada de eso
+   necesita ser HTML.
+2. **Si de verdad tiene que llevar etiquetas** —solo el enunciado y la pista de un ejercicio—, va
+   por `Seguro.html(...)`. No escribas otro escapador: los que había escapaban `&<>` y no las
+   comillas, así que servían para un párrafo y se colaban en un atributo.
+3. **Nada se pega adentro de un atributo.** El id, el nivel y el color se ponen por DOM
+   (`el.dataset.id = …`, `el.style.background = …`), no interpolados en un `innerHTML`.
+
+Lo que llega de un enlace, de un archivo o de otro par se limpia **antes** de guardarlo o mostrarlo,
+con `Seguro.ejercicio()` o con la función de limpieza de ese formato, y con el tamaño mirado antes
+de leer (`Seguro.cabe(archivo)`). Los límites están todos juntos en `Seguro.LIMITES`.
+
+Y por la CSP: nada de `<script>` ni `<style>` escritos adentro de un HTML, ni atributos `onclick=`
+o `style=`. Si hace falta un script nuevo, es un archivo en `js/` y un `<script src>`.
+
 ### Tocar la interfaz: acordate del tutorial
 
 Si agregaste, sacaste o renombraste un botón, un panel o un menú, el tutorial quedó viejo. Son dos

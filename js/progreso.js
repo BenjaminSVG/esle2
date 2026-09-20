@@ -21,7 +21,7 @@
     return p ? decodeURIComponent(p.slice(n.length + 1)) : '';
   };
   const grabarCookie = (n, v) => {
-    document.cookie = `${n}=${encodeURIComponent(v)}; expires=${new Date(Date.now() + 365 * 864e5).toUTCString()}; path=/; SameSite=Lax`;
+    document.cookie = `${n}=${encodeURIComponent(v)}; expires=${new Date(Date.now() + 365 * 864e5).toUTCString()}; path=/; SameSite=Lax${location.protocol === 'https:' ? '; Secure' : ''}`;
   };
   const leerJSON = n => { try { return JSON.parse(leerCookie(n) || '{}'); } catch (e) { return {}; } };
 

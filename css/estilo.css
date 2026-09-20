@@ -1667,3 +1667,45 @@ body.enfoque.enfoque-salida .columna { display: grid; }
   .tut-indice { flex-direction: row; overflow-x: auto; padding-bottom: 6px; }
   .tut-item { white-space: nowrap; }
 }
+
+/* ---------------- la documentación de POO, sus figuras ---------------- */
+/* Estaban adentro de poo-documentacion.html, en cuatro <style>. Salieron
+   acá por la CSP: sin 'unsafe-inline' un <style> escrito en el HTML no se
+   aplica, y la página quedaba a medio pintar. */
+
+              .cj-caja  { fill: var(--panel-2); stroke: var(--linea); stroke-width: 1.5; }
+              .cj-tit   { fill: var(--acento-sua); stroke: var(--acento); stroke-width: 1.5; }
+              .cj-t     { font: 600 13px "IBM Plex Mono", monospace; fill: var(--texto); }
+              .cj-c     { font: 12.5px "IBM Plex Mono", monospace; fill: var(--texto-2); }
+              .cj-n     { font: 12px "Source Sans 3", sans-serif; fill: var(--tenue); }
+              .cj-l     { stroke: var(--tenue); stroke-width: 1; stroke-dasharray: 3 3; fill: none; }
+            
+
+              .cv-b { fill: var(--panel-2); stroke: var(--linea); stroke-width: 1.5; }
+              .cv-b2{ fill: var(--acento-sua); stroke: var(--acento); stroke-width: 1.5; }
+              .cv-t { font: 600 12.5px "Source Sans 3", sans-serif; fill: var(--texto); }
+              .cv-s { font: 11.5px "IBM Plex Mono", monospace; fill: var(--texto-2); }
+              .cv-f { stroke: var(--tenue); stroke-width: 1.5; fill: none; marker-end: url(#pf); }
+            
+
+              .dp-b { fill: var(--panel-2); stroke: var(--linea); stroke-width: 1.5; }
+              .dp-hit { fill: var(--ok-sua); stroke: var(--ok); stroke-width: 2; }
+              .dp-t { font: 600 12.5px "IBM Plex Mono", monospace; fill: var(--texto); }
+              .dp-s { font: 11.5px "IBM Plex Mono", monospace; fill: var(--texto-2); }
+              .dp-n { font: 12px "Source Sans 3", sans-serif; fill: var(--tenue); }
+              .dp-f { stroke: var(--acento); stroke-width: 1.8; fill: none; marker-end: url(#pf2); }
+            
+
+              .rf-v { fill: var(--panel-2); stroke: var(--linea); stroke-width: 1.5; }
+              .rf-o { fill: var(--acento-sua); stroke: var(--acento); stroke-width: 1.8; }
+              .rf-r { fill: var(--aviso-sua); stroke: var(--aviso); stroke-width: 1.8; }
+              .rf-t { font: 600 12.5px "IBM Plex Mono", monospace; fill: var(--texto); }
+              .rf-s { font: 11.5px "IBM Plex Mono", monospace; fill: var(--texto-2); }
+              .rf-n { font: 12px "Source Sans 3", sans-serif; fill: var(--tenue); }
+              .rf-f { stroke: var(--acento); stroke-width: 1.6; fill: none; marker-end: url(#pf3); }
+              .rf-d { stroke: var(--linea); stroke-width: 1.5; stroke-dasharray: 4 4; }
+
+/* Dos clases que reemplazan a los últimos style="…" escritos a mano: con
+   la CSP puesta, un atributo style no se aplica. */
+.sin-aire-arriba { margin-top: 0; }
+.mayusculas { text-transform: uppercase; }

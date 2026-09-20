@@ -426,6 +426,7 @@
   $('#archivoSQL').addEventListener('change', ev => {
     const f = ev.target.files[0];
     if (!f) return;
+    if (!Seguro.cabe(f)) { alert(Seguro.AVISO_GRANDE); return; }
     const lector = new FileReader();
     lector.onload = () => {
       try {
@@ -466,6 +467,7 @@
   $('#archivo').addEventListener('change', ev => {
     const f = ev.target.files[0];
     if (!f) return;
+    if (!Seguro.cabe(f)) { alert(Seguro.AVISO_GRANDE); return; }
     const lector = new FileReader();
     lector.onload = () => {
       editor.setValue(String(lector.result));

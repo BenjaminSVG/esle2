@@ -19,10 +19,22 @@
     let dlg = null;
 
     /* ------------------------------ datos ------------------------------ */
+    /* Todo lo que sale de acá pasó por js/seguro.js: estos ejercicios se
+       importan de un .json que repartió otro —ese es justamente el punto de
+       «Mis ejercicios»—, y su enunciado se pinta en la misma pantalla que los
+       del curso. El id se rearma si no sirve: sin id no se puede ni borrar. */
+    function limpiar(e, i) {
+      const s = global.Seguro ? global.Seguro.ejercicio(e) : e;
+      if (!s.id) s.id = 'mio' + (i + 1);
+      return s;
+    }
+
     function cargar() {
       try {
         const v = JSON.parse(localStorage.getItem(clave) || '[]');
-        return Array.isArray(v) ? v.filter(valido) : [];
+        if (!Array.isArray(v)) return [];
+        const tope = global.Seguro ? global.Seguro.LIMITES.ejercicios : 100;
+        return v.slice(0, tope).filter(valido).map(limpiar);
       } catch (e) { return []; }
     }
     const guardar = lista => {
@@ -120,6 +132,7 @@
         const f = ev.target.files[0];
         ev.target.value = '';
         if (!f) return;
+        if (!Seguro.cabe(f)) { alert(Seguro.AVISO_GRANDE); return; }
         const lector = new FileReader();
         lector.onload = () => importar(String(lector.result));
         lector.readAsText(f, 'utf-8');
@@ -145,15 +158,19 @@
           t.className = 'mis-tit';
           t.textContent = e.titulo;
           const n = document.createElement('span');
-          n.className = 'etq ' + e.nivel;
-          n.textContent = NIVELES[e.nivel] || e.nivel;
+          const nivel = global.Seguro ? global.Seguro.deLista(e.nivel, global.Seguro.NIVELES, 'facil') : 'facil';
+          n.className = 'etq ' + nivel;
+          n.textContent = NIVELES[nivel] || nivel;
           const c = document.createElement('span');
           c.className = 'nota';
           c.textContent = `${e.pruebas.length} caso(s)`;
           const acciones = document.createElement('span');
           acciones.className = 'mis-acciones';
-          acciones.innerHTML = `<button class="btn mini-btn" data-accion="editar" data-id="${e.id}">Editar</button>
-                                <button class="btn mini-btn" data-accion="borrar" data-id="${e.id}">Borrar</button>`;
+          /* El id va por dataset y no pegado adentro del atributo: así no hay
+             forma de cerrar la comilla desde un ejercicio importado. */
+          acciones.innerHTML = '<button class="btn mini-btn" data-accion="editar">Editar</button>'
+            + '<button class="btn mini-btn" data-accion="borrar">Borrar</button>';
+          acciones.querySelectorAll('button').forEach(b => { b.dataset.id = e.id; });
           li.append(t, n, c, acciones);
           ul.appendChild(li);
         }
@@ -231,13 +248,17 @@
             !confirm(`Ese paquete es de ${d.lenguaje} y estás en ${lenguaje}. ¿Importarlo igual?`)) return;
 
         const lista = cargar();
+        const tope = global.Seguro ? global.Seguro.LIMITES.ejercicios : 100;
         let sumados = 0;
-        for (const e of d.ejercicios) {
+        for (const e of d.ejercicios.slice(0, tope)) {
           if (!valido(e)) continue;
-          const copia = Object.assign({}, e, { mio: true });
-          if (lista.some(x => x.id === copia.id)) copia.id = nuevoId(lista);
+          /* Del archivo se toman los campos conocidos y nada más: «mio» y el
+             id los pone ESLE2, no el que armó el paquete. */
+          const copia = Object.assign(limpiar(e, lista.length), { mio: true });
+          if (!copia.id || lista.some(x => x.id === copia.id)) copia.id = nuevoId(lista);
           lista.push(copia);
           sumados++;
+          if (lista.length >= tope) break;
         }
         guardar(lista);
         pintar();

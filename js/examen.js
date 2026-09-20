@@ -76,9 +76,21 @@
     return { columnas, filas };
   }
 
-  /* La misma planilla en CSV, para abrirla con una planilla de cálculo. */
+  /* La misma planilla en CSV, para abrirla con una planilla de cálculo.
+
+     El nombre del alumno y el título del ejercicio los escribe otro, y Excel y
+     LibreOffice tratan como fórmula toda celda que empiece con =, +, - o @: un
+     alumno que se anota «=1+1» hace que la planilla del profesor calcule, y hay
+     fórmulas que llaman a programas externos. Por eso esas celdas se sacan de
+     la columna de fórmulas con un apóstrofo adelante, que es lo que hacen las
+     planillas con un texto que parece cuenta. Los números que calcula ESLE2
+     siguen siendo números. */
   function planillaCSV(p) {
-    const escapar = v => `"${String(v).replace(/"/g, '""')}"`;
+    const inofensiva = v => {
+      const s = String(v);
+      return /^[=+\-@\t\r]/.test(s) ? "'" + s : s;
+    };
+    const escapar = v => `"${inofensiva(v).replace(/"/g, '""')}"`;
     const cabecera = ['Alumno', 'Nota (%)', 'Resueltos', 'Minutos']
       .concat(p.columnas.map(c => c.titulo)).map(escapar).join(',');
     const filas = p.filas.map(f => [f.alumno, f.nota, `${f.resueltos}/${f.total}`, f.minutos]
@@ -122,7 +134,51 @@
   }
 
   const esPaquete = p => p && p.formato === 'esle2-examen' && Array.isArray(p.ejercicios);
-  const esEntrega = e => e && e.formato === 'esle2-entrega' && Array.isArray(e.ejercicios);
+  const esEntrega = e => !!e && typeof e === 'object' && !Array.isArray(e)
+    && e.formato === 'esle2-entrega' && Array.isArray(e.ejercicios);
+
+  /* Una entrega la escribe el alumno: es un .json que el profesor abre, y todo
+     lo que trae termina en la pantalla y en la planilla. Acá se arma una copia
+     con los campos conocidos y cada uno en su tipo —los contadores como
+     números, los títulos como texto—, así el resto del módulo no trabaja nunca
+     con lo que vino del archivo. Un «pasadas» que sea una etiqueta HTML, un
+     «total» negativo o mil ejercicios se arreglan en este único lugar. */
+  function limpiarEntrega(e) {
+    const S = typeof Seguro !== 'undefined' ? Seguro : null;
+    const texto = (v, max) => (S ? S.texto(v, max) : String(v === undefined || v === null ? '' : v).slice(0, max));
+    const tope = (S && S.LIMITES) || { titulo: 200, nombre: 60, ejercicios: 100 };
+    const numero = (v, max) => {
+      const n = Number(v);
+      return Number.isFinite(n) ? Math.min(Math.max(0, Math.round(n)), max) : 0;
+    };
+    const ejercicios = e.ejercicios.slice(0, tope.ejercicios).map(x => {
+      const ej = x && typeof x === 'object' ? x : {};
+      const total = numero(ej.total, 9999);
+      return {
+        id: texto(ej.id, 40),
+        titulo: texto(ej.titulo, tope.titulo),
+        nivel: S ? S.deLista(ej.nivel, S.NIVELES, 'facil') : 'facil',
+        codigo: texto(ej.codigo, 256 * 1024),
+        /* «pasadas» no puede ser mayor que «total»: con eso se falsificaba una
+           nota de 300 %. */
+        pasadas: Math.min(numero(ej.pasadas, 9999), total),
+        total,
+        minutos: numero(ej.minutos, 60 * 24),
+        error: ej.error ? texto(ej.error, 500) : null
+      };
+    });
+    return {
+      formato: 'esle2-entrega',
+      version: numero(e.version, 99) || 1,
+      titulo: texto(e.titulo, tope.titulo),
+      alumno: texto(e.alumno, tope.nombre),
+      lenguaje: texto(e.lenguaje, 40),
+      origen: texto(e.origen, 40),
+      entregado: texto(e.entregado, 40),
+      motivo: texto(e.motivo, 200),
+      ejercicios
+    };
+  }
 
   /* Cuánto falta, en segundos. Nunca menos de cero. */
   function segundosRestantes(estado, ahora) {
@@ -286,9 +342,13 @@
         ul.innerHTML = '';
         for (const e of cfg.ejercicios()) {
           const li = document.createElement('li');
-          const id = 'ex-' + e.id;
-          li.innerHTML = `<label for="${id}"><input type="checkbox" id="${id}" value="${e.id}"> ` +
-            `<span class="mis-tit"></span> <span class="etq ${e.nivel}">${NIVELES[e.nivel] || e.nivel}</span></label>`;
+          /* El id y el nivel de un ejercicio propio los escribió alguien; van
+             como propiedades del DOM y no pegados adentro de un atributo. */
+          const nivel = window.Seguro.deLista(e.nivel, window.Seguro.NIVELES, 'facil');
+          const id = 'ex-' + escapar(e.id);
+          li.innerHTML = `<label for="${id}"><input type="checkbox" id="${id}"> ` +
+            `<span class="mis-tit"></span> <span class="etq ${nivel}">${NIVELES[nivel] || nivel}</span></label>`;
+          li.querySelector('input').value = e.id;
           li.querySelector('.mis-tit').textContent = e.titulo;
           ul.appendChild(li);
         }
@@ -303,7 +363,7 @@
       }
 
       function mostrarEntregas(lista) {
-        const entregas = lista.filter(esEntrega);
+        const entregas = lista.filter(esEntrega).map(limpiarEntrega);
         if (!entregas.length) { alert('Ninguno de esos archivos es una entrega de examen.'); return; }
         if (entregas.length === 1) return mostrarEntrega(entregas[0]);
 
@@ -329,8 +389,9 @@
         dlg._planilla = p;
       }
 
-      function mostrarEntrega(entrega) {
-        if (!esEntrega(entrega)) { alert('Ese archivo no es una entrega de examen.'); return; }
+      function mostrarEntrega(bruta) {
+        if (!esEntrega(bruta)) { alert('Ese archivo no es una entrega de examen.'); return; }
+        const entrega = limpiarEntrega(bruta);
         const r = resumir(entrega);
         const filas = entrega.ejercicios.map(e => `
           <tr>
@@ -350,7 +411,10 @@
       dlg._abrirFormulario = abrirFormulario;
     }
 
-    const escapar = s => String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+    /* De js/seguro.js: escapa también las comillas, que es lo que hace falta
+       cuando el texto va adentro de un atributo —y acá va, en el title de cada
+       chip— y el título lo escribió quien armó el examen. */
+    const escapar = window.Seguro.escapar;
 
     function bajar(nombre, datos) {
       const a = document.createElement('a');
@@ -361,10 +425,26 @@
     }
 
     /* ----------------------------- rendirlo ---------------------------- */
-    function empezar(paquete, alumno) {
-      if (!esPaquete(paquete)) { alert('Ese archivo no es un examen de ESLE2.'); return; }
+    function empezar(bruto, alumno) {
+      if (!esPaquete(bruto)) { alert('Ese archivo no es un examen de ESLE2.'); return; }
       const nombre = alumno !== undefined ? alumno : (prompt('Tu nombre y apellido:', '') || '').trim();
       if (nombre === null) return;
+      /* El examen es un archivo que alguien repartió: los ejercicios entran
+         por el mismo filtro que los de una guía, y el título y los minutos se
+         acotan. Un examen de −5 minutos terminaba antes de empezar. */
+      const S = typeof Seguro !== 'undefined' ? Seguro : null;
+      const paquete = S ? {
+        formato: 'esle2-examen',
+        version: bruto.version,
+        titulo: S.texto(bruto.titulo, S.LIMITES.titulo),
+        lenguaje: S.texto(bruto.lenguaje, 40),
+        minutos: Math.min(Math.max(1, Math.round(Number(bruto.minutos) || 60)), 60 * 12),
+        creado: S.texto(bruto.creado, 40),
+        /* Si el id no pasa el filtro se le pone uno nuestro: las respuestas se
+           guardan por id y dos ejercicios con id vacío serían el mismo. */
+        ejercicios: bruto.ejercicios.slice(0, S.LIMITES.ejercicios)
+          .map((e, i) => Object.assign(S.ejercicio(e), { id: S.id(e && e.id) || 'ex' + (i + 1) }))
+      } : bruto;
       estado = {
         paquete, alumno: nombre, empezado: new Date().toISOString(),
         minutos: paquete.minutos, actual: 0,
@@ -504,5 +584,5 @@
   }
 
   global.Examen = { crear, armarPaquete, resumir, segundosRestantes, reloj, esPaquete, esEntrega,
-    PLANTILLAS, plantillasDe, planilla, planillaCSV };
+    limpiarEntrega, PLANTILLAS, plantillasDe, planilla, planillaCSV };
 })(typeof window !== 'undefined' ? window : globalThis);

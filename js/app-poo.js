@@ -31,7 +31,7 @@
     return p ? decodeURIComponent(p.slice(n.length + 1)) : '';
   };
   const grabarCookie = (n, v) => {
-    document.cookie = `${n}=${encodeURIComponent(v)}; expires=${new Date(Date.now() + 365 * 864e5).toUTCString()}; path=/; SameSite=Lax`;
+    document.cookie = `${n}=${encodeURIComponent(v)}; expires=${new Date(Date.now() + 365 * 864e5).toUTCString()}; path=/; SameSite=Lax${location.protocol === 'https:' ? '; Secure' : ''}`;
   };
   const progreso = (() => { try { return JSON.parse(leerCookie(COOKIE) || '{}'); } catch (e) { return {}; } })();
   function pintarProgreso() {
@@ -608,9 +608,10 @@
     EJERCICIOS.filter(e => filtro === 'todos' || e.nivel === filtro).forEach(e => {
       const li = document.createElement('li');
       li.className = (progreso[e.id] ? 'hecho ' : '') + (seleccionado === e.id ? 'sel' : '');
+      const nivel = Seguro.deLista(e.nivel, Seguro.NIVELES, 'facil');
       li.innerHTML = `<span class="marca-ok">${progreso[e.id] ? '●' : '○'}</span>
                       <span class="tit"></span>
-                      <span class="etq ${e.nivel}">${NIVELES[e.nivel]}</span>`;
+                      <span class="etq ${nivel}">${NIVELES[nivel]}</span>`;
       li.querySelector('.tit').textContent = e.titulo;
       li.addEventListener('click', () => mostrarEjercicio(e.id));
       ol.appendChild(li);
@@ -625,18 +626,21 @@
     pintarLista();
   });
 
-  const escapar = s => s.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+  /* Igual que en el IDE clásico: lo que se pinta pasa por js/seguro.js, porque
+     una guía de clase puede traer el enunciado que quiera. */
+  const escapar = Seguro.escapar;
 
   function mostrarEjercicio(id) {
     const e = EJERCICIOS.find(x => x.id === id);
     seleccionado = id;
     pintarLista();
-    const casos = e.pruebas.map(p => `<tr><td>${p.entrada ? escapar(p.entrada) : '(sin datos)'}</td><td>${escapar(p.salida)}</td></tr>`).join('');
+    const nivel = Seguro.deLista(e.nivel, Seguro.NIVELES, 'facil');
+    const casos = (e.pruebas || []).map(p => `<tr><td>${p.entrada ? escapar(p.entrada) : '(sin datos)'}</td><td>${escapar(p.salida)}</td></tr>`).join('');
     $('#detalleEjercicio').innerHTML = `
-      <span class="etq ${e.nivel}">${NIVELES[e.nivel]}</span>
+      <span class="etq ${nivel}">${NIVELES[nivel]}</span>
       <h2></h2>
-      <div class="enunciado">${e.enunciado}</div>
-      ${e.pista ? `<div class="pista"><strong>Pista:</strong> ${e.pista}</div>` : ''}
+      <div class="enunciado">${Seguro.html(e.enunciado)}</div>
+      ${e.pista ? `<div class="pista"><strong>Pista:</strong> ${Seguro.html(e.pista)}</div>` : ''}
       <div class="acciones">
         <button class="btn primario" id="btnAbrirEjercicio">Abrir en el IDE</button>
         ${progreso[id] ? '<span class="nota">✔ Ya resolviste este ejercicio.</span>' : ''}
@@ -650,8 +654,10 @@
   function abrirEjercicio(e, codigoInicial) {
     historial.registrar('previa', 'Antes de abrir «' + e.titulo + '»');
     ejercicioActivo = e;
-    editor.setValue(codigoInicial !== undefined ? codigoInicial : (Guardado.leer('esle2poo_ej_' + e.id) || e.plantilla));
-    $('#entrada').value = e.pruebas[0].entrada;
+    editor.setValue(codigoInicial !== undefined ? codigoInicial : (Guardado.leer('esle2poo_ej_' + e.id) || e.plantilla || ''));
+    /* Sin casos de prueba —puede pasar con una guía ajena— la entrada queda
+       vacía en vez de tirar el curso abajo. */
+    $('#entrada').value = ((e.pruebas && e.pruebas[0]) || { entrada: '' }).entrada;
     $('#bannerTitulo').textContent = `${e.titulo} (${NIVELES[e.nivel]})`;
     $('#bannerEjercicio').classList.remove('oculto');
     limpiarConsola(); limpiarMarca();
@@ -730,6 +736,7 @@
     const f = ev.target.files[0];
     ev.target.value = '';
     if (!f) return;
+    if (!Seguro.cabe(f)) { alert(Seguro.AVISO_GRANDE); return; }
     const lector = new FileReader();
     lector.onload = () => {
       let sumados;
@@ -848,7 +855,7 @@
     caja.innerHTML = '<h3>Para repasar hoy</h3>' +
       '<p class="nota">Los resolviste hace unos días: rehacerlos de memoria es lo que los fija.</p>' +
       '<ul class="repaso-lista">' + lista.map(r =>
-        `<li><button class="repaso-item" data-repasar="${r.id}">${escapar(r.titulo)}</button>
+        `<li><button class="repaso-item" data-repasar="${escapar(r.id)}">${escapar(r.titulo)}</button>
            <span class="nota">hace ${r.dias} día(s)${r.hechos ? ' · repasado ' + r.hechos + ' vez(ces)' : ''}</span></li>`
       ).join('') + '</ul>';
   }

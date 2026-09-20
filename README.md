@@ -70,6 +70,98 @@ están en `sw.js`, así que el tutorial también anda sin internet.
 página no tiene (compara contra el HTML), que ninguna captura falte ni sobre, que todas tengan sus
 medidas y que el total entre en el presupuesto.
 
+## Seguridad: qué se puede y qué no
+
+ESLE2 no tiene servidor, ni cuentas, ni base de datos de nadie: todo pasa en el navegador del
+alumno. Eso saca de la mesa la mitad de los problemas de siempre —no hay contraseñas que robar, ni
+una base que volcar, ni una sesión que secuestrar— y deja uno bien concreto: **el sitio recibe
+contenido de otros**. Un programa que viaja en un enlace, una guía de clase repartida por WhatsApp,
+una entrega `.json`, un `.sql` que alguien pasó, lo que escribe el compañero en «Programar de a
+dos». Si ese contenido llega a ejecutarse, corre con los permisos del sitio: puede leer y borrar lo
+que ESLE2 guardó en ese navegador —los programas, el avance—, cambiar lo que se ve en pantalla o
+pedir un permiso haciéndose pasar por ESLE2.
+
+Eso es lo que hay que cerrar, y es lo que se cerró. Dicho con la misma honestidad: esto **no** es
+lo mismo que «entrar a la computadora del alumno». Salir del navegador hacia el sistema operativo
+necesita un agujero del navegador, no de este sitio. Y nada de lo que pase en una máquina cambia lo
+que ven los demás: para eso habría que entrar al repositorio o a la cuenta de Vercel, que se
+protegen aparte y con otras herramientas.
+
+### El agujero que había
+
+Estaba abierto, y era el peor de los posibles en un sitio así: el **enunciado de un ejercicio se
+pegaba en la página tal cual venía**. Los del curso son nuestros, pero los de una guía de clase y
+los de «Mis ejercicios» llegan de afuera, y terminaban en la misma pantalla. Un enlace de guía
+preparado ejecutaba JavaScript apenas el alumno tocaba el ejercicio.
+
+Está medido, no supuesto: el mismo ataque corrido contra la versión publicada anterior ejecutaba
+cinco veces; contra esta, cero. Con él venían otros cinco de la misma familia: el nivel de un
+ejercicio pegado adentro de un `class="…"`, el id adentro de un `data-…`, el título de un examen
+adentro de un `title="…"` con un escapador que no escapaba comillas, los contadores de una entrega
+`.json` pegados como HTML, y un nombre de perfil con comillas.
+
+### Un solo lugar decide qué es texto
+
+`js/seguro.js`. Es el único módulo que puede convertir un texto ajeno en HTML, y lo hace al revés
+de como se suele intentar: **no limpia lo que vino, reconstruye**. Lo que sale son etiquetas que
+escribe esa función —`code`, `strong`, `em`, `b`, `i`, `br`, `p`, `ul`, `ol`, `li`, `pre`, sin un
+solo atributo— más texto escapado. Por eso no hay que acertarle a la lista de los mil disfraces de
+`<script>`: lo que no está permitido es texto, y se ve como texto.
+
+Ahí mismo están los límites de todo lo que entra —cuánto puede pesar un enlace, una guía, un
+enunciado, un archivo— y la limpieza de un ejercicio ajeno, que se rearma campo por campo: el nivel
+sale de una lista cerrada, el id tiene que ser un id (`__proto__` no lo es), los casos son texto y
+están acotados, y lo que venga de más no se copia.
+
+`test/test-seguro.js` le tira los treinta ataques clásicos y comprueba una sola cosa: que sacando
+las etiquetas permitidas no quede ni un `<` en lo que salió.
+
+### Cabeceras: la segunda puerta
+
+Si algún día se cuela otro sink, la CSP lo frena igual. `vercel.json` sirve todo el sitio con:
+
+```
+default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; frame-src 'none';
+form-action 'none'; script-src 'self'; script-src-attr 'none';
+style-src 'self' https://fonts.googleapis.com; style-src-attr 'unsafe-inline';
+font-src 'self' https://fonts.gstatic.com; img-src 'self'; media-src 'self';
+connect-src 'self' wss:; worker-src 'self'; manifest-src 'self'
+```
+
+`script-src 'self'` sin `unsafe-inline` quiere decir que un `<script>` que aparezca en la página —o
+un `onclick=` en un atributo— no corre. Para poder tenerla hubo que sacar el único script escrito
+adentro de un HTML (el de `vivo.html`, ahora `js/vivo-pagina.js`), los cuatro `<style>` de la
+documentación de POO y los tres `style="…"` que quedaban. `frame-ancestors 'none'` más
+`X-Frame-Options: DENY` impiden meter ESLE2 en un iframe ajeno, que es como se arma una pantalla
+falsa. Van también `nosniff`, `Referrer-Policy: no-referrer`, HSTS de dos años, COOP/CORP y un
+`Permissions-Policy` que apaga cámara, micrófono, ubicación y el resto.
+
+La excepción, dicha: `style-src-attr 'unsafe-inline'` sigue permitida porque el vendor de
+«Programar de a dos» pinta los cursores del otro con un atributo `style`. Es la única, y no afecta
+a los scripts.
+
+`test/test-cabeceras.js` prueba las dos mitades sin navegador: que la política siga siendo estricta
+y que ningún HTML vuelva a tener un `<script>`, un `<style>` o un `onclick=` adentro —que es lo que
+obligaría a aflojarla—. En el navegador se recorren las diez páginas con las cabeceras de verdad
+puestas, escuchando `securitypolicyviolation`, y se comprueba que el sitio no entre en un iframe.
+
+### Lo demás
+
+- **Cookies**: `SameSite=Lax` ya estaban; ahora llevan `Secure` cuando la página va por https, y no
+  en `localhost`, donde el navegador las tiraría.
+- **Archivos**: todo `.sl`, `.sql`, `.json` de entrega o de progreso se mira el tamaño **antes** de
+  leerlo. Un archivo de 800 MB no es un ataque muy elaborado, pero cuelga la pestaña igual.
+- **Guías comprimidas**: el gzip se corta mientras se descomprime, con tope. Un enlace de 40 KB
+  puede descomprimirse en cientos de megas si alguien lo arma para eso.
+- **Planillas**: en el `.csv` del profesor, una celda que empiece con `=`, `+`, `-` o `@` sale de
+  la columna de fórmulas. Un alumno que se anota «=1+1» hacía calcular la planilla ajena.
+- **Service worker**: ahora solo guarda respuestas del propio origen, con estado 200, sin
+  redirección y con un tipo que corresponda a la extensión. Sin eso, el portal de wifi de un
+  colegio podía quedar guardado como si fuera nuestro código. Y borra solo las cachés de ESLE2.
+- **Lo que no se toca**: los perfiles no son cuentas y el propio diálogo lo dice; la transmisión en
+  vivo es pública por diseño y su «clave» no es un secreto; y `readOnly` en el visor no autentica a
+  nadie.
+
 ## Modo flexible: compilar con errores
 
 El compilador es estricto a propósito: al primer error para y lo cuenta bien. Eso está perfecto

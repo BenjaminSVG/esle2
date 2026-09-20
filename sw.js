@@ -7,7 +7,7 @@
  *
  * Al publicar una versión nueva hay que subir VERSION: eso borra la caché vieja.
  */
-const VERSION = 'esle2-v62';
+const VERSION = 'esle2-v63';
 
 const ARCHIVOS = [
   './',
@@ -216,13 +216,51 @@ const ARCHIVOS = [
   'js/tutorial-ui.js',
   'img/logo-bd.svg',
   'img/logo-visual.svg',
+  'js/seguro.js',
+  'js/vivo-pagina.js',
 ];
+
+/* Lo que esta caché acepta guardar. Sin esto, una respuesta que viniera de
+   otro lado —una redirección, un portal de wifi del colegio que contesta
+   cualquier cosa, un proxy— quedaba guardada con nuestra dirección y se
+   seguía sirviendo después, incluso ya con internet: el sitio quedaba
+   envenenado hasta que alguien limpiara la caché a mano. */
+function sirveParaGuardar(url, resp) {
+  if (!resp || !resp.ok || resp.status !== 200) return false;
+  if (resp.type === 'opaque' || resp.type === 'opaqueredirect' || resp.type === 'error') return false;
+  /* La dirección FINAL, después de seguir redirecciones, tiene que ser
+     nuestra: resp.url es la de verdad, req.url es la que pedimos. */
+  if (resp.redirected) return false;
+  try {
+    if (resp.url && new URL(resp.url).origin !== location.origin) return false;
+    if (new URL(url, location.href).origin !== location.origin) return false;
+  } catch (e) { return false; }
+  /* Y tiene que ser de un tipo que este sitio sirva. Un text/html donde
+     esperábamos un .js es la forma clásica de que un portal cautivo termine
+     guardado como si fuera nuestro código. */
+  const tipo = (resp.headers.get('content-type') || '').split(';')[0].trim().toLowerCase();
+  if (!tipo) return true;                       // sin tipo declarado: lo decide el navegador
+  const esperado = TIPOS_POR_EXTENSION[(url.match(/\.([a-z0-9]+)(?:$|\?)/i) || [])[1] || ''];
+  return !esperado || esperado.indexOf(tipo) >= 0;
+}
+
+const TIPOS_POR_EXTENSION = {
+  js: ['text/javascript', 'application/javascript'],
+  css: ['text/css'],
+  html: ['text/html'],
+  json: ['application/json', 'application/manifest+json'],
+  webmanifest: ['application/manifest+json'],
+  svg: ['image/svg+xml'],
+  png: ['image/png']
+};
 
 /* Guarda una copia bajo la dirección pedida.
    Se rearma la respuesta porque el navegador no deja cachear una redirección
-   (y algunos servidores mandan /index.html a /), ni una petición de navegación. */
+   (y algunos servidores mandan /index.html a /), ni una petición de navegación.
+   Las cabeceras se copian tal cual: ahí viaja la CSP, y una copia sin ella
+   quedaría más floja que el original. */
 async function guardar(cache, url, resp) {
-  if (!resp || !resp.ok) return;
+  if (!sirveParaGuardar(url, resp)) return;
   try {
     const copia = new Response(await resp.clone().blob(), {
       status: 200,
@@ -247,7 +285,10 @@ self.addEventListener('install', ev => {
 
 self.addEventListener('activate', ev => {
   ev.waitUntil((async () => {
-    const viejas = (await caches.keys()).filter(k => k !== VERSION);
+    /* Solo las cachés de ESLE2: si el sitio convive con otra cosa en el mismo
+       origen —una prueba, otra herramienta de la escuela—, borrarle la suya
+       sería romperle el trabajo a otro. */
+    const viejas = (await caches.keys()).filter(k => k !== VERSION && k.startsWith('esle2-'));
     await Promise.all(viejas.map(k => caches.delete(k)));
     await self.clients.claim();
   })());
@@ -276,10 +317,14 @@ self.addEventListener('fetch', ev => {
       ev.waitUntil(guardar(cache, req.url, resp));
       return resp;
     } catch (e) {
-      // Sin conexión y sin copia: si es una navegación, mostrar al menos el IDE.
+      // Sin conexión y sin copia: si es una navegación, mostrar algo útil.
       if (req.mode === 'navigate') {
-        const inicio = await cache.match(new URL('index.html', self.registration.scope).href);
-        if (inicio) return inicio;
+        /* /live/juan es la página de una transmisión: sin conexión tiene que
+           mostrar ESA página, que explica que no hay señal, y no el IDE. */
+        const esVivo = /\/live\//.test(new URL(req.url).pathname);
+        const destino = new URL(esVivo ? 'vivo.html' : 'index.html', self.registration.scope).href;
+        const pagina = await cache.match(destino);
+        if (pagina) return pagina;
       }
       return Response.error();
     }

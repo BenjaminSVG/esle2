@@ -131,5 +131,30 @@ comprobar('sin ejercicios no divide por cero', Examen.resumir(vacia).nota, 0);
   comprobar('lo que no rindió queda vacío', Examen.planillaCSV(q).split('\n')[1].endsWith('"1/1","2/2",""'), true);
 }
 
+/* Una entrega la escribe el alumno: es un .json que el profesor abre, y todo
+   lo que trae termina en su pantalla y en su planilla. */
+{
+  const sucia = {
+    formato: 'esle2-entrega', version: '<img src=x>', titulo: 't'.repeat(9999),
+    alumno: '=1+1', lenguaje: 'SLE2', entregado: '2026-01-01', motivo: '',
+    ejercicios: [
+      { id: 'f1', titulo: '<b>x</b>', pasadas: '<img src=x onerror=alert(1)>', total: 3, minutos: -5 },
+      { id: 'f2', titulo: 'y', pasadas: 999, total: 2, minutos: 1 }
+    ]
+  };
+  const limpia = Examen.limpiarEntrega(sucia);
+  comprobar('un pasadas que no es número queda en cero', limpia.ejercicios[0].pasadas, 0);
+  comprobar('pasadas nunca supera a total', limpia.ejercicios[1].pasadas, 2);
+  comprobar('los minutos negativos quedan en cero', limpia.ejercicios[0].minutos, 0);
+  comprobar('el título se recorta a 200', limpia.titulo.length, 200);
+  comprobar('la nota que sale de ahí es creíble', Examen.resumir(limpia).nota <= 100, true);
+  comprobar('los contadores son números',
+    typeof limpia.ejercicios[0].pasadas === 'number', true);
+
+  /* Una celda que empieza con «=» la calcula Excel, y el nombre del alumno lo
+     escribe el alumno: sale de la columna de fórmulas con un apóstrofo. */
+  const csv = Examen.planillaCSV(Examen.planilla([limpia]));
+  comprobar('el CSV no deja una fórmula suelta', /"'=1\+1"/.test(csv), true);
+}
 console.log(`\n${ok} verificaciones correctas, ${fallos} fallos.`);
 assert.strictEqual(fallos, 0, 'hay pruebas fallidas');

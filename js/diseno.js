@@ -191,7 +191,7 @@
   }
   function grabarCookie(nombre, valor) {
     const f = new Date(Date.now() + 365 * 864e5).toUTCString();
-    document.cookie = `${nombre}=${encodeURIComponent(valor)}; expires=${f}; path=/; SameSite=Lax`;
+    document.cookie = `${nombre}=${encodeURIComponent(valor)}; expires=${f}; path=/; SameSite=Lax${location.protocol === 'https:' ? '; Secure' : ''}`;
   }
 
   function leer() {

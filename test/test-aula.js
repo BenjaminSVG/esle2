@@ -14,6 +14,7 @@ const assert = require('assert');
 
 const RAIZ = path.join(__dirname, '..');
 global.window = global;
+require(path.join(RAIZ, 'js', 'seguro.js'));
 require(path.join(RAIZ, 'js', 'aula.js'));
 const { Aula } = global;
 
@@ -233,6 +234,50 @@ const PROPIO = {
       Aula.nombreDeEntrega({ n: '' }, ''));
     comprobar('dos alumnos, dos archivos',
       Aula.nombreDeEntrega(guia, 'Ana') !== Aula.nombreDeEntrega(guia, 'Beto'));
+  }
+
+  seccion('Lo que llega de un enlace ajeno');
+  {
+    /* Una guía la arma cualquiera: lo que trae se limpia antes de que nadie
+       lo mire. Esto es lo que impedía que un enunciado con una etiqueta
+       terminara pegado como HTML en la pantalla del alumno. */
+    const sucia = {
+      v: 1, l: 'SLE2', n: 'Guía', m: '',
+      e: [{
+        id: '__proto__', nivel: 'inventado', titulo: 'x'.repeat(9999),
+        enunciado: '<img src=x onerror=alert(1)>', pista: null,
+        plantilla: 'inicio\nfin\n', pruebas: [{ entrada: 1, salida: 2 }],
+        colado: 'no debería viajar'
+      }]
+    };
+    const r = Aula.resolver(sucia, CATALOGO);
+    const e = r.ejercicios[0];
+    comprobar('el nivel inventado cae en fácil', e.nivel === 'facil', e.nivel);
+    comprobar('el título se recorta', e.titulo.length <= 200, e.titulo.length);
+    comprobar('no se cuela ningún campo de más', e.colado === undefined);
+    comprobar('los casos quedan como texto', e.pruebas[0].entrada === '1');
+    comprobar('y el id lo pone la guía, no el archivo', /^a[a-z0-9]+-1$/.test(e.id), e.id);
+    comprobar('Object.prototype sigue limpio', ({}).colado === undefined);
+  }
+
+  seccion('Los límites del enlace');
+  {
+    comprobar('un hash descomunal no se decodifica',
+      await Aula.decodificar('z' + 'A'.repeat(600000)) === null);
+    comprobar('un prefijo desconocido no se acepta',
+      await Aula.decodificar('x' + 'AAAA') === null);
+    comprobar('base64 roto devuelve null', await Aula.decodificar('p!!!!') === null);
+    comprobar('una guía con mil ejercicios no pasa',
+      await (async () => {
+        const grande = { v: 1, l: 'SLE2', n: 'g', m: '', e: Array.from({ length: 1000 }, () => 'f1') };
+        return await Aula.decodificar(await Aula.codificar(grande)) === null;
+      })());
+    comprobar('y una normal sí',
+      await (async () => {
+        const g = { v: 1, l: 'SLE2', n: 'g', m: '', e: ['f1', 'f2'] };
+        const v = await Aula.decodificar(await Aula.codificar(g));
+        return !!v && v.e.length === 2;
+      })());
   }
 
   console.log(`\n${ok} verificaciones correctas, ${fallos} fallos.`);
