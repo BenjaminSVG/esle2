@@ -81,7 +81,7 @@
     btnAbrir: { nombre: 'Abrir…', que: 'Trae un archivo de tu computadora al editor.' },
     btnGuardar: { nombre: 'Guardar', atajo: 'Ctrl + S', que: 'Baja el programa como archivo a tu computadora. ESLE2 ya lo guarda solo en el navegador; esto es para llevártelo.' },
     btnCompartir: { nombre: 'Compartir', que: 'Copia un enlace con el programa adentro. No se sube nada a ningún lado: el programa viaja en el propio enlace.' },
-    btnJuntos: { nombre: 'Programar en grupo…', que: 'Dos personas, o toda la clase, escriben el mismo programa cada uno desde su computadora. Necesita internet.' },
+    btnJuntos: { nombre: 'Programar en grupo…', que: 'Dos personas, o toda la clase, escriben el mismo programa cada uno desde su computadora. Con el servidor de la escuela necesita internet; de a dos también se puede sin ningún servidor, pasándose un código a mano.' },
     btnVivo: { nombre: 'Transmitir mi lógica…', que: 'Un enlace corto para que otros vean, en el momento, cómo vas escribiendo. Para mostrar en clase. Necesita internet.' },
     btnArchivos: { nombre: 'Archivos…', que: 'Los archivos de mentira que viven en la memoria del navegador: de ahí lee set_stdin() y ahí escribe set_stdout().' },
     selPlantillas: { nombre: 'Plantillas', que: 'Pega un esqueleto en el cursor —un ciclo, una subrutina— para no arrancar de la hoja en blanco.' },
@@ -126,7 +126,7 @@
     btnLimpiar: { nombre: 'Limpiar', que: 'Vacía la pantalla. No toca el programa ni la base.' },
     lienzo: { nombre: 'El lienzo', que: 'Aparece cuando el programa dibuja: dibujar_pixel(), dibujar_rectangulo(), dibujar_circulo(), dibujar_linea().' },
     variables: { nombre: 'Variables', que: 'Mientras depurás, cada variable viva con lo que tiene adentro. Las de una subrutina se van cuando la subrutina termina.' },
-    explorador: { nombre: 'El explorador', que: 'Varios programas a la vez, con carpetas. Viven en el navegador: para llevártelos hay que bajarlos.' },
+    explorador: { nombre: 'El explorador', que: 'Varios programas a la vez, con carpetas dentro de carpetas. El botón ⋮ de cada fila abre nuevo, renombrar y borrar. Viven en el navegador: para llevártelos, Exportar.' },
     arbolControles: { nombre: 'Controles', que: 'Lo que creó tu programa: la ventana y todo lo que tiene adentro, en forma de árbol. Al elegir uno se ven sus propiedades al lado.' },
     esquema: { nombre: 'La base', que: 'Las tablas que hay ahora mismo, con sus columnas y sus claves. Se actualiza sola cada vez que ejecutás.' },
     sqlRapido: { nombre: 'SQL a mano', atajo: 'Ctrl + Enter', que: 'Probá una consulta suelta sin tocar el programa. Anda sobre la misma base, así que lo que borres acá se borra de verdad.' },
@@ -141,7 +141,7 @@
     btnAula: { nombre: 'Modo aula…', que: 'Una guía de clase —varios ejercicios en orden— que se reparte con un solo enlace.' },
     btnPerfil: { nombre: 'Usuarios', que: 'Creá tu usuario con contraseña para separar tus trabajos en este navegador. Desde acá también podés cambiar la contraseña, cerrar sesión o crear otro usuario.' },
     btnDuelo: { nombre: 'Batallas de código…', que: 'Dos personas, el mismo problema, cinco minutos. Necesita internet.' },
-    btnExportar: { nombre: 'Exportar progreso', que: 'Baja un archivo con tu avance, para pasarlo a otra computadora o guardarlo antes de formatear.' },
+    btnExportar: { nombre: 'Exportar', que: 'Baja un archivo con tu avance del curso, para pasarlo a otra computadora o guardarlo antes de formatear.' },
     btnImportar: { nombre: 'Importar…', que: 'Carga uno de esos archivos. Lo que traiga se suma a lo que ya tenías.' },
     btnReiniciar: { nombre: 'Reiniciar progreso', que: 'Borra todo tu avance del curso. No se puede deshacer; si querés guardarlo, exportalo antes.' },
     btnReiniciarBD: { nombre: 'Reiniciar progreso', que: 'Borra tu avance en los 50 ejercicios de BD y no se puede deshacer. La base de datos no se toca: para eso está Vaciar la base.' },
@@ -303,8 +303,10 @@
     {
       id: 'explorador',
       titulo: 'El explorador de archivos',
-      texto: 'Varios programas a la vez, con carpetas, como en un editor de verdad. Se prende desde el menú Ver. ' +
-        'Los archivos viven en este navegador: para llevártelos hay que bajarlos.',
+      texto: 'Varios programas a la vez, con carpetas dentro de carpetas, como en un editor de verdad. Se prende ' +
+        'desde el menú Ver. Cada fila tiene su botón ⋮: ahí está renombrar, borrar, y para una carpeta también ' +
+        'crear algo adentro. Arriba, junto a Importar, está Exportar: baja el proyecto entero en un solo archivo. ' +
+        'Los archivos viven en este navegador: para llevártelos hay que exportarlos.',
       capturas: { clasico: 'explorador.png', poo: 'explorador.png', visual: 'explorador.png' },
       alt: 'El panel del explorador con una carpeta y dos archivos.',
       controles: ['explorador']
@@ -349,7 +351,7 @@
       titulo: 'El curso',
       texto: 'Ejercicios que se corrigen solos: ESLE2 corre tu programa con varios juegos de datos y compara el resultado. ' +
         'Cada uno se abre en el IDE y se vuelve con «Salir del ejercicio». ' +
-        'Los botones de acá abajo están al final de la lista de la izquierda: hay que bajar para verlos.',
+        'Debajo de la lista está «Más formas de practicar» y, más abajo, «Tu progreso»: hay que bajar para verlos.',
       capturas: { clasico: 'curso-clasico.png', poo: 'curso-poo.png', visual: 'curso-visual.png', bd: 'curso-bd.png' },
       alt: 'La pantalla del curso: la lista de ejercicios a la izquierda y el enunciado a la derecha.',
       controles: ['filtros', 'listaEjercicios', 'btnExamen', 'btnMisEj', 'btnAula', 'btnDuelo',
