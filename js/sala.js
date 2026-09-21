@@ -319,10 +319,19 @@
          de gusto treinta veces por segundo. */
       recibir(id, estado, suReloj, ahora) {
         if (id === clientID) return false;
+
+        /* «Se lo oyó» y «dijo algo nuevo» son dos cosas distintas, y hay que
+           anotarlas en ese orden. El latido de alguien que está quieto repite
+           el mismo reloj —no cambió nada—, así que si el reloj viejo cortara
+           acá, no se anotaría que se lo oyó, y a los treinta segundos la
+           guadaña lo sacaría de la lista estando conectado: el que mira sin
+           escribir desaparecía solo. Anotar antes es seguro porque lo que
+           llega hasta acá ya pasó por el Vigía: un sobre repetido no llega. */
+        visto.set(id, ahora === undefined ? Date.now() : ahora);
+
         const previo = relojes.get(id);
         if (previo !== undefined && suReloj !== undefined && suReloj <= previo) return false;
         if (suReloj !== undefined) relojes.set(id, suReloj);
-        visto.set(id, ahora === undefined ? Date.now() : ahora);
         const limpio = presencia(estado);
         const habia = estados.has(id);
         if (!limpio) {
