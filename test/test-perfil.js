@@ -217,5 +217,141 @@ seccion('Cosas que pueden salir mal');
   comprobar('y uno que no existe ocupa cero', p3.tamano('Nadie') === 0);
 }
 
-console.log(`\n${ok} verificaciones correctas, ${fallos} fallos.`);
-assert.strictEqual(fallos, 0, 'los perfiles tienen fallos');
+/* ==================================================================== */
+/* El modo usuario: nombre, contraseña y cerrar sesión                   */
+/* ==================================================================== */
+(async () => {
+  seccion('La cerradura');
+  {
+    const n = navegador();
+    const p = Perfil.crear(n);
+    comprobar('viene apagado', p.modo() === false);
+    p.ponerModo(true);
+    comprobar('se puede encender', p.modo() === true);
+
+    p.crear('Ana');
+    comprobar('un perfil recién hecho no tiene contraseña', !p.tieneClave('Ana'));
+    /* Con el modo encendido, «sin contraseña» tiene que ser «no entra», no
+       «pasá sin golpear». */
+    comprobar('y sin contraseña puesta no deja entrar nadie',
+      (await p.comprobar('Ana', '')) === false);
+    comprobar('ni con cualquier cosa', (await p.comprobar('Ana', 'lo que sea')) === false);
+
+    await p.ponerClave('Ana', 'sandia-con-vino');
+    comprobar('ahora sí tiene', p.tieneClave('Ana'));
+    comprobar('la contraseña correcta entra', (await p.comprobar('Ana', 'sandia-con-vino')) === true);
+    comprobar('una parecida no', (await p.comprobar('Ana', 'sandia-con-vin')) === false);
+    comprobar('vacía tampoco', (await p.comprobar('Ana', '')) === false);
+    comprobar('la de otro perfil que no existe tampoco',
+      (await p.comprobar('Nadie', 'sandia-con-vino')) === false);
+
+    /* Lo que se guarda no es la contraseña. */
+    const crudo = n.almacen.leer('esle2_perfiles');
+    comprobar('la contraseña NO queda guardada', !crudo.includes('sandia-con-vino'), crudo);
+    comprobar('queda una sal propia', /"s":"[A-Za-z0-9_-]{20,}"/.test(crudo));
+    comprobar('y cuántas vueltas costó', /"it":\d{5,}/.test(crudo));
+
+    /* Dos perfiles con la misma contraseña no dan lo mismo: cada uno su sal. */
+    p.crear('Beto');
+    await p.ponerClave('Beto', 'sandia-con-vino');
+    const reg = JSON.parse(n.almacen.leer('esle2_perfiles'));
+    const [a, b] = ['ana', 'beto'].map(x => reg.cerraduras.find(c => c.n === x));
+    comprobar('cada perfil tiene su propia sal', a.s !== b.s);
+    comprobar('y por eso la misma contraseña no da lo mismo', a.h !== b.h);
+
+    comprobar('una contraseña corta no se acepta',
+      await p.ponerClave('Ana', 'corta').then(() => false, () => true));
+  }
+
+  seccion('Entrar y salir');
+  {
+    const n = navegador();
+    const p = Perfil.crear(n);
+    p.ponerModo(true);
+    p.crear('Ana');
+    n.almacen.escribir('esle2_ej_f1', 'el programa de Ana');
+    await p.ponerClave('Ana', 'sandia-con-vino');
+    p.guardar();
+
+    comprobar('con la contraseña mal no se abre sesión',
+      (await p.abrirSesion('Ana', 'otra cosa')) === false);
+
+    comprobar('cerrar sesión devuelve true', p.cerrarSesion() === true);
+    comprobar('y nadie queda abierto', p.actual() === null);
+    /* Lo que de verdad arregla la cerradura: el que viene después no ve nada. */
+    comprobar('la máquina queda limpia', !n.almacen.leer('esle2_ej_f1'),
+      n.almacen.leer('esle2_ej_f1'));
+    comprobar('pero el trabajo no se perdió: está en su cajón',
+      (n.almacen.leer('esle2_perfil_ana') || '').includes('el programa de Ana'));
+
+    comprobar('con la contraseña bien se vuelve a entrar',
+      (await p.abrirSesion('Ana', 'sandia-con-vino')) === true);
+    comprobar('y el trabajo vuelve', n.almacen.leer('esle2_ej_f1') === 'el programa de Ana');
+    comprobar('con la sesión abierta, el perfil es el suyo', p.actual() === 'Ana');
+
+    comprobar('cerrar sesión sin nadie adentro no rompe',
+      p.cerrarSesion() === true && p.cerrarSesion() === false);
+  }
+
+  seccion('Sacar la cerradura');
+  {
+    const n = navegador();
+    const p = Perfil.crear(n);
+    p.crear('Ana');
+    await p.ponerClave('Ana', 'sandia-con-vino');
+    comprobar('sacarla sin la contraseña no se puede',
+      (await p.sacarClave('Ana', 'otra cosa')) === false);
+    comprobar('y sigue puesta', p.tieneClave('Ana'));
+    comprobar('con la contraseña sí', (await p.sacarClave('Ana', 'sandia-con-vino')) === true);
+    comprobar('y ya no está', !p.tieneClave('Ana'));
+  }
+
+  seccion('Un registro que alguien tocó a mano');
+  {
+    const n = navegador();
+    const p = Perfil.crear(n);
+    p.crear('Ana');
+    await p.ponerClave('Ana', 'sandia-con-vino');
+
+    const conRegistro = cambio => {
+      const r = JSON.parse(n.almacen.leer('esle2_perfiles'));
+      cambio(r);
+      n.almacen.escribir('esle2_perfiles', JSON.stringify(r));
+    };
+
+    /* Bajar las vueltas a una hace barato probar contraseñas: no se acepta. */
+    conRegistro(r => { r.cerraduras[0].it = 1; });
+    comprobar('con las vueltas bajadas a mano no entra',
+      (await p.comprobar('Ana', 'sandia-con-vino')) === false);
+
+    conRegistro(r => { r.cerraduras[0].it = 210000; r.cerraduras[0].v = 99; });
+    comprobar('con una versión desconocida tampoco',
+      (await p.comprobar('Ana', 'sandia-con-vino')) === false);
+
+    conRegistro(r => { r.cerraduras = 'no soy una lista'; });
+    comprobar('con las cerraduras rotas no entra nadie',
+      (await p.comprobar('Ana', 'sandia-con-vino')) === false);
+    comprobar('y no se rompe al preguntar', p.tieneClave('Ana') === false);
+  }
+
+  seccion('Un alumno que se llama «__proto__»');
+  {
+    const n = navegador();
+    const p = Perfil.crear(n);
+    p.crear('__proto__');
+    await p.ponerClave('__proto__', 'sandia-con-vino');
+    comprobar('entra como cualquiera', (await p.comprobar('__proto__', 'sandia-con-vino')) === true);
+    comprobar('y no le pisa el prototipo a nadie', ({}).v === undefined && ({}).h === undefined);
+  }
+
+  seccion('Comparar sin apurarse');
+  {
+    comprobar('dos iguales dan true', Perfil.iguales('abc', 'abc'));
+    comprobar('distintas, false', !Perfil.iguales('abc', 'abd'));
+    comprobar('de distinto largo, false', !Perfil.iguales('abc', 'abcd'));
+    comprobar('vacías, true', Perfil.iguales('', ''));
+  }
+
+  console.log(`\n${ok} verificaciones correctas, ${fallos} fallos.`);
+  assert.strictEqual(fallos, 0, 'los perfiles tienen fallos');
+})();

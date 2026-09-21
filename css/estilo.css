@@ -1603,8 +1603,22 @@ body.enfoque.enfoque-salida .columna { display: grid; }
 .perfil-lista li.abierto { border-color: var(--acento); background: var(--acento-sua); }
 .perfil-lista li.nota { display: block; border: 0; background: none; padding: .2rem 0; }
 .perfil-nombre { font-weight: 600; }
-.perfil-alta { display: flex; align-items: flex-end; gap: .5rem; }
-.perfil-alta label { flex: 1; }
+.perfil-alta { display: flex; align-items: flex-end; gap: .5rem; flex-wrap: wrap; }
+.perfil-alta label { flex: 1; min-width: 10rem; }
+
+/* El interruptor del modo usuario y lo que dice debajo. */
+.perfil-modo {
+  margin: .9rem 0; padding: .7rem .9rem; border: 1px solid var(--linea);
+  border-left: 3px solid var(--acento); border-radius: 8px; background: var(--panel-2);
+}
+.perfil-interruptor { display: flex; gap: .5rem; align-items: flex-start; cursor: pointer; }
+.perfil-interruptor input { margin-top: .15rem; flex: 0 0 auto; }
+.perfil-modo .nota { margin: .5rem 0 0; }
+
+/* La pantalla de entrada: angosta, sin nada que distraiga. */
+.dlg-entrada { max-width: 420px; }
+.dlg-entrada .perfil-alta { flex-direction: column; align-items: stretch; }
+.dlg-entrada .perfil-alta label { width: 100%; }
 
 /* --------------------------- los primeros pasos ------------------------- */
 /* El cartel NO es modal ni tapa la pantalla: la persona tiene que poder mirar

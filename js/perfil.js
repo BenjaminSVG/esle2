@@ -11,9 +11,15 @@
  * entrega desde la máquina donde antes trabajó Beto, se lleva el código de
  * Beto con su nombre encima.
  *
- * Esto no son cuentas ni contraseñas —no hay servidor, y una contraseña que
- * no protege nada enseña mal—. Es un cajón por persona: al cambiar de alumno
- * se guarda lo del que estaba y se saca lo del que viene.
+ * Es un cajón por persona: al cambiar de alumno se guarda lo del que estaba y
+ * se saca lo del que viene. No son cuentas de un servidor, porque no hay
+ * servidor.
+ *
+ * Arriba de eso, y apagado por omisión, está el «modo usuario»: con él
+ * encendido cada alumno entra con nombre y contraseña, y al cerrar sesión la
+ * máquina queda limpia. Lo que esa contraseña hace y lo que no —no cifra
+ * nada— está explicado más abajo, donde está el código, y también en pantalla
+ * antes de que nadie la elija.
  *
  * Lo que NO se cambia son las preferencias de la máquina: el tema, los
  * colores, la disposición de los paneles, el servidor de señas. Esas son del
@@ -23,16 +29,47 @@
  * API (sin DOM: lo prueba test/test-perfil.js)
  *   Perfil.crear({ almacen, galletas }) -> {
  *     listar(), actual(), cambiar(nombre), crear(nombre), borrar(nombre),
- *     guardar(), hayDatos(), tamano(nombre)
+ *     guardar(), hayDatos(), tamano(nombre),
+ *     modo(), ponerModo(v), tieneClave(n), ponerClave(n, clave),
+ *     sacarClave(n, clave), comprobar(n, clave), abrirSesion(n, clave),
+ *     cerrarSesion()
  *   }
  *   Perfil.esDelAlumno(clave)   Perfil.limpiarNombre(texto)
+ *   Perfil.sal()   Perfil.amasar(clave, sal, vueltas, subtle)
  */
 (function (global) {
   'use strict';
 
-  const REGISTRO = 'esle2_perfiles';          // { actual, nombres: [] }
+  const REGISTRO = 'esle2_perfiles';          // { actual, nombres, modo, cerraduras }
   const PREFIJO_DATOS = 'esle2_perfil_';      // + nombre
   const LARGO_MAX = 40;
+  const CLAVE_MIN = 8;
+
+  /*
+   * ----------------------------------------------------------------------
+   * La cerradura: lo que es y lo que NO es
+   * ----------------------------------------------------------------------
+   * Con el «modo usuario» encendido, cada alumno entra con su nombre y su
+   * contraseña, y al cerrar sesión sus cosas se guardan en su cajón y la
+   * máquina queda limpia: el que viene después abre ESLE2 y no ve nada de
+   * nadie. Eso es lo que arregla, y en un laboratorio es justamente el
+   * problema de todos los días.
+   *
+   * Lo que NO hace, y está dicho en pantalla con todas las letras: no cifra
+   * nada. Los cajones siguen guardados en el navegador, así que alguien que
+   * sepa abrir las herramientas del navegador los puede leer igual. Para que
+   * la contraseña protegiera de verdad habría que cifrar el cajón con una
+   * llave sacada de ella, y entonces el trabajo del alumno no podría vivir
+   * suelto en el almacenamiento mientras la sesión está abierta —treinta
+   * módulos lo leen y lo escriben ahí— sino solo en memoria. Es otro trabajo
+   * y no se hace de arriba de este.
+   *
+   * De la contraseña no se guarda la contraseña: se guarda el resultado de
+   * pasarla por PBKDF2 con una sal propia. No es para proteger el cajón —ya
+   * dijimos que no lo protege— sino porque los chicos repiten contraseñas: si
+   * alguien mira el navegador, que no se lleve puesta la que además usan en
+   * otro lado.
+   */
 
   /* Las que se quedan en la máquina pase quien pase. Todo lo demás que
      empiece con «esle2» es del alumno: si mañana alguien agrega una clave y
@@ -75,6 +112,56 @@
   }
   const comparable = t => limpiarNombre(t).normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+  /* ------------------------------------------------------------------ */
+  /* Amasar la contraseña                                                */
+  /* ------------------------------------------------------------------ */
+
+  /* Cuántas vueltas. Es un número de compromiso: en la máquina de un
+     laboratorio tiene que tardar menos de un segundo —si no, entrar a clase
+     se vuelve un castigo— y al mismo tiempo tiene que hacer caro probar
+     contraseñas una por una. */
+  const VUELTAS = 210000;
+
+  const enTexto = bytes => {
+    let s = '';
+    const b = new Uint8Array(bytes);
+    for (let i = 0; i < b.length; i++) s += String.fromCharCode(b[i]);
+    const crudo = typeof btoa === 'function' ? btoa(s) : Buffer.from(b).toString('base64');
+    return crudo.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  };
+
+  function sal(n) {
+    const c = global.crypto || (global.require && global.require('crypto').webcrypto);
+    const b = new Uint8Array(n || 16);
+    if (c && c.getRandomValues) c.getRandomValues(b);
+    else for (let i = 0; i < b.length; i++) b[i] = Math.floor(Math.random() * 256);
+    return enTexto(b);
+  }
+
+  const elSubtle = s => s || (global.crypto && global.crypto.subtle)
+    || (global.require && global.require('crypto').webcrypto.subtle);
+
+  async function amasar(clave, laSal, vueltas, subtle) {
+    const st = elSubtle(subtle);
+    const bytes = new TextEncoder().encode(String(clave));
+    const semilla = await st.importKey('raw', bytes, 'PBKDF2', false, ['deriveBits']);
+    const salado = new TextEncoder().encode('esle2-perfil/' + laSal);
+    const crudo = await st.deriveBits(
+      { name: 'PBKDF2', hash: 'SHA-256', salt: salado, iterations: vueltas || VUELTAS },
+      semilla, 256);
+    return enTexto(crudo);
+  }
+
+  /* Comparar sin apurarse: si se corta en la primera letra distinta, el
+     tiempo que tarda dice cuántas letras acertó quien está probando. */
+  function iguales(a, b) {
+    const x = String(a), y = String(b);
+    if (x.length !== y.length) return false;
+    let d = 0;
+    for (let i = 0; i < x.length; i++) d |= x.charCodeAt(i) ^ y.charCodeAt(i);
+    return d === 0;
+  }
 
   function crear(cfg) {
     const almacen = cfg.almacen;
@@ -190,13 +277,95 @@
       return (almacen.leer(ranura(nombre)) || '').length;
     }
 
+    /* ---------------------------- cerradura --------------------------- */
+
+    /* Las cerraduras van en una lista y no en un objeto con el nombre de
+       clave: el nombre lo escribe el alumno, y un alumno que se llama
+       «__proto__» no tiene por qué poder tocar el prototipo de nada. */
+    const cerraduras = r => (Array.isArray(r.cerraduras) ? r.cerraduras : []);
+    const cerraduraDe = (r, nombre) =>
+      cerraduras(r).find(c => c && c.n === comparable(nombre)) || null;
+
+    const modo = () => leerRegistro().modo === true;
+
+    function ponerModo(encendido) {
+      const r = leerRegistro();
+      r.modo = !!encendido;
+      grabarRegistro(r);
+      return r.modo;
+    }
+
+    const tieneClave = nombre => !!cerraduraDe(leerRegistro(), nombre);
+
+    async function ponerClave(nombre, clave, subtle) {
+      const texto = String(clave == null ? '' : clave);
+      if (texto.length < CLAVE_MIN) {
+        throw new Error('la contraseña tiene que tener al menos ' + CLAVE_MIN + ' caracteres');
+      }
+      const r = leerRegistro();
+      const cual = r.nombres.find(n => comparable(n) === comparable(nombre));
+      if (!cual) throw new Error('no hay ningún perfil que se llame así');
+      const laSal = sal(16);
+      const h = await amasar(texto, laSal, VUELTAS, subtle);
+      r.cerraduras = cerraduras(r).filter(c => c && c.n !== comparable(cual))
+        .concat([{ n: comparable(cual), v: 1, it: VUELTAS, s: laSal, h }]);
+      grabarRegistro(r);
+      return true;
+    }
+
+    /* Devuelve si la contraseña es la de ese perfil. Un perfil sin cerradura
+       contesta que NO, en vez de dejar entrar a cualquiera: con el modo
+       encendido, «sin contraseña» es «todavía no terminó de configurarse», no
+       «pasá sin golpear». */
+    async function comprobar(nombre, clave, subtle) {
+      const c = cerraduraDe(leerRegistro(), nombre);
+      if (!c || c.v !== 1 || typeof c.s !== 'string' || typeof c.h !== 'string') return false;
+      const vueltas = Number(c.it);
+      if (!Number.isInteger(vueltas) || vueltas < 1000 || vueltas > 5000000) return false;
+      let h;
+      try { h = await amasar(String(clave == null ? '' : clave), c.s, vueltas, subtle); }
+      catch (e) { return false; }
+      return iguales(h, c.h);
+    }
+
+    async function abrirSesion(nombre, clave, subtle) {
+      if (!(await comprobar(nombre, clave, subtle))) return false;
+      cambiar(nombre);
+      return true;
+    }
+
+    /* Cerrar sesión: lo del alumno se va a su cajón y la máquina queda
+       limpia. Eso es lo que hace que el que viene después no vea nada. */
+    function cerrarSesion() {
+      const r = leerRegistro();
+      if (!r.actual) return false;
+      guardar();
+      poner(null);
+      r.actual = null;
+      grabarRegistro(r);
+      return true;
+    }
+
+    /* Sacar la cerradura pide la contraseña: si no, cualquiera la saca desde
+       el mismo diálogo y la cerradura no cierra nada. */
+    async function sacarClave(nombre, clave, subtle) {
+      if (!(await comprobar(nombre, clave, subtle))) return false;
+      const r = leerRegistro();
+      r.cerraduras = cerraduras(r).filter(c => c && c.n !== comparable(nombre));
+      grabarRegistro(r);
+      return true;
+    }
+
     return {
       listar: () => leerRegistro().nombres.slice(),
       actual: () => leerRegistro().actual,
       crear: crearPerfil,
-      cambiar, borrar, guardar, hayDatos, tamano
+      cambiar, borrar, guardar, hayDatos, tamano,
+      modo, ponerModo, tieneClave, ponerClave, sacarClave, comprobar,
+      abrirSesion, cerrarSesion
     };
   }
 
-  global.Perfil = { crear, esDelAlumno, limpiarNombre, DE_LA_MAQUINA, COOKIES, REGISTRO };
+  global.Perfil = { crear, esDelAlumno, limpiarNombre, sal, amasar, iguales,
+    DE_LA_MAQUINA, COOKIES, REGISTRO, CLAVE_MIN, VUELTAS };
 })(typeof window !== 'undefined' ? window : globalThis);

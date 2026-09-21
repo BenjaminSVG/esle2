@@ -158,9 +158,9 @@ puestas, escuchando `securitypolicyviolation`, y se comprueba que el sitio no en
 - **Service worker**: ahora solo guarda respuestas del propio origen, con estado 200, sin
   redirección y con un tipo que corresponda a la extensión. Sin eso, el portal de wifi de un
   colegio podía quedar guardado como si fuera nuestro código. Y borra solo las cachés de ESLE2.
-- **Lo que no se toca**: los perfiles no son cuentas y el propio diálogo lo dice; la transmisión en
-  vivo es pública por diseño y su «clave» no es un secreto; y `readOnly` en el visor no autentica a
-  nadie.
+- **Lo que no se toca**: el modo usuario es una cerradura y no un cifrado, y el propio diálogo lo
+  dice antes de que nadie elija una contraseña; la transmisión en vivo es pública por diseño y su
+  «clave» no es un secreto; y `readOnly` en el visor no autentica a nadie.
 
 ## Modo flexible: compilar con errores
 
@@ -1535,9 +1535,9 @@ donde antes trabajó Beto, se lleva el código de Beto con su nombre encima.
 El botón **¿Quién sos?**, arriba de las acciones de progreso, abre un cajón por persona. Al cambiar de
 alumno se guarda lo del que estaba y se saca lo del que viene.
 
-**No son cuentas ni contraseñas.** No hay servidor, así que una contraseña acá no protegería nada, y
-una que no protege nada enseña mal: cualquiera puede entrar al cajón de cualquiera. Lo que resuelve es
-que el trabajo de uno no aparezca en la sesión del otro, que es el problema real.
+**No son cuentas de un servidor**, porque no hay servidor. Lo que resuelve es que el trabajo de uno
+no aparezca en la sesión del otro, que es el problema real. Por omisión se cambia de alumno con un
+clic, sin contraseña: para una máquina de casa alcanza.
 
 Lo que **no** cambia son las preferencias de la máquina: el tema, los colores, la disposición de los
 paneles, el servidor de señas. Esas son del aula y no de la persona; hacer que cada alumno vuelva a
@@ -1546,6 +1546,46 @@ clave nueva que nadie agregue a esa lista cae del lado del alumno: si el error s
 reiniciando una preferencia y no dejando el código de uno en la sesión de otro.
 
 Dos detalles que hacen que no muerda:
+
+### Modo usuario: entrar con nombre y contraseña
+
+Apagado por omisión. Encendido —desde el mismo diálogo de «¿Quién sos?»— cada alumno entra con su
+nombre y su contraseña, y **al cerrar sesión la máquina queda limpia**: el que viene después abre
+ESLE2 y no ve el programa, la racha ni el avance de nadie. En un laboratorio ese es el problema de
+todos los días, y eso es lo que arregla.
+
+**Lo que NO hace, y está escrito en la misma pantalla antes de que nadie elija una contraseña: no
+cifra nada.** Los cajones siguen guardados en el navegador, así que alguien que sepa abrir las
+herramientas del navegador los puede leer igual. Esto ordena el trabajo, no lo guarda bajo llave.
+
+Para que la contraseña protegiera de verdad habría que cifrar el cajón con una llave sacada de
+ella, y entonces el trabajo del alumno no podría vivir suelto en el almacenamiento mientras la
+sesión está abierta —treinta módulos lo leen y lo escriben ahí— sino solo en memoria. Es otro
+trabajo, bastante más grande, y no se hace de arriba de este.
+
+De la contraseña **no se guarda la contraseña**: se guarda el resultado de pasarla por PBKDF2-SHA256
+con 210.000 vueltas y una sal propia de cada perfil. No es para proteger el cajón —ya dijimos que no
+lo protege— sino porque los chicos repiten contraseñas: si alguien mira el navegador, que no se
+lleve puesta la que además usan en otro lado. Se compara en tiempo constante, y dos perfiles con la
+misma contraseña dan resultados distintos porque cada uno tiene su sal. Tarda unos 100 ms en una
+máquina de escritorio.
+
+**No hay forma de recuperar una contraseña olvidada**, porque no hay servidor que la recupere. Se
+dice al elegirla y se dice en la pantalla de entrada. Lo que sí hay es una salida a la vista:
+**apagar el modo usuario**, que lo puede hacer cualquiera que esté frente a esa computadora. Sin
+eso, un alumno que olvidó su contraseña se quedaría afuera de la máquina entera y no de su perfil.
+Que esa salida exista es exactamente lo que hace que esto sea una cerradura y no una caja fuerte, y
+por eso está dicho ahí mismo.
+
+La pantalla de entrada no se puede saltear: Escape no la cierra. Con el modo encendido, un perfil
+sin contraseña **no** deja entrar a nadie —«sin contraseña» es «todavía no se terminó de
+configurar», no «pasá sin golpear»— y desaparece el botón de «Entrar» de un clic, que sería la
+puerta de atrás que deja la cerradura de adorno.
+
+Las cerraduras se guardan en una lista y no en un objeto con el nombre como clave: el nombre lo
+escribe el alumno, y uno que se llame `__proto__` no tiene por qué poder tocar el prototipo de nada.
+Un registro editado a mano —vueltas bajadas a 1, versión desconocida, la lista rota— no deja entrar
+a nadie en vez de dejar entrar a cualquiera.
 
 * **el primero se queda con lo que ya había.** Quien venía usando ESLE2 en esa máquina y recién ahora
   se anota no pierde nada; los siguientes arrancan limpios;
@@ -1800,7 +1840,7 @@ la copia vieja y el cambio no llega a nadie. `npm run revisar` compara las fecha
 | `js/carpeta.js` | Llevarse una carpeta en un archivo y traerla de vuelta. |
 | `js/disenador.js` · `js/disenador-ui.js` | Diseñar la ventana arrastrando, reescribiendo los números del programa. |
 | `tools/soltar.js` · `tools/probar.js` · `tools/revisar-cache.js` | Publicar: pruebas, índice, caché y `VERSION` en un comando. |
-| `js/perfil.js` · `js/perfil-ui.js` | Un cajón por alumno en las máquinas compartidas. |
+| `js/perfil.js` · `js/perfil-ui.js` | Un cajón por alumno, y el modo usuario con contraseña. |
 | `js/guardado.js` | Guardar en el navegador sin tirar abajo el IDE cuando el almacén está lleno. |
 | `js/bienvenida.js` | Los cuatro carteles de la primera visita. |
 | `js/cobertura.js` | Qué líneas corrieron y cuáles no, con el gancho del depurador. |
@@ -1858,7 +1898,7 @@ la copia vieja y el cambio no llega a nadie. `npm run revisar` compara las fecha
 | `test/test-senas.js` | Que el servidor de señas **reenvíe**, no que conecte. Las dos versiones (22). |
 | `test/test-disenador.js` | Que arrastrar cambie dos números y NADA más, y que siga compilando (71). |
 | `test/test-cache.js` | Que todo lo que piden las páginas se guarde para usar sin internet (18). |
-| `test/test-perfil.js` | Que el trabajo de un alumno no aparezca en la sesión del otro (61). |
+| `test/test-perfil.js` | Que el trabajo de un alumno no aparezca en la sesión del otro, y la cerradura (100). |
 | `test/test-guardado.js` | Que guardar nunca tire, y que avise una sola vez cuando no puede (21). |
 | `test/test-bienvenida.js` | Sobre todo, a quién NO tiene que aparecerle el recorrido (19). |
 | `test/test-cobertura.js` | Que no mienta en ninguna de las dos direcciones (31). |
