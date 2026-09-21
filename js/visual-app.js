@@ -1168,7 +1168,13 @@
   }
 
   if (window.ProyectoUI) {
-    ProyectoUI.iniciar({
+    const aplicarAlEditorVis = (codigo, entradaTexto) => {
+      editor.setValue(codigo);
+      $('#entrada').value = entradaTexto || '';
+      irA('ide');
+      editor.refresh();
+    };
+    const proyecto = ProyectoUI.iniciar({
       clave: 'esle2vis_proyecto',
       claveModo: 'esle2vis_explorador',
       ext: '.slv',
@@ -1176,14 +1182,21 @@
       plantilla: 'var\ninicio\n   ventana ("Mi programa", 400, 300)\n   \n   esperar_eventos ()\nfin\n',
       editor,
       entrada: () => $('#entrada').value,
-      aplicar: (codigo, entradaTexto) => {
-        editor.setValue(codigo);
-        $('#entrada').value = entradaTexto || '';
-        irA('ide');
-        editor.refresh();
-      },
+      aplicar: aplicarAlEditorVis,
       estado: nombre => estado('abierto ' + nombre)
     });
+
+    if (window.VersionesUI && proyecto && historial) {
+      VersionesUI.iniciar({
+        variante: 'visual',
+        claveVersiones: 'esle2vis_versiones',
+        proyecto, historial, editor,
+        entrada: () => $('#entrada').value,
+        ext: '.slv',
+        aplicar: aplicarAlEditorVis,
+        estado
+      });
+    }
   }
 
   /* ------------------------------ el alumno ---------------------------- */

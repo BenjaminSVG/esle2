@@ -45,9 +45,11 @@
       const ul = $('#hisLista');
       ul.replaceChildren();
       if (!lista.length) {
-        ul.appendChild(nodo('p', 'nota', 'Todavía no hay ninguna versión guardada. ' +
+        const li = nodo('li');
+        li.appendChild(nodo('p', 'nota', 'Todavía no hay ninguna copia guardada. ' +
           'Se van a ir guardando solas cuando ejecutes el programa, y podés guardar una ' +
           'ahora mismo con el botón de arriba.'));
+        ul.appendChild(li);
         return;
       }
       const ahora = cfg.codigo();
@@ -140,16 +142,17 @@
       pintar();
     }
 
+    /* No abre el diálogo: eso ahora lo maneja js/versiones-ui.js, que es
+       quien decide cuándo mostrarlo (esta pestaña es una más, adentro de
+       «Versiones»). Acá solo se refresca lo que se va a pintar. */
     function abrir() {
       lista = H.cargar(cfg.clave);
       elegida = null;
       $('#hisAviso').classList.add('oculto');
       $('#hisMensaje').value = '';
       pintar();
-      dlg.showModal();
     }
 
-    $('#btnHistorial').addEventListener('click', abrir);
     $('#hisGuardar').addEventListener('click', guardarAMano);
     $('#hisMensaje').addEventListener('keydown', ev => {
       if (ev.key === 'Enter') { ev.preventDefault(); guardarAMano(); }

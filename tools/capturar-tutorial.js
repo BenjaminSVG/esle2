@@ -279,7 +279,10 @@ const PLAN = [
       await escribir(p, SALUDO.replace('"Ana"', '"Beto"'));
       await correr(p);
       await porMenu(p, '#menuVer', '#btnHistorial', '#dlgHistorial[open]');
-      await p.click('#hisLista li:first-child');
+      await p.fill('#verMensaje', 'Con el saludo a Beto');
+      await p.click('#verGuardar');
+      await p.click('#verTabVersiones');
+      await p.click('#verLista li:first-child');
       await p.waitForTimeout(350);
     } },
 

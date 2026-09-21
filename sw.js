@@ -7,7 +7,7 @@
  *
  * Al publicar una versión nueva hay que subir VERSION: eso borra la caché vieja.
  */
-const VERSION = 'esle2-v77';
+const VERSION = 'esle2-v78';
 
 const ARCHIVOS = [
   './',
@@ -225,6 +225,8 @@ const ARCHIVOS = [
   'js/sala.js',
   'js/sala-ui.js',
   'js/carpeta.js',
+  'js/versiones.js',
+  'js/versiones-ui.js',
 ];
 
 /* Lo que esta caché acepta guardar. Sin esto, una respuesta que viniera de

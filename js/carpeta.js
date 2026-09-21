@@ -44,6 +44,12 @@
  *   Carpeta.limpiar(bruto)                 -> el paquete rearmado, o null
  *   Carpeta.fundir(estado, paquete, raiz)  -> { estado } | { error }
  *   Carpeta.nombreDeArchivo(ruta)          -> «parcial.esle2carpeta»
+ *
+ * El gzip de acá abajo (comprimirJSON/descomprimirJSON) es de cualquier
+ * objeto, no solo de una carpeta: js/versiones.js lo reutiliza para el
+ * archivo de «Pasar a otra compu», que es OTRO formato (empieza con
+ * f:"esle2-proyecto", no f:"esle2-carpeta") y por eso no puede pasar por
+ * limpiar(), que es específica de una carpeta.
  */
 (function (global) {
   'use strict';
@@ -116,24 +122,33 @@
     return salida;
   }
 
-  function comprimir(paquete, Comp) {
+  /* Cualquier objeto, comprimido: JSON.stringify + gzip, nada más. */
+  function comprimirJSON(objeto, Comp) {
     const C = Comp || global.CompressionStream;
-    return pasar(enBytes(JSON.stringify(paquete)), C, 'gzip', null);
+    return pasar(enBytes(JSON.stringify(objeto)), C, 'gzip', null);
   }
 
-  async function descomprimir(bytes, Descomp) {
+  /* La vuelta: gzip -> texto -> JSON.parse. Devuelve el objeto CRUDO, sin
+     revisar campo por campo —eso es tarea de quien conoce ESE formato—, o
+     null si no era gzip, se pasaba de grande, o no era JSON. */
+  async function descomprimirJSON(bytes, Descomp, tope) {
     if (!bytes || bytes.length > LIMITES.archivo) return null;
     const D = Descomp || global.DecompressionStream;
     let crudo;
-    try { crudo = await pasar(bytes, D, 'gzip', LIMITES.abierto); }
+    try { crudo = await pasar(bytes, D, 'gzip', tope || LIMITES.abierto); }
     catch (e) { return null; }                       // no era gzip
     if (!crudo) return null;                         // se pasaba de grande
     let texto;
     try { texto = new TextDecoder('utf-8', { fatal: true }).decode(crudo); }
     catch (e) { return null; }                       // no era texto
-    let bruto;
-    try { bruto = JSON.parse(texto); } catch (e) { return null; }
-    return limpiar(bruto);
+    try { return JSON.parse(texto); } catch (e) { return null; }
+  }
+
+  function comprimir(paquete, Comp) { return comprimirJSON(paquete, Comp); }
+
+  async function descomprimir(bytes, Descomp) {
+    const bruto = await descomprimirJSON(bytes, Descomp);
+    return bruto === null ? null : limpiar(bruto);
   }
 
   /* ------------------------------------------------------------------ */
@@ -235,7 +250,7 @@
   }
 
   global.Carpeta = {
-    armar, comprimir, descomprimir, limpiar, fundir, nombreDeArchivo,
+    armar, comprimir, descomprimir, comprimirJSON, descomprimirJSON, limpiar, fundir, nombreDeArchivo,
     LIMITES, FORMATO, VERSION, EXTENSION
   };
 })(typeof window !== 'undefined' ? window : globalThis);

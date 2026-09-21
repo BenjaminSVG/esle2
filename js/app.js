@@ -773,19 +773,20 @@ fin
   pintarSonido();
 
   /* ------------------- explorador de archivos (apagado) ---------------- */
-  ProyectoUI.iniciar({
+  const aplicarAlEditor = (codigo, entrada) => {
+    editor.setValue(codigo);
+    $('#entrada').value = entrada || '';
+    Guardado.escribir('esle2_entrada', entrada || '');
+    editor.refresh();
+  };
+  const proyecto = ProyectoUI.iniciar({
     clave: 'esle2_proyecto',
     claveModo: 'esle2_explorador',
     ext: '.sl',
     proyecto: 'ESLE2',
     editor,
     entrada: () => $('#entrada').value,
-    aplicar: (codigo, entrada) => {
-      editor.setValue(codigo);
-      $('#entrada').value = entrada || '';
-      Guardado.escribir('esle2_entrada', entrada || '');
-      editor.refresh();
-    },
+    aplicar: aplicarAlEditor,
     estado: nombre => estado('abierto ' + nombre)
   });
 
@@ -800,6 +801,19 @@ fin
     },
     estado
   });
+
+  if (window.VersionesUI && proyecto) {
+    VersionesUI.iniciar({
+      variante: 'clasico',
+      claveVersiones: 'esle2_versiones',
+      proyecto, historial, editor,
+      entrada: () => $('#entrada').value,
+      ext: '.sl',
+      aplicar: aplicarAlEditor,
+      estado
+    });
+  }
+
   AutocompletarUI.iniciar(editor, { poo: false });
   MemoriaUI.iniciar({
     codigo: () => editor.getValue(),

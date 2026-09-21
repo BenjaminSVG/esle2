@@ -549,7 +549,43 @@
 
     aplicarModo(leerModo());
 
-    return { activo: () => (encendido ? st.activo : null), guardarActual, abrir, encendido: () => encendido };
+    /* Lo que necesita js/versiones-ui.js para hacer commits del proyecto
+       entero: leer el estado tal cual está guardado (con lo que se esté
+       escribiendo en este momento incluido) y reemplazarlo entero —al
+       restaurar una versión vieja o al traer cambios de otra computadora—
+       prendiendo el explorador si hiciera falta, porque un proyecto con más
+       de un archivo no se puede mostrar con el explorador apagado. */
+    function estadoCompleto() {
+      guardarActual();
+      return P.normalizar(st);
+    }
+
+    function establecer(nuevoEstado) {
+      st = P.normalizar(nuevoEstado);
+      grabar();
+      if (st.archivos.length > 1 && !encendido) {
+        encendido = true;
+        grabarModo(true);
+        panel.classList.remove('oculto');
+        document.body.classList.add('con-explorador');
+        boton.setAttribute('aria-pressed', 'true');
+        const etiqueta = boton.querySelector('.menu-etiqueta') || boton;
+        etiqueta.textContent = 'Explorador de archivos ✓';
+      }
+      if (encendido && st.activo) {
+        const a = st.archivos.find(x => x.nombre === st.activo);
+        if (a) { cambiando = true; cfg.aplicar(a.codigo, a.entrada); cambiando = false; }
+      } else if (!encendido && st.archivos[0]) {
+        cambiando = true; cfg.aplicar(st.archivos[0].codigo, st.archivos[0].entrada); cambiando = false;
+      }
+      pintar();
+      global.dispatchEvent(new CustomEvent('esle2:disposicion'));
+    }
+
+    return {
+      activo: () => (encendido ? st.activo : null), guardarActual, abrir, encendido: () => encendido,
+      estadoCompleto, establecer
+    };
   }
 
   global.ProyectoUI = { iniciar };

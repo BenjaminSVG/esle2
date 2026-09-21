@@ -584,6 +584,60 @@ la poda con y sin versiones manuales, el tope de tamaño, el diff (línea cambia
 de vacío a algo, un caso realista y uno de 600 líneas), el recorte con contexto, y que una clave
 corrupta en `localStorage` no rompa nada.
 
+Esto de acá arriba es la red de seguridad de un solo archivo, silenciosa y automática. Lo que sigue
+—las **Versiones** del proyecto— es lo que el alumno guarda a propósito, y lo que se puede llevar a
+otra computadora.
+
+## Versiones del proyecto
+
+Un control de versiones más parecido a GitHub Desktop, pero con el vocabulario recortado a lo que
+hace falta para aprender a programar: no hay *staging*, cada versión es el proyecto **entero** —todos
+los archivos, de una— con un mensaje. En herramientas de verdad esto se llama *commit*, y el diálogo
+lo dice así una sola vez, para quien ya conoce la palabra.
+
+El diálogo **Versiones** (`Ver ▸ Versiones…`) tiene cuatro pestañas:
+
+- **Cambios**: qué archivos cambiaron desde la última versión guardada, con su diff, y el botón para
+  guardar una nueva.
+- **Versiones guardadas**: la lista cronológica, con su diff contra la anterior o contra el código de
+  ahora, y **«Volver a esta versión»** —que guarda lo que había antes de tocar nada, así que restaurar
+  también es reversible.
+- **Pasar a otra compu**: **«Llevar proyecto…»** baja un archivo `.esle2proyecto` con el proyecto y
+  *todo* su historial; **«Traer cambios…»** lo trae de vuelta en otra computadora, sin que ninguna de
+  las dos tenga que estar prendida al mismo tiempo que la otra.
+- **Copias automáticas**: el historial de arriba, sin tocar.
+
+Por qué un archivo y no una cuenta con sincronización automática: ESLE2 es un sitio estático, sin
+servidor ni base de datos, así que no hay dónde sincronizar nada en el medio. El archivo es la forma
+más simple de mover trabajo entre dos
+computadoras que un alumno realmente tiene: llevarlo a upa de casa a la escuela, mandárselo a sí
+mismo, guardarlo en la carpeta compartida de la escuela.
+
+**El modelo.** Cada versión —cada *commit*— apunta a la anterior (o a dos, cuando es la unión de dos
+historiales) y así arma un grafo, no una lista: es lo que hace falta para saber de dónde partió cada
+computadora y compararlas contra eso, no entre sí. `js/versiones.js` es el cálculo puro —el grafo, el
+diff, la combinación de tres estados— y lo prueba `test/test-versiones.js`; `js/versiones-ui.js` lo
+dibuja y lo conecta con el editor y el explorador (`js/proyecto-ui.js`).
+
+**Traer cambios de otra compu**, paso a paso:
+
+1. Si el proyecto local todavía no tiene ninguna versión guardada, el que llega se adopta entero: es
+   el caso de «traje mi trabajo a esta compu nueva».
+2. Si no, lo que hay ahora se guarda primero —protegido, como siempre— y recién después se compara.
+3. Los dos historiales se unen por identificador de versión: lo que ya tenía cada uno se conserva, lo
+   que le faltaba se copia del otro.
+4. Si un archivo cambió solo de un lado, se lleva ese cambio sin preguntar nada. Si los dos lo
+   cambiaron y llegaron a lo mismo, tampoco. Si lo cambiaron **distinto** —o un lado lo borró y el
+   otro lo tocó— es un conflicto de verdad: se muestran las dos versiones una al lado de la otra y el
+   alumno elige con cuál quedarse, o guarda las dos con otro nombre. Nunca se sobrescribe nada en
+   silencio.
+
+`test/test-versiones.js` prueba las 46 verificaciones en Node: el grafo (ascendencia, antecesor
+común), el diff archivo por archivo, la combinación de tres estados en cada uno de sus casos (un solo
+lado tocó, los dos llegaron a lo mismo, conflicto, borrado contra modificación, los dos borraron),
+unir dos grafos —incluida la reimportación del mismo paquete, que no debe duplicar nada— y que un
+paquete armado a mano (con un `..` en una ruta, un id repetido, un ciclo) no entre.
+
 ## Autocompletado
 
 Mientras se escribe aparece una lista con lo que puede ir en ese lugar: las palabras reservadas,
@@ -1916,7 +1970,8 @@ la copia vieja y el cambio no llega a nadie. `npm run revisar` compara las fecha
 | `js/ajustar-texto.js` | Ajustar texto (`Alt + Z`): corta las líneas largas sin perder la sangría. |
 | `js/iconos-visual.js` · `tools/iconos-visual.js` | Los iconos de los controles y del dibujo, y el guion que los genera. |
 | `js/sonido.js` | Micro-sonidos del IDE, sintetizados con la Web Audio API. |
-| `js/historial.js` · `js/historial-ui.js` | Historial de versiones: guardado, diff y restauración. |
+| `js/historial.js` · `js/historial-ui.js` | Copias automáticas de un archivo: guardado, diff y restauración. |
+| `js/versiones.js` · `js/versiones-ui.js` | Versiones del proyecto entero: el grafo de commits, el diff, unir dos historiales, y «Pasar a otra compu». |
 | `js/autocompletar.js` · `js/autocompletar-ui.js` | Autocompletado del editor y su lista de sugerencias. |
 | `js/memoria.js` · `js/memoria-ui.js` | Simulador de memoria: fotos de las cajas y su línea de tiempo. |
 | `js/disposicion.js` | Mover y redimensionar los paneles del IDE. |
@@ -1965,11 +2020,12 @@ la copia vieja y el cambio no llega a nadie. `npm run revisar` compara las fecha
 | `test/test-visual.js` | Ventanas, controles, eventos y dibujo de ESLE2 Visual (46). |
 | `test/test-ejercicios-visual.js` | Los 50 ejercicios del curso Visual, sus soluciones de referencia y que ninguna plantilla apruebe sola (1011). |
 | `test/test-proyecto.js` | Archivos, carpetas y nombres del explorador (54). |
-| `test/test-carpeta.js` | Carpetas vacías, exportar/importar y rutas que vienen de afuera (61). |
+| `test/test-carpeta.js` | Carpetas vacías, exportar/importar y rutas que vienen de afuera (67). |
 | `test/test-iconos.js` | Iconos, cabecera común de las diez páginas, barra agrupada y botones sin cablear (531). |
 | `test/test-manifest.js` | Manifiesto, iconos y etiquetas de instalación en el celular (108). |
 | `test/test-sonido.js` | Efectos, envolventes y apagado de los micro-sonidos (54). |
-| `test/test-historial.js` | Altas, poda y diff del historial de versiones (40). |
+| `test/test-historial.js` | Altas, poda y diff de las copias automáticas (40). |
+| `test/test-versiones.js` | El grafo de versiones, el diff, unir dos historiales y los paquetes que vienen de afuera (46). |
 | `test/test-autocompletar.js` | Sugerencias, correcciones de tipeo y plantillas del autocompletado (44). |
 | `test/test-memoria.js` | Direcciones, tamaños, pila y montículo del simulador de memoria (52). |
 | `test/test-diagrama.js` | Formas, coordenadas y explicación de los diagramas de flujo (42). |

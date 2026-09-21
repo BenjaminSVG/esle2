@@ -124,7 +124,7 @@
         <button class="btn menu-item" id="btnEditorDiagrama" data-ic="editar-diagrama" title="Armar el programa dibujando el diagrama, bloque por bloque">Editor de diagramas</button>
         <button class="btn menu-item" id="btnMemoria" data-ic="memoria" title="Ver cómo se crean y cambian las variables en la memoria">Simulador de memoria</button>
         <button class="btn menu-item" id="btnEscritorio" data-ic="escritorio" title="Seguir el programa paso a paso en una tabla, como en el pizarrón">Prueba de escritorio</button>
-        <button class="btn menu-item" id="btnHistorial" data-ic="historial" title="Versiones anteriores de tu programa">Historial de versiones</button>
+        <button class="btn menu-item" id="btnHistorial" data-ic="historial" title="Guardar y traer versiones de tu proyecto">Versiones…</button>
         <button class="btn menu-item" id="btnDisposicion" data-ic="paneles" title="Volver a la disposición original de los paneles">Restablecer los paneles</button>
         <label class="menu-campo">Argumentos
           <input type="text" id="argumentos" class="control" placeholder="uno dos tres"
@@ -413,31 +413,96 @@
 </dialog>
 
 <dialog id="dlgHistorial" class="dlg dlg-historial">
-  <h3>Historial de versiones</h3>
-  <p class="nota">ESLE2 guarda solo una copia de tu programa cada vez que lo ejecutás, cuando
-     resolvés un ejercicio y <strong>antes</strong> de cualquier cosa que pise el editor. Podés
-     volver a cualquiera de esas versiones; y como al restaurar también se guarda lo que tenías,
-     volver atrás nunca te hace perder nada.</p>
-  <div class="dlg-fila">
-    <input type="text" id="hisMensaje" class="control" maxlength="80"
-           placeholder="Nombre para esta versión (por ejemplo: «antes de cambiar el evento»)"
-           aria-label="Nombre de la versión que se va a guardar">
-    <button class="btn primario" id="hisGuardar" type="button">Guardar versión</button>
+  <h3>Versiones</h3>
+  <p class="nota">Una versión guarda <strong>todos los archivos</strong> de tu proyecto con una explicación.
+     En otras herramientas —como GitHub Desktop— a esto se lo llama <strong>commit</strong>.</p>
+
+  <div class="ver-tabs" role="tablist" aria-label="Secciones de Versiones">
+    <button class="ver-tab" id="verTabCambios" type="button" role="tab" aria-selected="true" aria-controls="verPanelCambios" tabindex="0">Cambios</button>
+    <button class="ver-tab" id="verTabVersiones" type="button" role="tab" aria-selected="false" aria-controls="verPanelVersiones" tabindex="-1">Versiones guardadas</button>
+    <button class="ver-tab" id="verTabPasar" type="button" role="tab" aria-selected="false" aria-controls="verPanelPasar" tabindex="-1">Pasar a otra compu</button>
+    <button class="ver-tab" id="verTabAuto" type="button" role="tab" aria-selected="false" aria-controls="verPanelAuto" tabindex="-1">Copias automáticas</button>
   </div>
-  <p class="mis-error oculto" id="hisAviso"></p>
-  <div class="his-cuerpo">
-    <ul class="his-lista" id="hisLista" aria-label="Versiones guardadas"></ul>
-    <div class="his-lado">
-      <h4 id="hisTitulo">Elegí una versión de la lista</h4>
-      <p class="nota" id="hisResumen"></p>
-      <div class="his-diff" id="hisDiff" tabindex="0" role="group" aria-label="Diferencias con el código actual"></div>
-      <div class="dlg-fila oculto" id="hisAcciones">
-        <button class="btn primario" id="hisRestaurar" type="button"
-                title="Poner esta versión en el editor (lo de ahora se guarda antes)">↩ Restaurar esta versión</button>
-        <button class="btn borrar" id="hisBorrar" type="button">Borrar del historial</button>
+
+  <div class="ver-panel" id="verPanelCambios" role="tabpanel" aria-labelledby="verTabCambios">
+    <div class="his-cuerpo">
+      <ul class="ver-lista" id="verCambiosLista" aria-label="Archivos cambiados"></ul>
+      <div class="his-lado">
+        <h4 id="verCambiosTitulo">Elegí un archivo cambiado de la lista</h4>
+        <div class="his-diff" id="verCambiosDiff" tabindex="0" role="group" aria-label="Qué cambió en ese archivo"></div>
+      </div>
+    </div>
+    <div class="dlg-fila">
+      <input type="text" id="verMensaje" class="control" maxlength="80"
+             placeholder="¿Qué cambiaste? (por ejemplo: «arreglé el evento»)"
+             aria-label="Mensaje para esta versión">
+      <button class="btn primario" id="verGuardar" type="button">Guardar versión</button>
+    </div>
+  </div>
+
+  <div class="ver-panel oculto" id="verPanelVersiones" role="tabpanel" aria-labelledby="verTabVersiones">
+    <div class="his-cuerpo">
+      <ul class="his-lista" id="verLista" aria-label="Versiones guardadas"></ul>
+      <div class="his-lado">
+        <h4 id="verTitulo">Elegí una versión de la lista</h4>
+        <p class="nota" id="verResumen"></p>
+        <div class="his-diff" id="verDiff" tabindex="0" role="group" aria-label="Diferencias con la versión anterior"></div>
+        <div class="dlg-fila oculto" id="verAcciones">
+          <button class="btn" id="verComparar" type="button">Comparar con mi trabajo</button>
+          <button class="btn primario" id="verRestaurar" type="button"
+                  title="Poner esta versión en el proyecto (lo de ahora se guarda antes)">↩ Volver a esta versión</button>
+        </div>
       </div>
     </div>
   </div>
+
+  <div class="ver-panel oculto" id="verPanelPasar" role="tabpanel" aria-labelledby="verTabPasar">
+    <p class="nota">El archivo lleva tu proyecto <strong>con todas sus versiones</strong>. Podés seguir
+       trabajando en otra computadora y después traer lo que hiciste acá: si cambiaste algo en las dos,
+       ESLE2 te muestra las diferencias antes de juntar el trabajo. Ninguna de las dos computadoras
+       tiene que estar prendida al mismo tiempo que la otra.</p>
+    <div class="dlg-fila">
+      <button class="btn primario" id="verLlevar" type="button">Llevar proyecto…</button>
+      <button class="btn" id="verTraer" type="button">Traer cambios…</button>
+    </div>
+    <div class="oculto" id="verConflictos">
+      <h4>Hay archivos que cambiaron distinto en cada computadora</h4>
+      <p class="nota">Elegí para cada uno con cuál te querés quedar, o guardá los dos con otro nombre.</p>
+      <ul class="ver-lista-conflictos" id="verConflictosLista"></ul>
+      <div class="dlg-fila">
+        <button class="btn primario" id="verConflictosAplicar" type="button">Unir los cambios</button>
+        <button class="btn" id="verConflictosCancelar" type="button">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="ver-panel oculto" id="verPanelAuto" role="tabpanel" aria-labelledby="verTabAuto">
+    <p class="nota">ESLE2 va guardando solo una copia de tu programa cada vez que lo ejecutás, cuando
+       resolvés un ejercicio y <strong>antes</strong> de cualquier cosa que pise el editor. Esto es
+       aparte de las versiones que guardás vos: es la red de seguridad de un solo archivo, para cuando
+       todavía no guardaste ninguna versión a mano.</p>
+    <div class="dlg-fila">
+      <input type="text" id="hisMensaje" class="control" maxlength="80"
+             placeholder="Nombre para esta copia (por ejemplo: «antes de cambiar el evento»)"
+             aria-label="Nombre de la copia que se va a guardar">
+      <button class="btn primario" id="hisGuardar" type="button">Guardar copia</button>
+    </div>
+    <p class="mis-error oculto" id="hisAviso"></p>
+    <div class="his-cuerpo">
+      <ul class="his-lista" id="hisLista" aria-label="Copias automáticas guardadas"></ul>
+      <div class="his-lado">
+        <h4 id="hisTitulo">Elegí una copia de la lista</h4>
+        <p class="nota" id="hisResumen"></p>
+        <div class="his-diff" id="hisDiff" tabindex="0" role="group" aria-label="Diferencias con el código actual"></div>
+        <div class="dlg-fila oculto" id="hisAcciones">
+          <button class="btn primario" id="hisRestaurar" type="button"
+                  title="Poner esta copia en el editor (lo de ahora se guarda antes)">↩ Restaurar esta copia</button>
+          <button class="btn borrar" id="hisBorrar" type="button">Borrar de la lista</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="dlg-fila derecha">
     <button class="btn primario" id="btnCerrarHistorial" type="button">Cerrar</button>
   </div>
@@ -479,7 +544,9 @@
 <script src="js/iconos.js"></script>
 <script src="js/proyecto.js"></script>
 <script src="js/carpeta.js"></script>
+<script src="js/versiones.js"></script>
 <script src="js/proyecto-ui.js"></script>
+<script src="js/versiones-ui.js"></script>
 <script src="js/verificar-visual.js"></script>
 <script src="js/ejercicios-visual.js"></script>
 <script src="js/iconos-visual.js"></script>
