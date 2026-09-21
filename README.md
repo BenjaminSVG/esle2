@@ -1004,10 +1004,12 @@ Las decisiones, que son casi todas de seguridad:
   ICE aparecen candidatos después, y acá no hay por dónde mandarlos: no se le va a pedir a un chico
   que copie cinco códigos. Si tarda más de 15 segundos, el intento se corta en vez de dar un código
   a medias, que conectaría **a veces**;
-- **sin servidor es sin servidor**: con la casilla sin marcar, `iceServers` va vacío y este
-  navegador no le habla a nadie. Eso alcanza entre dos máquinas de la misma red, que es el
-  laboratorio. Hay una casilla aparte, apagada, que enciende los STUN y **dice que esos servidores
-  ven la IP**; con esa casilla marcada ya no es «sin ningún servidor», y no se lo llama así;
+- **hay una casilla, y dice exactamente qué hace.** Viene marcada, porque sin ella dos
+  computadoras en redes distintas no se encuentran casi nunca y la primera prueba de cualquiera es
+  con un amigo desde su casa. Marcada, se le pregunta la dirección propia a un STUN de Cloudflare
+  o Google: **esos servidores ven la IP**, y nada más —no reparten nada y el programa no pasa por
+  ahí—. Destildada, `iceServers` va vacío y este navegador **no le habla a nadie**, que alcanza
+  entre dos máquinas de la misma red. Con la casilla marcada no se lo llama «sin ningún servidor»;
 - **pegar un código no es conectarse.** Leer la invitación no crea ninguna `RTCPeerConnection`:
   primero se lee, se muestra qué dice, y recién cuando el alumno acepta se toca la red;
 - **el código es entrada de un desconocido.** Se mide antes de leerlo, se descomprime con tope

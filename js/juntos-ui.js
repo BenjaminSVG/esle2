@@ -108,9 +108,11 @@
                   distintas, casi seguro que no.</li>
             </ul>
             <label class="juntos-check">
-              <input type="checkbox" data-campo="mano-stun">
-              Intentar también entre redes distintas. Le pregunta la dirección a los servidores
-              STUN de Cloudflare y Google, que ven tu IP. El programa no pasa por ellos.
+              <input type="checkbox" data-campo="mano-stun" checked>
+              Intentar también entre redes distintas. Para eso hay que preguntarle la dirección a
+              un servidor STUN de Cloudflare o Google: ven tu IP, y nada más —el programa no pasa
+              por ellos, y no reparten nada. Si estás en la misma red que tu compañero, podés
+              destildarlo y no se habla con nadie.
             </label>
             <div class="dlg-fila">
               <button class="btn" data-accion="mano-invito">Yo invito</button>
@@ -284,13 +286,16 @@
       });
 
       atadura = new Y.CodemirrorBinding(texto, editor, prov.vecinos);
-      estadoDelDialogo('buscando el servidor…');
+      /* A mano no hay ningún servidor que buscar: lo que falta es la otra
+         persona. Y si no llega, hay que decirlo en vez de esperar sin fin. */
+      if (canal) { manoVigilar(canal); estadoDelDialogo('esperando a tu compañero…'); }
+      else estadoDelDialogo('buscando el servidor…');
 
       prov.al('estado', e => {
         pintarDirecto(e);
         estadoDelDialogo(e.conectado
           ? (e.gente <= 1 ? 'conectado · esperando a alguien más' : 'conectado · ' + e.gente + ' personas')
-          : (e.motivo || 'buscando…'));
+          : (e.motivo || (canal ? 'esperando a tu compañero…' : 'buscando…')));
         if (!e.conectado && e.motivo === 'sin relevo') sinRelevo();
         pintarGente();
       });
@@ -469,6 +474,31 @@
       }
     }
 
+    /* Cuánto se espera a que el canal se abra después de pegar los códigos.
+       Si no abre, no se deja la pantalla «esperando»: se dice qué pasó y qué
+       se puede hacer, que casi siempre es marcar la casilla. */
+    const ESPERA_CANAL = 30000;
+    let manoReloj = null;
+
+    function manoVigilar(canal) {
+      clearTimeout(manoReloj);
+      const rendirse = () => {
+        clearTimeout(manoReloj);
+        if (!canal || canal.abierto) return;
+        campo('error').textContent = 'No se pudo conectar estas dos computadoras. '
+          + (manoStun()
+            ? 'La red puede estar bloqueando la conexión directa, y pasa seguido en el wifi de '
+              + 'la escuela. Probá desde otra red, o usen una sala con servidor.'
+            : 'Si no están en la misma red, hace falta marcar «Intentar también entre redes '
+              + 'distintas» y empezar de nuevo con códigos nuevos.');
+        estadoDelDialogo('no se pudo conectar');
+      };
+      canal.alFallar = rendirse;
+      manoReloj = setTimeout(rendirse, ESPERA_CANAL);
+      const eraAbrir = canal.alAbrir;
+      canal.alAbrir = () => { clearTimeout(manoReloj); if (eraAbrir) eraAbrir(); };
+    }
+
     const manoPorQueFallo = e => (e && e.message === 'tardo')
       ? 'No se pudo armar el código: la red tardó demasiado. Probá de nuevo.'
       : 'No se pudo armar el código en esta computadora.';
@@ -482,6 +512,7 @@
     }
 
     function manoVolver() {
+      clearTimeout(manoReloj);
       if (mano && mano.sesion && !enSala()) mano.sesion.cancelar();
       mano = null;
       paso('mano').classList.add('oculto');
@@ -520,6 +551,7 @@
       if (prov) { prov.destruir(); prov = null; }
       if (doc) { doc.destroy(); doc = null; }
       /* Salir de una sala a mano es cortar la conexión: no hay dónde volver. */
+      clearTimeout(manoReloj);
       if (mano && mano.sesion) mano.sesion.cancelar();
       mano = null;
       sala = clave = relevo = null;

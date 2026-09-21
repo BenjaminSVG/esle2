@@ -50,12 +50,20 @@
   function armarCanal(pc) {
     const canal = {
       abierto: false,
-      alTexto: null, alAbrir: null, alCerrar: null,
+      alTexto: null, alAbrir: null, alCerrar: null, alFallar: null,
       enviar(texto) { mandarPartido(String(texto)); },
       cerrar() {
         try { if (dc) dc.close(); } catch (e) { /* ya estaba */ }
         try { pc.close(); } catch (e) { /* ya estaba */ }
       }
+    };
+
+    /* Que no conecte es un final posible y hay que decirlo. Sin esto, cuando
+       la red no deja, la pantalla se queda «esperando» para siempre, que es
+       exactamente la forma de fallar que venimos sacando de todos lados. */
+    pc.onconnectionstatechange = () => {
+      const e = pc.connectionState;
+      if ((e === 'failed' || e === 'closed') && !canal.abierto && canal.alFallar) canal.alFallar(e);
     };
 
     let dc = null;
