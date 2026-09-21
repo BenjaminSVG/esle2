@@ -407,11 +407,15 @@
       if (!vivo) return;
       /* Cuál servidor: el primero que REENVÍE de verdad, no el primero que
          conteste. Un relevo que acepta la conexión y no reparte nada deja a
-         todos «conectados» y solos, que es cómo estuvo roto esto mucho tiempo. */
-      let url = cfg.servidores && cfg.servidores.length === 1 ? cfg.servidores[0] : null;
-      if (!url) {
-        try { url = await global.Juntos.alguienReenvia(cfg.servidores); } catch (e) { url = null; }
-      }
+         todos «conectados» y solos, que es cómo estuvo roto esto mucho tiempo.
+
+         Se prueba siempre, incluso cuando hay uno solo. Antes se salteaba la
+         prueba en ese caso —que es el caso normal de una escuela con su
+         relevo— y era justo donde más falta hacía: el único servidor
+         configurado es el único que puede dejar a todo un curso conectado y
+         solo. */
+      let url = null;
+      try { url = await global.Juntos.alguienReenvia(cfg.servidores); } catch (e) { url = null; }
       if (!vivo) return;
       if (!url) { decir('sin relevo', false); reintentar(); return; }
       abrirSocket(url);

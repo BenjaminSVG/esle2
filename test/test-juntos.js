@@ -137,30 +137,68 @@ const seccion = t => console.log('\n' + t);
      encontrarse jamás. Estas pruebas son sobre ese caso, que es el que estuvo
      rompiendo en producción sin que nada lo dijera. */
   {
-    /* Un servidor de mentira. «modo» dice qué clase de servidor es. */
-    const servidorFalso = modo => function (url) {
-      const ws = this;
-      ws.url = url;
-      ws.close = () => { ws.cerrado = true; };
-      ws.send = datos => {
-        const d = JSON.parse(datos);
-        /* El que reenvía devuelve lo publicado a los suscriptos. */
-        if (modo === 'reenvia' && d.type === 'publish') {
-          setTimeout(() => ws.onmessage && ws.onmessage({ data: datos }), 5);
-        }
-        /* El «mudo» acepta todo y no devuelve nada: el caso peligroso. */
-      };
-      setTimeout(() => {
-        if (modo === 'roto') { ws.onerror && ws.onerror(new Error('no')); return; }
-        ws.onopen && ws.onopen();
-      }, 3);
-    };
-    const con = modo => ({ WebSocket: servidorFalso(modo), espera: 120 });
+    /* Un servidor de mentira, y ahora uno solo para las dos conexiones: la
+       prueba es entre dos, así que un falso que no comparta nada entre
+       conexiones no puede distinguir al que reenvía del que hace eco.
 
-    comprobar('uno que reenvía se detecta',
+       «modo» dice qué clase de servidor es:
+         reenvia     lo correcto, y como el nuestro: a los demás, no al que
+                     mandó (servidor-senas/cloudflare/src/servidor.js)
+         devuelve    le contesta SOLO a quien publicó y no reparte nada. Es el
+                     peligroso: dos alumnos quedan «conectados» y solos, y es
+                     el que la prueba vieja daba por bueno
+         unaVia      reparte lo de «a» y se come lo de «b»
+         mudo        acepta todo y no dice nada
+         lento       reparte, pero anota la suscripción medio segundo tarde
+         roto        no conecta */
+    const servidorFalso = modo => {
+      const todos = [];
+      return function (url) {
+        const ws = this;
+        ws.url = url;
+        ws.temas = [];
+        todos.push(ws);
+        ws.close = () => { ws.cerrado = true; };
+        ws.send = datos => {
+          const d = JSON.parse(datos);
+          if (d.type === 'subscribe') {
+            const anotar = () => { ws.temas = ws.temas.concat(d.topics || []); };
+            if (modo === 'lento') setTimeout(anotar, 500); else anotar();
+            return;
+          }
+          if (d.type !== 'publish') return;
+          if (modo === 'mudo') return;
+          if (modo === 'unaVia' && d.data && d.data.de === 'b') return;
+          if (modo === 'devuelve') {
+            setTimeout(() => !ws.cerrado && ws.onmessage && ws.onmessage({ data: datos }), 5);
+            return;
+          }
+          for (const otro of todos) {
+            if (otro === ws || otro.cerrado) continue;
+            if (!otro.temas.includes(d.topic)) continue;
+            setTimeout(() => otro.onmessage && otro.onmessage({ data: datos }), 5);
+          }
+        };
+        setTimeout(() => {
+          if (modo === 'roto') { ws.onerror && ws.onerror(new Error('no')); return; }
+          ws.onopen && ws.onopen();
+        }, 3);
+      };
+    };
+    const con = modo => ({ WebSocket: servidorFalso(modo), espera: 1200 });
+
+    comprobar('uno que reenvía entre dos se detecta',
       await Juntos.probarRelevo('wss://bueno', con('reenvia')) === 'reenvia');
-    comprobar('uno que conecta y NO reenvía también',
+    /* El que encontró esto en la vida real: pasaba la prueba vieja. */
+    comprobar('uno que solo le contesta al que publicó NO pasa',
+      await Juntos.probarRelevo('wss://eco', con('devuelve')) === 'no-reenvia');
+    comprobar('uno que reparte en una sola dirección tampoco',
+      await Juntos.probarRelevo('wss://media', con('unaVia')) === 'no-reenvia');
+    comprobar('uno que conecta y NO reenvía nada tampoco',
       await Juntos.probarRelevo('wss://mudo', con('mudo')) === 'no-reenvia');
+    /* Sin acuse de suscripción, lo único que salva al lento es repetir. */
+    comprobar('uno que anota la suscripción tarde igual pasa',
+      await Juntos.probarRelevo('wss://lento', con('lento')) === 'reenvia');
     comprobar('uno que ni conecta',
       await Juntos.probarRelevo('wss://roto', con('roto')) === 'sin-conexion');
     comprobar('sin WebSocket en el navegador no rompe',
@@ -169,23 +207,36 @@ const seccion = t => console.log('\n' + t);
     /* Lo que se manda es el protocolo de y-webrtc y nada más. */
     {
       const visto = [];
+      const abiertos = [];
       const Espia = function () {
         const ws = this;
+        abiertos.push(ws);
         ws.send = d => visto.push(d);
         ws.close = () => {};
         setTimeout(() => ws.onopen && ws.onopen(), 3);
       };
-      await Juntos.probarRelevo('wss://x', { WebSocket: Espia, espera: 80, tema: 'T' });
-      comprobar('se suscribe primero y publica después', visto.length === 2, visto.length);
-      comprobar('con el protocolo de y-webrtc',
+      await Juntos.probarRelevo('wss://x', { WebSocket: Espia, espera: 150, tema: 'T' });
+      comprobar('se prueba con dos conexiones, no con una', abiertos.length === 2, abiertos.length);
+      comprobar('cada una se suscribe primero y publica después',
         JSON.parse(visto[0]).type === 'subscribe' && JSON.parse(visto[1]).type === 'publish',
-        visto.join(' '));
-      comprobar('sobre el mismo tema',
-        JSON.parse(visto[0]).topics[0] === 'T' && JSON.parse(visto[1]).topic === 'T');
+        visto.slice(0, 2).join(' '));
+      comprobar('todas sobre el mismo tema',
+        visto.every(d => (JSON.parse(d).topics || [JSON.parse(d).topic])[0] === 'T'));
+      /* Las marcas tienen que ser distintas o el eco propio contaría. */
+      {
+        const marcas = new Set(visto.map(d => JSON.parse(d)).filter(d => d.type === 'publish')
+          .map(d => d.data.de));
+        comprobar('y cada conexión con su marca', marcas.size === 2, [...marcas].join(','));
+      }
     }
 
-    /* El eco: solo cuenta el propio. */
-    comprobar('el eco propio cuenta', Juntos.esEco(Juntos.pruebaDeRelevo('T').publicar, 'T'));
+    /* El eco: solo cuenta el que viene del otro. */
+    comprobar('un sobre de prueba de este tema es uno de los nuestros',
+      Juntos.esEco(Juntos.pruebaDeRelevo('T', 'a').publicar, 'T'));
+    comprobar('el del compañero cuenta para mí',
+      Juntos.esEco(Juntos.pruebaDeRelevo('T', 'b').publicar, 'T', 'b'));
+    comprobar('pero el mío no cuenta como si fuera del compañero',
+      !Juntos.esEco(Juntos.pruebaDeRelevo('T', 'a').publicar, 'T', 'b'));
     comprobar('el de otro tema no', !Juntos.esEco(Juntos.pruebaDeRelevo('OTRO').publicar, 'T'));
     comprobar('un mensaje cualquiera tampoco', !Juntos.esEco(JSON.stringify({ type: 'pong' }), 'T'));
     comprobar('ni algo que no es JSON', !Juntos.esEco('hola', 'T'));
@@ -200,6 +251,8 @@ const seccion = t => console.log('\n' + t);
       await Juntos.alguienReenvia(['wss://a', 'wss://b'], con('reenvia')) !== null);
     comprobar('si ninguno reenvía, se dice que no',
       await Juntos.alguienReenvia(['wss://a', 'wss://b'], con('mudo')) === null);
+    comprobar('y uno que solo hace eco no cuenta como bueno',
+      await Juntos.alguienReenvia(['wss://a'], con('devuelve')) === null);
     comprobar('sin servidores no rompe',
       await Juntos.alguienReenvia([], con('mudo')) === null);
   }

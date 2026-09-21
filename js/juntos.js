@@ -159,28 +159,49 @@
      siempre sin encontrarse nunca. Mirar solo si la conexión está viva es
      mentirle a la persona con la cara más seria.
 
-     La prueba es la que haría cualquiera a mano: suscribirse a un tema
-     inventado, publicar ahí, y ver si vuelve. Si no vuelve, ese servidor no
-     sirve, aunque conteste.
+     La prueba tiene que ser entre DOS conexiones, y eso costó descubrirlo.
+     Antes se abría una sola, se publicaba y se esperaba el propio eco, y eso
+     estaba mal de las dos maneras a la vez:
+
+     - Daba por bueno un servidor que le devuelve el mensaje a quien lo mandó
+       y no se lo pasa a nadie más. Comprobado contra uno público de verdad:
+       pasaba la prueba y dos alumnos no se encontraban nunca.
+     - Daba por malo el nuestro, que hace lo correcto y NO le devuelve el
+       mensaje a quien lo mandó (servidor-senas/cloudflare/src/servidor.js:
+       «if (otro === ws) continue»). Es decir que el día que una escuela
+       publicara el suyo, la prueba le iba a decir que no sirve.
+
+     Así que ahora se abren dos, cada una con su marca, y solo cuenta cuando a
+     cada una le llega la marca de la otra. Es lo mismo que hacen dos alumnos.
 
      El tema lleva azar para que dos alumnos probando a la vez no se crucen. */
   function temaDePrueba() {
     return 'esle2-prueba-' + enBase36(azar(8));
   }
 
-  function pruebaDeRelevo(tema) {
+  function pruebaDeRelevo(tema, marca) {
     return {
       suscribir: JSON.stringify({ type: 'subscribe', topics: [tema] }),
-      publicar: JSON.stringify({ type: 'publish', topic: tema, data: { esle2: 'prueba' } })
+      publicar: JSON.stringify({
+        type: 'publish', topic: tema, data: { esle2: 'prueba', de: marca || 'a' }
+      })
     };
   }
 
-  function esEco(datos, tema) {
+  /* Si no se dice de quién, alcanza con que sea un sobre de prueba de este
+     tema; la prueba de verdad siempre dice de quién, porque ahí está todo. */
+  function esEco(datos, tema, deQuien) {
     let d;
     try { d = JSON.parse(String(datos)); } catch (e) { return false; }
     return !!d && d.type === 'publish' && d.topic === tema
-      && !!d.data && d.data.esle2 === 'prueba';
+      && !!d.data && d.data.esle2 === 'prueba'
+      && (deQuien === undefined || d.data.de === deQuien);
   }
+
+  /* Cada cuánto se repite el aviso. Este protocolo no tiene acuse de
+     suscripción: no hay forma de saber cuándo el servidor anotó a la otra
+     conexión, así que se repite hasta que llegue o se acabe el tiempo. */
+  const REPETIR = 200;
 
   /* -> Promise<'reenvia' | 'no-reenvia' | 'sin-conexion'> */
   function probarRelevo(url, opciones) {
@@ -195,24 +216,57 @@
 
     return new Promise(resolver => {
       const tema = cfg.tema || temaDePrueba();
-      const sobres = pruebaDeRelevo(tema);
-      let ws = null, reloj = null, listo = false;
+      const partes = [];
+      let listo = false, reloj = null, repique = null;
 
       const terminar = resultado => {
         if (listo) return;
         listo = true;
         clearTimeout(reloj);
-        try { if (ws) ws.close(); } catch (e) { /* ya estaba cerrado */ }
+        clearInterval(repique);
+        for (const p of partes) { try { if (p.ws) p.ws.close(); } catch (e) { /* ya estaba */ } }
         resolver(resultado);
       };
 
-      try { ws = new Socket(url); } catch (e) { return terminar('sin-conexion'); }
+      const avisar = () => {
+        if (listo) return;
+        for (const p of partes) {
+          if (!p.abierto) continue;
+          try { p.ws.send(p.sobres.publicar); } catch (e) { terminar('sin-conexion'); return; }
+        }
+      };
 
-      reloj = setTimeout(() => terminar('no-reenvia'), espera);
-      ws.onerror = () => terminar('sin-conexion');
-      ws.onclose = () => terminar('sin-conexion');
-      ws.onopen = () => { ws.send(sobres.suscribir); ws.send(sobres.publicar); };
-      ws.onmessage = ev => { if (esEco(ev.data, tema)) terminar('reenvia'); };
+      /* «mia» es la marca que manda esta conexión; «suya», la que espera de la
+         otra. Son distintas a propósito: si fueran iguales, el propio eco
+         contaría como si hubiera llegado del compañero, que es justo el error
+         que dejaba pasar a un servidor donde nadie se encuentra. */
+      const armar = (mia, suya) => {
+        const parte = { ws: null, abierto: false, oyo: false, sobres: pruebaDeRelevo(tema, mia) };
+        try { parte.ws = new Socket(url); } catch (e) { return parte; }
+        const ws = parte.ws;
+        ws.onerror = () => terminar('sin-conexion');
+        ws.onclose = () => terminar('sin-conexion');
+        ws.onopen = () => {
+          parte.abierto = true;
+          try { ws.send(parte.sobres.suscribir); } catch (e) { return terminar('sin-conexion'); }
+          avisar();
+        };
+        ws.onmessage = ev => {
+          if (!esEco(ev.data, tema, suya)) return;
+          parte.oyo = true;
+          if (partes.length === 2 && partes.every(p => p.oyo)) terminar('reenvia');
+        };
+        return parte;
+      };
+
+      partes.push(armar('a', 'b'), armar('b', 'a'));
+      if (partes.some(p => !p.ws)) return terminar('sin-conexion');
+
+      /* Una sola ventana para las dos conexiones: abrir, suscribirse, repetir
+         el aviso y contestar entran todos acá adentro. */
+      reloj = setTimeout(
+        () => terminar(partes.every(p => p.abierto) ? 'no-reenvia' : 'sin-conexion'), espera);
+      repique = setInterval(avisar, REPETIR);
     });
   }
 

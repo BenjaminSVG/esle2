@@ -989,12 +989,23 @@ Cómo está hecho, y por qué no con el proveedor WebRTC de la librería:
 ### El relevo, gratis y propio
 
 > **ESLE2 no trae ningún relevo puesto, y eso es una decisión.** No hay ninguno público que se
-> pueda recomendar: se probaron los tres que se suelen nombrar mirando si **reenvían** y no si
-> conectan, y el que trae y-webrtc por omisión acepta la conexión y no reenvía nada —parece
-> conectado sin estarlo, que es la peor forma de fallar—, otro ya no existe y el tercero habla otro
-> protocolo. Mientras no haya uno, las tres cosas que usan la red (**Programar en grupo**,
-> **Batallas de código** y **Transmitir mi lógica**) lo dicen en pantalla en vez de dejar a alguien
-> esperando para siempre.
+> pueda recomendar: se probaron los que se suelen nombrar mirando si **reenvían** y no si conectan.
+> Dos ya no existen, uno habla otro protocolo, y el que queda en pie es peor que todos esos: le
+> devuelve el mensaje a quien lo publicó y no se lo pasa a nadie más, así que una computadora sola
+> lo ve andar perfecto y dos alumnos no se encuentran nunca. En una tanda de pruebas repartió entre
+> dos la mitad de las veces —parece estar en varias máquinas sin nada compartido—, y un servidor que
+> anda una vez de cada dos es lo peor que se le puede poner adelante a una clase.
+>
+> Mientras no haya uno, las tres cosas que usan la red (**Programar en grupo**, **Batallas de
+> código** y **Transmitir mi lógica**) lo dicen en pantalla en vez de dejar a alguien esperando para
+> siempre.
+
+Por eso la prueba es **entre dos conexiones**: se abren dos, cada una con su marca, y solo cuenta
+cuando a cada una le llega la marca de la otra. Probar con una sola conexión estaba mal de las dos
+maneras a la vez —daba por bueno al que solo hace eco, y por malo al nuestro, que hace lo correcto
+y no le devuelve nada a quien publicó—, así que el día que una escuela publicara el suyo, la prueba
+le iba a decir que no sirve. Se prueba siempre, también cuando hay un solo servidor configurado,
+que es justo el caso de una escuela.
 
 Publicar el propio es gratis y son tres comandos:
 
