@@ -7,7 +7,7 @@
  *
  * Al publicar una versión nueva hay que subir VERSION: eso borra la caché vieja.
  */
-const VERSION = 'esle2-v69';
+const VERSION = 'esle2-v70';
 
 const ARCHIVOS = [
   './',
@@ -219,7 +219,7 @@ const ARCHIVOS = [
   'js/seguro.js',
   'js/vivo-pagina.js',
   'js/sala.js',
-  'js/sala-ui.js',
+  'js/sala-ui.js',
   'js/carpeta.js',
 ];
 
