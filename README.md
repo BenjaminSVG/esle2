@@ -1033,17 +1033,17 @@ misma red se conectan sin internet, y sin ese archivo no habría con qué.
 
 ### El relevo, gratis y propio
 
-> **ESLE2 no trae ningún relevo puesto, y eso es una decisión.** No hay ninguno público que se
-> pueda recomendar: se probaron los que se suelen nombrar mirando si **reenvían** y no si conectan.
-> Dos ya no existen, uno habla otro protocolo, y el que queda en pie es peor que todos esos: le
-> devuelve el mensaje a quien lo publicó y no se lo pasa a nadie más, así que una computadora sola
-> lo ve andar perfecto y dos alumnos no se encuentran nunca. En una tanda de pruebas repartió entre
-> dos la mitad de las veces —parece estar en varias máquinas sin nada compartido—, y un servidor que
-> anda una vez de cada dos es lo peor que se le puede poner adelante a una clase.
+> **ESLE2 trae un relevo puesto**, desplegado en Cloudflare Workers el 2026-09-21 y comprobado con
+> la prueba de dos conexiones (no la de una, que daba resultados falsos: ver más abajo). Hasta esa
+> fecha no había ninguno: se probaron los que se suelen nombrar y ninguno reenviaba de verdad —dos
+> ya no existen, uno habla otro protocolo, y el que quedaba en pie le devolvía el mensaje a quien lo
+> publicó y no lo pasaba a nadie más, así que una computadora sola lo veía andar perfecto y dos
+> alumnos no se encontraban nunca.
 >
-> Mientras no haya uno, las tres cosas que usan la red (**Programar en grupo**, **Batallas de
-> código** y **Transmitir mi lógica**) lo dicen en pantalla en vez de dejar a alguien esperando para
-> siempre.
+> Es de una sola cuenta gratuita, así que corre bajo su cuota: 100.000 solicitudes por día, y los
+> mensajes entrantes cuentan 20 a 1. Una escuela con uso serio, o cualquiera que no quiera depender
+> de una cuenta ajena, debería publicar el suyo con los tres comandos de abajo y ponerlo en
+> `PROPIOS` o pasarlo por «Para el profesor»: no hace falta tocar nada más.
 
 Por eso la prueba es **entre dos conexiones**: se abren dos, cada una con su marca, y solo cuenta
 cuando a cada una le llega la marca de la otra. Probar con una sola conexión estaba mal de las dos

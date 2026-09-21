@@ -126,10 +126,10 @@
      que no tiene.
 
      Publicar el propio son tres comandos y es gratis: está escrito y probado
-     en servidor-senas/cloudflare. Cuando lo tengas, ponelo acá y listo para
-     todo el mundo, o pasalo por el diálogo, que lo guarda en esta
-     computadora. */
-  const PROPIOS = [];
+     en servidor-senas/cloudflare. Este es ese: desplegado el 2026-09-21,
+     comprobado que REENVÍA entre dos conexiones (no solo que conteste) con
+     la prueba de test-juntos.js, y no con la propia. */
+  const PROPIOS = ['wss://esle2-senas.esle2-senas-cloudflare.workers.dev'];
 
   /* Una escuela puede apuntar al suyo sin tocar el código:
        localStorage.esle2_senas = 'wss://senas.mi-escuela.edu.py'
