@@ -59,6 +59,12 @@
     const quienEs = new Map();
     const oyentes = new Map();
 
+    /* El modo «a mano»: no hay relevo ni socket, hay un canal que alguien de
+       afuera ya armó pegando códigos (js/mano-ui.js). Los sobres son los
+       mismos y entran por la misma puerta; lo único distinto es por dónde
+       viajan. */
+    const canal = cfg.canal || null;
+
     let ws = null, ctx = null, clave = null;
     cfg.directo = Object.assign({ permitido: false, hasta: 4, iceServers: [] }, cfg.directo || {});
     const directo = armarDirecto();
@@ -92,6 +98,9 @@
       if (!c) return;
       let sobre;
       try { sobre = await S().cerrar(c, objeto); } catch (e) { return; }
+
+      /* A mano no hay a quién más mandarle: es de a dos y por el canal. */
+      if (canal) { canal.enviar(sobre); return; }
 
       /* Las señas para encontrarse van por el relevo sí o sí: son justamente
          lo que hace falta ANTES de que exista el camino directo. */
@@ -403,8 +412,33 @@
       reloj = setTimeout(() => { if (vivo) arrancar(); }, espera);
     }
 
+    /* A mano: el canal ya existe o va a existir, y no hay nada que buscar ni
+       nada que reintentar. Si se corta, se corta: volver a conectarse es
+       pegarse otro código, y eso lo deciden las dos personas. */
+    function arrancarAMano() {
+      ctx = S().contexto(clave, sala);
+      canal.alTexto = texto => { if (vivo) procesar(texto); };
+      canal.alAbrir = () => {
+        if (!vivo) return;
+        listo = true;
+        conocidas = new Set();
+        mandarEstado();
+        mandarPresencia();
+        decir('conectado con tu compañero', true);
+      };
+      canal.alCerrar = () => {
+        if (!vivo) return;
+        listo = false;
+        /* Al compañero lo saca la poda, como a cualquiera que se calla: no
+           hace falta una regla aparte para esto. */
+        decir('se cortó la conexión con tu compañero', false);
+      };
+      if (canal.abierto) canal.alAbrir();
+    }
+
     async function arrancar() {
       if (!vivo) return;
+      if (canal) return arrancarAMano();
       /* Cuál servidor: el primero que REENVÍE de verdad, no el primero que
          conteste. Un relevo que acepta la conexión y no reparte nada deja a
          todos «conectados» y solos, que es cómo estuvo roto esto mucho tiempo.
@@ -474,6 +508,16 @@
         doc.off('update', alCambiarElDoc);
         vecinos.off('update', alCambiarLoMio);
         directo.destruir();
+
+        if (canal) {
+          const irse = () => { try { canal.cerrar(); } catch (e) { /* ya estaba */ } };
+          if (listo) mandar({ k: 'chau', i: doc.clientID, c: vecinos.reloj + 1 }).then(irse, irse);
+          else irse();
+          vecinos.destroy();
+          oyentes.clear();
+          return;
+        }
+
         /* Avisar que uno se va es cortesía, no seguridad: si la pestaña se
            cierra de golpe no llega, y por eso existe el latido. */
         const suave = ws;

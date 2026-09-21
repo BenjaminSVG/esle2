@@ -986,6 +986,49 @@ Cómo está hecho, y por qué no con el proveedor WebRTC de la librería:
   de recibir sin que nadie se entere. Si entra uno nuevo, el relevo vuelve a
   llevar todo en el acto.
 
+### De a dos, sin ningún servidor
+
+Cuando no hay relevo, dos computadoras igual se pueden conectar: el mensajero es la persona. Uno
+arma un código, se lo manda a su compañero por donde ya se hablan, el otro devuelve el suyo, y
+quedan hablándose **directo**. Está en «Programar en grupo → De a dos, sin ningún servidor».
+
+Por qué hace falta que alguien lleve ese papelito, y no se puede evitar: dos navegadores no tienen
+forma de encontrarse solos. Uno tiene que decirle al otro su dirección y su certificado —la oferta
+y la respuesta de WebRTC— **antes** de que exista cualquier conexión. Cuando hay relevo, las lleva
+el relevo. Cuando no hay nada, las lleva el alumno. No hay una tercera opción, y por eso «P2P sin
+ningún servidor» y «conectarse con un clic» no pueden ser lo mismo.
+
+Las decisiones, que son casi todas de seguridad:
+
+- **las direcciones se juntan antes de dar el código**, todas juntas y no de a una. Con trickle
+  ICE aparecen candidatos después, y acá no hay por dónde mandarlos: no se le va a pedir a un chico
+  que copie cinco códigos. Si tarda más de 15 segundos, el intento se corta en vez de dar un código
+  a medias, que conectaría **a veces**;
+- **sin servidor es sin servidor**: con la casilla sin marcar, `iceServers` va vacío y este
+  navegador no le habla a nadie. Eso alcanza entre dos máquinas de la misma red, que es el
+  laboratorio. Hay una casilla aparte, apagada, que enciende los STUN y **dice que esos servidores
+  ven la IP**; con esa casilla marcada ya no es «sin ningún servidor», y no se lo llama así;
+- **pegar un código no es conectarse.** Leer la invitación no crea ninguna `RTCPeerConnection`:
+  primero se lee, se muestra qué dice, y recién cuando el alumno acepta se toca la red;
+- **el código es entrada de un desconocido.** Se mide antes de leerlo, se descomprime con tope
+  —hay una prueba con bomba de verdad—, se rearma campo por campo, y del SDP se exige que sea una
+  sola conexión de datos: un código que pida audio o video no se usa, así nadie prende la cámara
+  de nadie;
+- **la respuesta tiene que ser a esa invitación**: coinciden sala, intento y vencimiento, y se
+  acepta una sola vez. Los códigos duran diez minutos, que no es revocación: es para que uno que
+  quedó dando vueltas en un chat no sirva la semana que viene;
+- **el sobre es el mismo** que va por el relevo y entra por la misma función. Un camino nuevo con
+  su propia puerta de entrada sería un segundo lugar donde acordarse de revisar;
+- el canal parte los sobres grandes y los rearma con el mismo tope que el relevo, porque SCTP no
+  acepta un mensaje de 1 MiB de una sola vez.
+
+Lo que se dice en pantalla antes de empezar: que la conexión directa **le muestra la IP a la otra
+persona**, que el código **lleva la clave de la sala** y por lo tanto a quien se lo reenvíen puede
+entrar y escribir, y que entre dos casas distintas lo más probable es que no funcione.
+
+Desde que esto existe, `vendor/yjs/juntos.min.js` **sí** se guarda en la caché: dos máquinas de la
+misma red se conectan sin internet, y sin ese archivo no habría con qué.
+
 ### El relevo, gratis y propio
 
 > **ESLE2 no trae ningún relevo puesto, y eso es una decisión.** No hay ninguno público que se
@@ -1832,6 +1875,7 @@ la copia vieja y el cambio no llega a nadie. `npm run revisar` compara las fecha
 | `js/aula.js` · `js/aula-ui.js` | Modo aula: la guía, el enlace que la lleva y el cartel de la clase. |
 | `js/sala.js` · `js/sala-ui.js` | El sobre cerrado, quién está en la sala y el transporte por el relevo. |
 | `js/juntos.js` · `js/juntos-ui.js` · `vendor/yjs/` | Programar en grupo: la sala, el enlace y Yjs. |
+| `js/mano.js` · `js/mano-ui.js` | De a dos sin ningún servidor: el código que se pasan y la conexión. |
 | `js/duelo.js` · `js/duelo-ui.js` | Batallas: el código de sala, el emparejado y el puntaje. |
 | `js/animo.js` · `js/animo-ui.js` | Detectar que alguien se trabó, y decirlo bien. |
 | `js/enfoque.js` · `js/enfoque-ui.js` | Modo enfoque y su música, calculada nota por nota. |
@@ -1899,7 +1943,8 @@ la copia vieja y el cambio no llega a nadie. `npm run revisar` compara las fecha
 | `test/test-contraste.js` | Toda la paleta llega al contraste mínimo de WCAG AA (167). |
 | `test/test-examen.js` | Modo examen: paquete, cronómetro, plantillas y planilla (33). |
 | `test/test-aula.js` | Modo aula: la guía, el enlace de ida y vuelta y los ids (30). |
-| `test/test-juntos.js` | La sala y su enlace: que no se adivine y que vuelva entero (48). |
+| `test/test-juntos.js` | La sala, su enlace, y que el relevo reenvíe entre dos y no solo haga eco (55). |
+| `test/test-mano.js` | El código que se pasan dos alumnos sin servidor, y lo que no se acepta (54). |
 | `test/test-sala.js` | El sobre cerrado, la repetición y lo que llega de un compañero (70). |
 | `test/test-duelo.js` | Que las dos máquinas calculen lo mismo sin hablarse (39). |
 | `test/test-animo.js` | Cuándo avisar y —sobre todo— cuándo no (17). |

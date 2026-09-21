@@ -7,7 +7,7 @@
  *
  * Al publicar una versión nueva hay que subir VERSION: eso borra la caché vieja.
  */
-const VERSION = 'esle2-v70';
+const VERSION = 'esle2-v71';
 
 const ARCHIVOS = [
   './',
@@ -100,8 +100,12 @@ const ARCHIVOS = [
   'js/animo-ui.js',
   'js/duelo.js',
   'js/duelo-ui.js',
-  /* vendor/yjs/juntos.min.js NO se guarda a propósito: son 214 KB que solo
-     sirven conectado, y se traen recién al abrir «Programar en grupo». */
+  /* El bundle de Yjs sí se guarda, desde que existe «de a dos, sin ningún
+     servidor»: dos máquinas de la misma red se conectan sin internet, y sin
+     este archivo no habría con qué conectarse. Son 214 KB una sola vez. */
+  'vendor/yjs/juntos.min.js',
+  'js/mano.js',
+  'js/mano-ui.js',
   'js/juntos.js',
   'js/juntos-ui.js',
   'js/enfoque.js',

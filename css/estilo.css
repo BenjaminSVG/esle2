@@ -608,6 +608,16 @@ body.en-examen .lista-ejercicios { opacity: .4; pointer-events: none; }
 .juntos-nombre { max-width: 16ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .juntos-punto { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex: 0 0 auto; }
 
+/* El código que se pasan a mano. Es largo y feo por naturaleza —adentro van
+   las direcciones y el certificado—, así que se muestra chico, en monoespacio
+   y con quiebre, para que se vea entero y se copie de una. */
+.juntos-codigo { width: 100%; box-sizing: border-box; resize: vertical;
+  font-family: var(--mono, ui-monospace, monospace); font-size: 11.5px; line-height: 1.35;
+  word-break: break-all; }
+.juntos-check { display: flex; gap: 8px; align-items: flex-start;
+  font-size: 13px; color: var(--texto-2); margin-top: 8px; }
+.juntos-check input { margin-top: 3px; flex: 0 0 auto; }
+
 .juntos-avanzado { margin: 4px 0 10px; font-size: 13px; }
 .juntos-avanzado summary { cursor: pointer; color: var(--acento); }
 .juntos-avanzado .nota { margin: 8px 0; }

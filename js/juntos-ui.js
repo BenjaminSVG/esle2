@@ -92,6 +92,53 @@
             <button class="btn primario" data-accion="entrar">Entrar a la sala</button>
             <button class="btn primario" data-accion="crear">Crear una sala</button>
           </div>
+
+          <details class="juntos-avanzado juntos-mano">
+            <summary>De a dos, sin ningún servidor</summary>
+            <p class="nota">Si no hay servidor, las dos computadoras se pueden conectar
+               <strong>directo</strong>, pasándose un código a mano: uno lo arma, se lo manda al
+               otro por donde ya se hablan, y el otro devuelve el suyo. Es de a dos, son dos
+               pegadas de código, y no hace falta nada más.</p>
+            <ul class="juntos-avisos">
+              <li>La conexión directa le muestra tu <strong>dirección IP</strong> a la otra
+                  persona. Conectate solo con alguien que conozcas.</li>
+              <li>El código lleva <strong>la clave de la sala</strong>: a quien se lo reenvíen
+                  puede entrar y escribir. Mandáselo solo a tu compañero.</li>
+              <li>Anda entre dos máquinas de la misma red, como el laboratorio. Entre dos casas
+                  distintas, casi seguro que no.</li>
+            </ul>
+            <label class="juntos-check">
+              <input type="checkbox" data-campo="mano-stun">
+              Intentar también entre redes distintas. Le pregunta la dirección a los servidores
+              STUN de Cloudflare y Google, que ven tu IP. El programa no pasa por ellos.
+            </label>
+            <div class="dlg-fila">
+              <button class="btn" data-accion="mano-invito">Yo invito</button>
+              <button class="btn" data-accion="mano-tengo">Tengo un código</button>
+            </div>
+          </details>
+        </div>
+
+        <div class="juntos-paso oculto" data-paso="mano">
+          <p class="juntos-titulo" data-campo="mano-titulo"></p>
+          <div class="juntos-estado" data-campo="mano-estado" aria-live="polite"></div>
+
+          <label class="oculto" data-campo="mano-pego-caja"><span
+              data-campo="mano-pego-texto">Pegá acá el código que te mandaron</span>
+            <textarea class="control juntos-codigo" data-campo="mano-pego" rows="3"
+              spellcheck="false" autocomplete="off"></textarea>
+          </label>
+
+          <label class="oculto" data-campo="mano-mio-caja">Tu código, para mandarle a tu compañero
+            <textarea class="control juntos-codigo" data-campo="mano-mio" rows="3" readonly
+              spellcheck="false"></textarea>
+          </label>
+
+          <div class="dlg-fila">
+            <button class="btn oculto" data-accion="mano-copiar">Copiar mi código</button>
+            <button class="btn primario oculto" data-accion="mano-seguir"></button>
+            <button class="btn oculto" data-accion="mano-volver">Volver</button>
+          </div>
         </div>
 
         <div class="juntos-paso oculto" data-paso="adentro">
@@ -179,6 +226,11 @@
         else if (a === 'copiar') copiar();
         else if (a === 'guardar-relevo') guardarRelevo();
         else if (a === 'directo') activarDirecto();
+        else if (a === 'mano-invito') manoInvitar();
+        else if (a === 'mano-tengo') manoPedirCodigo();
+        else if (a === 'mano-seguir') manoSeguir();
+        else if (a === 'mano-copiar') manoCopiar();
+        else if (a === 'mano-volver') manoVolver();
       });
     }
 
@@ -189,7 +241,9 @@
 
     /* ------------------------------ conectar ------------------------- */
 
-    async function conectar(s, c, r, soyPrimero) {
+    /* «canal» es el modo a mano: si viene, no hay relevo ni enlace, y los
+       sobres viajan por la conexión directa que ya armaron los dos. */
+    async function conectar(s, c, r, soyPrimero, canal) {
       let Y;
       try {
         estadoDelDialogo('trayendo lo necesario…');
@@ -221,10 +275,11 @@
       if (soyPrimero && mio.trim()) texto.insert(0, mio);
 
       prov = global.SalaUI.conectar({
-        Y: Y.Y, doc, sala, secreto: clave,
+        Y: Y.Y, doc, sala, secreto: clave, canal: canal || null,
         servidores: global.Juntos.servidores(relevo),
         alias: miAlias(), papel: 'edita',
-        /* Apagado hasta que lo digan: ver activarDirecto(). */
+        /* Apagado hasta que lo digan: ver activarDirecto(). A mano no va, que
+           el camino ya ES directo. */
         directo: { permitido: false, hasta: 4, iceServers: global.Sala.STUN }
       });
 
@@ -242,8 +297,16 @@
       prov.vecinos.on('change', pintarGente);
 
       paso('afuera').classList.add('oculto');
+      paso('mano').classList.add('oculto');
       paso('adentro').classList.remove('oculto');
-      campo('enlace').value = global.Juntos.enlace(sala, clave, location.origin + location.pathname, relevo);
+
+      /* A mano no hay enlace que repartir —el que quiera entrar tiene que
+         pegar un código y que el otro lo acepte— y no hay conexión directa que
+         activar, porque ya es la única que hay. */
+      const enlaceCaja = campo('enlace').closest('label');
+      if (enlaceCaja) enlaceCaja.classList.toggle('oculto', !!canal);
+      campo('enlace').value = canal ? ''
+        : global.Juntos.enlace(sala, clave, location.origin + location.pathname, relevo);
       campo('error').textContent = '';
       pintarGente();
       pintarBoton();
@@ -267,13 +330,163 @@
       if (!dlg) return;
       const caja = campo('caja-directa');
       /* Se ofrece solo cuando tiene sentido: de a pocos. En una clase entera
-         serían decenas de conexiones por máquina y no vale la pena. */
-      caja.classList.toggle('oculto', e.gente > 4);
+         serían decenas de conexiones por máquina y no vale la pena. Y nunca a
+         mano, donde el camino ya es directo y no hay otro. */
+      caja.classList.toggle('oculto', e.gente > 4 || !!(mano && mano.sesion));
       campo('estado-directo').textContent = !e.directo ? ''
         : e.directos > 0
           ? (e.directos === 1 ? 'andando, sin pasar por el servidor'
             : 'andando con ' + e.directos + ', sin pasar por el servidor')
           : 'buscando el camino directo… mientras tanto va por el servidor';
+    }
+
+    /* ------------------------- de a dos, a mano ----------------------- */
+
+    /* Todo este pedazo existe para el caso en que no hay servidor de nadie.
+       El mensajero es la persona: copia un código y lo manda por donde ya se
+       habla con su compañero. Ver js/mano.js y js/mano-ui.js.
+
+       Ninguna de estas pantallas crea una conexión ni toca la red hasta que
+       alguien aprieta el botón que lo dice. Pegar un código y leerlo no es
+       conectarse. */
+    let mano = null;              // { rol, paso, sesion, invitacion }
+
+    const manoBoton = (que, texto) => {
+      const b = accion(que);
+      b.classList.toggle('oculto', !texto);
+      if (texto) b.textContent = texto;
+    };
+    const manoVer = (que, si) => campo(que).classList.toggle('oculto', !si);
+    const manoStun = () => !!campo('mano-stun').checked;
+
+    function manoPantalla(titulo) {
+      campo('mano-titulo').textContent = titulo;
+      paso('afuera').classList.add('oculto');
+      paso('mano').classList.remove('oculto');
+      campo('error').textContent = '';
+      const d = dlg.querySelector('.juntos-mano');
+      if (d) d.open = true;
+      manoBoton('mano-volver', 'Volver');
+    }
+
+    function manoError(texto) {
+      campo('error').textContent = texto;
+      campo('mano-estado').textContent = '';
+    }
+
+    /* Juntar las direcciones tarda, y el alumno tiene que saber que no se
+       colgó. Quince segundos es el tope que pone js/mano-ui.js. */
+    const manoEsperando = () => {
+      campo('mano-estado').textContent = 'Preparando tu código… puede tardar unos segundos.';
+      manoBoton('mano-seguir', '');
+      manoBoton('mano-copiar', '');
+    };
+
+    async function manoInvitar() {
+      if (!global.ManoUI || !global.ManoUI.hayRTC()) {
+        campo('error').textContent = 'Este navegador no puede conectarse directo con otro.';
+        return;
+      }
+      const s = global.Juntos.crearSala();
+      mano = { rol: 'i', paso: 'armando', sala: s.sala, clave: s.clave };
+      manoPantalla('Vos invitás');
+      manoVer('mano-pego-caja', false);
+      manoVer('mano-mio-caja', false);
+      manoEsperando();
+
+      let sesion;
+      try { sesion = await global.ManoUI.invitar({ sala: s.sala, secreto: s.clave, stun: manoStun() }); }
+      catch (e) { manoError(manoPorQueFallo(e)); return; }
+      if (!mano || mano.paso !== 'armando') { sesion.cancelar(); return; }   // se volvió
+
+      mano.sesion = sesion;
+      mano.paso = 'espero-respuesta';
+      campo('mano-mio').value = sesion.codigo;
+      manoVer('mano-mio-caja', true);
+      manoVer('mano-pego-caja', true);
+      campo('mano-pego-texto').textContent = 'Pegá acá la respuesta de tu compañero';
+      campo('mano-pego').value = '';
+      campo('mano-estado').textContent = 'Mandale tu código. Cuando te devuelva el suyo, pegalo acá abajo.';
+      manoBoton('mano-copiar', 'Copiar mi código');
+      manoBoton('mano-seguir', 'Conectar');
+    }
+
+    function manoPedirCodigo() {
+      mano = { rol: 'r', paso: 'mirando' };
+      manoPantalla('Te invitaron');
+      manoVer('mano-mio-caja', false);
+      manoVer('mano-pego-caja', true);
+      campo('mano-pego-texto').textContent = 'Pegá acá el código que te mandaron';
+      campo('mano-pego').value = '';
+      campo('mano-estado').textContent = '';
+      manoBoton('mano-copiar', '');
+      manoBoton('mano-seguir', 'Mirar el código');
+    }
+
+    async function manoSeguir() {
+      if (!mano) return;
+      campo('error').textContent = '';
+
+      if (mano.paso === 'mirando') {
+        const r = await global.ManoUI.leerInvitacion(campo('mano-pego').value);
+        if (!r.ok) { manoError(r.mensaje); return; }
+        mano.invitacion = r.paquete;
+        mano.paso = 'listo-para-responder';
+        campo('mano-estado').textContent = 'El código está bien. Al aceptar, tu computadora se '
+          + 'conecta directo con la de quien te invitó y le muestra tu dirección IP.';
+        manoBoton('mano-seguir', 'Aceptar y armar mi código');
+        return;
+      }
+
+      if (mano.paso === 'listo-para-responder') {
+        mano.paso = 'armando';
+        manoEsperando();
+        let sesion;
+        try { sesion = await global.ManoUI.responder(mano.invitacion, { stun: manoStun() }); }
+        catch (e) { manoError(manoPorQueFallo(e)); return; }
+        if (!mano || mano.paso !== 'armando') { sesion.cancelar(); return; }
+
+        mano.sesion = sesion;
+        mano.paso = 'esperando-canal';
+        campo('mano-mio').value = sesion.codigo;
+        manoVer('mano-mio-caja', true);
+        manoVer('mano-pego-caja', false);
+        campo('mano-estado').textContent = 'Mandale este código a quien te invitó y esperá. '
+          + 'Se conectan solos en cuanto lo pegue.';
+        manoBoton('mano-copiar', 'Copiar mi código');
+        manoBoton('mano-seguir', '');
+        /* Se entra a la sala ya: el canal se abre cuando el otro pega el
+           código, y ahí empieza a llegar el programa. */
+        conectar(sesion.sala, sesion.secreto, null, false, sesion.canal);
+        return;
+      }
+
+      if (mano.paso === 'espero-respuesta') {
+        const r = await mano.sesion.aceptar(campo('mano-pego').value);
+        if (!r.ok) { manoError(r.mensaje); return; }
+        campo('mano-estado').textContent = 'Conectando…';
+        conectar(mano.sala, mano.clave, null, true, mano.sesion.canal);
+      }
+    }
+
+    const manoPorQueFallo = e => (e && e.message === 'tardo')
+      ? 'No se pudo armar el código: la red tardó demasiado. Probá de nuevo.'
+      : 'No se pudo armar el código en esta computadora.';
+
+    function manoCopiar() {
+      const t = campo('mano-mio');
+      t.select();
+      const listo = () => { const b = accion('mano-copiar'); b.textContent = 'Copiado'; };
+      if (navigator.clipboard) navigator.clipboard.writeText(t.value).then(listo, () => {});
+      else listo();                                   // ya quedó seleccionado
+    }
+
+    function manoVolver() {
+      if (mano && mano.sesion && !enSala()) mano.sesion.cancelar();
+      mano = null;
+      paso('mano').classList.add('oculto');
+      paso('afuera').classList.remove('oculto');
+      campo('error').textContent = '';
     }
 
     function sinRelevo() {
@@ -306,10 +519,14 @@
       if (atadura) { atadura.destroy(); atadura = null; }
       if (prov) { prov.destruir(); prov = null; }
       if (doc) { doc.destroy(); doc = null; }
+      /* Salir de una sala a mano es cortar la conexión: no hay dónde volver. */
+      if (mano && mano.sesion) mano.sesion.cancelar();
+      mano = null;
       sala = clave = relevo = null;
       history.replaceState(null, '', location.pathname);
       if (dlg) {
         paso('adentro').classList.add('oculto');
+        paso('mano').classList.add('oculto');
         paso('afuera').classList.remove('oculto');
         accion('entrar').classList.add('oculto');
         campo('invitacion').classList.add('oculto');
