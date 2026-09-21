@@ -41,7 +41,20 @@ async function probarWorker() {
   seccion('Cloudflare Workers (la decisión, sin red)');
   const mod = await import(
     'file://' + path.join(SENAS, 'cloudflare', 'src', 'logica.js').replace(/\\/g, '/'));
-  const { decidir, MAX_TEMAS, PING, PONG } = mod;
+  const { decidir, MAX_TEMAS, MAX_POR_SALA, TOPE_MENSAJE, cabe, PING, PONG } = mod;
+
+  /* Los dos topes. Desde que todo el tráfico pasa por el relevo —y no solo el
+     saludo— sin esto una sola persona le llena la memoria a su clase entera.
+     El tamaño se mide ANTES de parsear: parsear un megabyte de basura ya es el
+     ataque, no el paso anterior. */
+  {
+    comprobar('un mensaje normal entra', cabe(JSON.stringify({ type: 'ping' })));
+    comprobar('uno de dos megas no', !cabe('A'.repeat(2 * 1024 * 1024)));
+    comprobar('justo en el tope entra', cabe('A'.repeat(TOPE_MENSAJE)));
+    comprobar('uno más que el tope no', !cabe('A'.repeat(TOPE_MENSAJE + 1)));
+    comprobar('lo que no es texto tampoco', !cabe(null) && !cabe(42) && !cabe(undefined));
+    comprobar('la sala tiene un tope de gente', MAX_POR_SALA === 32, MAX_POR_SALA);
+  }
 
   /* Suscribirse deja el tema anotado. */
   {

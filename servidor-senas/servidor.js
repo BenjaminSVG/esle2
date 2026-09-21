@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
- * Servidor de señas para «programar de a dos» y para las batallas.
+ * Relevo para «programar en grupo», las batallas y la transmisión en vivo.
  *
  * Lo único que hace es presentar a dos computadoras: recibe «me interesa el
  * tema X» y reenvía a los demás interesados lo que alguien publique en X. Con
@@ -30,6 +30,11 @@ const { WebSocketServer } = require('ws');
 const PUERTO = process.env.PORT || 4444;
 const PING = 30000;          // cada cuánto se comprueba que el otro sigue ahí
 const MAX_TEMAS = 50;        // por conexión, para que nadie se suscriba a todo
+const MAX_POR_SALA = 32;     // gente por sala: un curso chico entra
+/* Lo más grande que se acepta de una vez: adentro va un sobre cerrado de hasta
+   1 MiB (ver js/sala.js) más el envoltorio. Se mide antes de parsear, porque
+   parsear un megabyte de basura ya es el ataque. */
+const TOPE_MENSAJE = 1024 * 1024 + 8192;
 
 /* tema -> conjunto de conexiones interesadas */
 const temas = new Map();
@@ -73,13 +78,24 @@ wss.on('connection', conn => {
   });
 
   conn.on('message', datos => {
+    /* El tamaño se mira ANTES de parsear: parsear un megabyte de basura ya es
+       el ataque, no el paso anterior. */
+    const crudo = String(datos);
+    if (crudo.length > TOPE_MENSAJE) { conn.close(1009, 'mensaje demasiado grande'); return; }
     let m;
-    try { m = JSON.parse(String(datos)); } catch (e) { return; }
+    try { m = JSON.parse(crudo); } catch (e) { return; }
     if (!m || typeof m.type !== 'string') return;
 
     if (m.type === 'subscribe') {
       for (const t of (m.topics || [])) {
         if (typeof t !== 'string' || suyos.size >= MAX_TEMAS) continue;
+        /* La sala llena se avisa. Dejar entrar en silencio a quien no va a ver
+           a nadie nunca es la peor de las dos formas de decir que no. */
+        const gente = temas.get(t);
+        if (gente && !gente.has(conn) && gente.size >= MAX_POR_SALA) {
+          enviar(conn, { type: 'lleno', topic: t });
+          continue;
+        }
         if (!temas.has(t)) temas.set(t, new Set());
         temas.get(t).add(conn);
         suyos.add(t);

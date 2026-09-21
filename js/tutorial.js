@@ -81,7 +81,7 @@
     btnAbrir: { nombre: 'Abrir…', que: 'Trae un archivo de tu computadora al editor.' },
     btnGuardar: { nombre: 'Guardar', atajo: 'Ctrl + S', que: 'Baja el programa como archivo a tu computadora. ESLE2 ya lo guarda solo en el navegador; esto es para llevártelo.' },
     btnCompartir: { nombre: 'Compartir', que: 'Copia un enlace con el programa adentro. No se sube nada a ningún lado: el programa viaja en el propio enlace.' },
-    btnJuntos: { nombre: 'Programar de a dos…', que: 'Dos personas escriben el mismo programa desde dos computadoras. Necesita internet.' },
+    btnJuntos: { nombre: 'Programar en grupo…', que: 'Dos personas, o toda la clase, escriben el mismo programa cada uno desde su computadora. Necesita internet.' },
     btnVivo: { nombre: 'Transmitir mi lógica…', que: 'Un enlace corto para que otros vean, en el momento, cómo vas escribiendo. Para mostrar en clase. Necesita internet.' },
     btnArchivos: { nombre: 'Archivos…', que: 'Los archivos de mentira que viven en la memoria del navegador: de ahí lee set_stdin() y ahí escribe set_stdout().' },
     selPlantillas: { nombre: 'Plantillas', que: 'Pega un esqueleto en el cursor —un ciclo, una subrutina— para no arrancar de la hoja en blanco.' },

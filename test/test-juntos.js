@@ -13,6 +13,8 @@ const assert = require('assert');
 
 const RAIZ = path.join(__dirname, '..');
 global.window = global;
+require(path.join(RAIZ, 'js', 'seguro.js'));
+require(path.join(RAIZ, 'js', 'sala.js'));
 require(path.join(RAIZ, 'js', 'juntos.js'));
 const { Juntos } = global;
 
@@ -43,7 +45,11 @@ const seccion = t => console.log('\n' + t);
     const claves = new Set();
     for (let i = 0; i < 500; i++) claves.add(Juntos.crearSala().clave);
     comprobar('y 500 contraseñas distintas', claves.size === 500, claves.size);
-    comprobar('la contraseña es larga', s.clave.length >= 16, s.clave.length + ' caracteres');
+    /* El secreto dejó de ser «algo que nadie va a escribir de memoria» para
+       ser la llave con la que se cifra todo lo que pasa por el relevo: si es
+       corto, el relevo puede probar todos hasta leer la clase entera. */
+    comprobar('el secreto es de 256 bits', s.clave.length >= 42, s.clave.length + ' caracteres');
+    comprobar('y entra en un enlace sin escaparse', /^[A-Za-z0-9_-]+$/.test(s.clave), s.clave);
   }
 
   /* ------------------------------------------------------------------ */
@@ -78,14 +84,48 @@ const seccion = t => console.log('\n' + t);
   }
 
   /* ------------------------------------------------------------------ */
+  /* El enlace puede traer el servidor de la escuela adentro, para que nadie
+     tenga que configurar nada en cada computadora. Eso también quiere decir
+     que un enlace ajeno puede decirle a un navegador a dónde conectarse, así
+     que lo que salga de acá tiene que ser una dirección y nada más —y la
+     interfaz además lo pregunta antes de usarlo—. */
+  seccion('El servidor que viene en el enlace');
+  {
+    const s = Juntos.crearSala();
+    const url = Juntos.enlace(s.sala, s.clave, 'https://esle2.vercel.app/', 'wss://senas.escuela.edu.py');
+    const v = Juntos.leerUrl(url.slice(url.indexOf('#')));
+    comprobar('vuelve la dirección del relevo', v.relevo === 'wss://senas.escuela.edu.py', v.relevo);
+    comprobar('y la sala sigue entera', v.sala === s.sala && v.clave === s.clave);
+
+    comprobar('sin relevo, no hay relevo',
+      Juntos.leerUrl(Juntos.enlace(s.sala, s.clave, 'https://x/')).relevo === null);
+
+    /* Lo que no es una dirección cifrada no pasa: ni http, ni javascript:, ni
+       una con cosas raras adentro. */
+    const cuela = u => Juntos.leerRelevo(Sala.aTexto(new TextEncoder().encode(u)));
+    comprobar('ws:// sin cifrar no pasa', cuela('ws://senas.escuela.edu.py') === null);
+    comprobar('https:// tampoco', cuela('https://senas.escuela.edu.py') === null);
+    comprobar('javascript: menos', cuela('javascript:alert(1)') === null);
+    comprobar('con espacios no pasa', cuela('wss://a b') === null);
+    comprobar('una enorme tampoco', cuela('wss://' + 'a'.repeat(400)) === null);
+    comprobar('una normal sí', cuela('wss://esle2-senas.alguien.workers.dev') !== null);
+    comprobar('basura que no es base64 no rompe', Juntos.leerRelevo('!!!!') === null);
+  }
+
+  /* ------------------------------------------------------------------ */
   seccion('Cómo se ve cada uno');
   {
     comprobar('el color de un nombre es siempre el mismo',
       Juntos.color('Ana 12') === Juntos.color('Ana 12'));
     comprobar('y dos nombres distintos, distinto',
       Juntos.color('Ana 12') !== Juntos.color('Beto 44'));
-    comprobar('es un color que el navegador entiende',
-      /^hsl\(\d+, \d+%, \d+%\)$/.test(Juntos.color('Ana')), Juntos.color('Ana'));
+    /* En #rrggbb y no en hsl(): y-codemirror le pega dos dígitos atrás para la
+       transparencia, y «hsl(...)70» no es un color. Por eso la selección del
+       compañero no se veía. */
+    comprobar('es #rrggbb, que es lo que y-codemirror puede usar',
+      /^#[0-9a-f]{6}$/.test(Juntos.color('Ana')), Juntos.color('Ana'));
+    comprobar('y con la transparencia atrás sigue siendo un color',
+      /^#[0-9a-f]{8}$/.test(Juntos.color('Ana') + '70'));
     comprobar('el nombre sugerido tiene nombre y número',
       /^[A-Za-z]+ \d+$/.test(Juntos.nombreSugerido()), Juntos.nombreSugerido());
   }

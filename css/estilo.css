@@ -579,19 +579,65 @@ body.en-examen .lista-ejercicios { opacity: .4; pointer-events: none; }
 .animo-acciones { display: flex; gap: 8px; flex-wrap: wrap; }
 .animo-cuenta { color: var(--tenue); font-variant-numeric: tabular-nums; }
 
-/* --------------------- programar de a dos ---------------------------- */
-.juntos-gente { list-style: none; margin: 8px 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px; }
-.juntos-gente li { display: flex; gap: 6px; align-items: center; font-size: 13px; }
-.juntos-punto { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-/* El cursor y la selección de la otra persona, que dibuja y-codemirror. */
-.yRemoteSelection { background-color: rgba(120, 170, 210, .35); }
-.yRemoteSelectionHead { position: absolute; border-left: 2px solid; border-top: 2px solid; height: 100%; box-sizing: border-box; }
-.yRemoteSelectionHead::after {
-  position: absolute; content: attr(title); top: -1.05em; left: -2px;
-  padding: 1px 5px; border-radius: 4px 4px 4px 0;
-  font-size: 10.5px; font-family: var(--sans); white-space: nowrap; color: #fff;
-  background: inherit; border-color: inherit; background-color: currentColor;
+/* --------------------- programar en grupo ---------------------------- */
+.dlg-juntos { max-width: 560px; }
+.dlg-juntos .juntos-paso { display: flex; flex-direction: column; gap: 12px; margin: 14px 0; }
+.juntos-alias { max-width: 260px; }
+.juntos-titulo { margin: 0; font-size: 12px; font-weight: 600; letter-spacing: .04em;
+  text-transform: uppercase; color: var(--tenue); }
+
+/* La invitación: lo que hay que saber ANTES de entrar, no después. */
+.juntos-invitacion { border: 1px solid var(--linea); border-left: 3px solid var(--acento);
+  border-radius: 8px; padding: 12px 14px; background: var(--acento-sua); }
+.juntos-avisos { margin: 8px 0 0; padding-left: 18px; font-size: 13px; color: var(--texto-2); }
+.juntos-avisos li { margin: 4px 0; }
+.juntos-avisos label { margin-left: 6px; }
+
+.juntos-estado { font-size: 13px; color: var(--texto-2); }
+
+/* El enlace y su botón, pegados: el enlace es largo y el botón no se busca. */
+.juntos-enlace { display: flex; gap: 6px; align-items: stretch; }
+.juntos-enlace .control { flex: 1 1 auto; min-width: 0; font-size: 12.5px; }
+.juntos-enlace .btn { flex: 0 0 auto; }
+
+.juntos-gente { list-style: none; margin: 6px 0 0; padding: 0;
+  display: flex; flex-wrap: wrap; gap: 6px; }
+.juntos-chip, .juntos-gente li { display: inline-flex; gap: 6px; align-items: center; font-size: 13px;
+  padding: 3px 9px 3px 7px; border-radius: 999px;
+  border: 1px solid var(--linea); background: var(--panel-2); }
+.juntos-nombre { max-width: 16ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.juntos-punto { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex: 0 0 auto; }
+
+.juntos-avanzado { margin: 4px 0 10px; font-size: 13px; }
+.juntos-avanzado summary { cursor: pointer; color: var(--acento); }
+.juntos-avanzado .nota { margin: 8px 0; }
+
+/* La barra de arriba del editor: quién está, sin abrir nada. */
+.juntos-barra { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 6px 12px; border-bottom: 1px solid var(--linea);
+  background: var(--acento-sua); font-size: 13px; }
+.juntos-barra.juntos-solo { background: var(--panel-2); }
+.juntos-barra-estado { color: var(--texto-2); }
+.juntos-barra-gente { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* El cursor y la selección de los demás, que dibuja y-codemirror. El color de
+   la línea lo pone él, desde la paleta de js/sala.js: es el mismo con el que
+   se ve a esa persona en la lista. El cartelito con el nombre aparece cuando
+   se mueve y se desvanece solo, para no tapar el código mientras se lee. */
+/* El color va sin poner: lo trae el «border-color» que y-codemirror escribe
+   en el elemento, y que sale de la paleta y nunca de lo que mande el otro. */
+.remote-caret { position: relative; border-left: 2px solid;
+  margin-left: -1px; margin-right: -1px; box-sizing: border-box; }
+.remote-caret > div {
+  position: absolute; top: -1.35em; left: -2px; z-index: 3;
+  padding: 1px 6px; border-radius: 4px 4px 4px 0;
+  font-size: 10.5px; line-height: 1.5; font-family: var(--sans);
+  white-space: nowrap; max-width: 18ch; overflow: hidden; text-overflow: ellipsis;
+  color: #fff; user-select: none; pointer-events: none;
+  transition: opacity .3s ease; opacity: 1;
 }
+.remote-caret.hide-name > div { opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .remote-caret > div { transition: none; } }
 .dlg-ayuda { margin: 6px 0 10px; font-size: 13px; }
 .dlg-ayuda summary { cursor: pointer; color: var(--acento); }
 .dlg-ayuda table { margin-top: 8px; }

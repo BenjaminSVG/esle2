@@ -137,7 +137,7 @@ falsa. Van también `nosniff`, `Referrer-Policy: no-referrer`, HSTS de dos años
 `Permissions-Policy` que apaga cámara, micrófono, ubicación y el resto.
 
 La excepción, dicha: `style-src-attr 'unsafe-inline'` sigue permitida porque el vendor de
-«Programar de a dos» pinta los cursores del otro con un atributo `style`. Es la única, y no afecta
+«Programar en grupo» pinta los cursores de los demás con un atributo `style`. Es la única, y no afecta
 a los scripts.
 
 `test/test-cabeceras.js` prueba las dos mitades sin navegador: que la política siga siendo estricta
@@ -905,47 +905,93 @@ de evitar. Para publicarla en el Marketplace hace falta una cuenta de editor.
 respeta `set_color` y sale con código 1 si no compila. Sirve para corregir un práctico desde un
 script.
 
-## Programar de a dos
+## Programar en grupo
 
-Dos alumnos, dos computadoras, el mismo programa. Uno crea la sala desde **Archivo → Programar de a
-dos…** y le pasa el enlace al otro; desde ahí los dos escriben a la vez y las ediciones se juntan
-solas sin pisarse (Yjs, un CRDT).
+Dos alumnos, o la clase entera, escribiendo el mismo programa. Uno crea la sala desde **Archivo →
+Programar en grupo…** y reparte el enlace; desde ahí todos escriben a la vez y las ediciones se
+juntan solas sin pisarse (Yjs, un CRDT). El tope es de **32 personas por sala**, que es un número
+de producto y no un límite técnico: pasado eso conviene que alguien se entere en vez de que se
+ponga lento para todos, y al que sobra se le dice que la sala está llena.
 
-> **Hace falta un servidor de señas, y no hay ninguno público que sirva.** Se probaron los tres
-> que se suelen recomendar, no mirando si conectan sino si **reenvían**: el que trae y-webrtc por
-> omisión acepta la conexión y no reenvía nada —la aplicación parece conectada sin estarlo, que
-> es la peor forma de fallar—, otro ya no existe, y el tercero habla otro protocolo. Hasta que no
-> haya uno propio andando, las tres cosas que usan la red (**Programar de a dos**, **Batallas de
-> código** y **Transmitir mi lógica**) no funcionan en producción.
->
-> Por eso hay dos servidores propios, los dos de la misma medida y con el mismo protocolo:
-> [`servidor-senas/`](servidor-senas/) para cualquier máquina que corra Node, y
-> [`servidor-senas/cloudflare/`](servidor-senas/cloudflare/) para **Cloudflare Workers, que es
-> gratis, no pide tarjeta y no se duerme**. Los planes gratuitos que corren Node no sirven acá:
-> duermen el servicio a los quince minutos, tardan un minuto en despertar y cortan las conexiones
-> abiertas al hacerlo. `test/test-senas.js` prueba las dos versiones con la misma tanda de
-> mensajes, y lo que comprueba es que **reenvíen**, no que conecten.
-> Por eso está [`servidor-senas/`](servidor-senas/): 40 líneas y una dependencia, con
-> Dockerfile, para que una escuela no dependa de nadie. Se apunta ahí sin tocar el código:
-> `localStorage.esle2_senas = 'wss://…'`. Si ninguno responde, se avisa en pantalla a los quince
-> segundos en vez de dejar a alguien esperando para siempre.
+### Por qué dejó de ir de máquina a máquina
 
-El transporte es **WebRTC**: el texto va **directo de una máquina a la otra**, cifrado con una
-contraseña al azar que viaja en el mismo enlace. Un servidor de señas ajeno solo presenta a las dos
-computadoras y después se va; no puede leer nada, y lo único que ve es un nombre de sala como
-`esle2-rio-verde-8f3a`, que no dice nada de nadie.
+Iba por WebRTC, que suena mejor y en una escuela no anda. Para que dos navegadores se hablen
+directo hacen falta dos cosas: encontrarse —eso lo arregla un servidor de señas— y que exista una
+ruta entre ellos. Esa ruta es la que no aparece: el wifi de un colegio suele aislar a los alumnos
+entre sí, el NAT del router no deja entrar nada de afuera, y cuando eso pasa WebRTC necesita un
+servidor **TURN** que retransmita. TURN gratis no existe. El resultado en pantalla era el peor
+posible: «conectado», y los dos esperándose para siempre.
+
+Ahora las máquinas no se hablan entre sí: todas hablan con el mismo **relevo**, que reenvía. Eso
+anda en cualquier red donde ande el sitio, y cada navegador abre una conexión en vez de una por
+cada compañero.
+
+### Lo que el relevo no puede hacer
+
+Leer nada. Lo que sale de cada navegador son **sobres cerrados con AES-GCM**, y la llave sale del
+secreto de 256 bits que viaja en el enlace y que el relevo nunca recibe. Están cifrados los cambios
+del programa, el estado de sincronización, los nombres y los cursores: no queda presencia en claro.
+Cada sobre va firmado con la sala, la sesión y un número que no se repite, así que no se puede
+mover de una sala a otra, ni cambiarle un byte, ni volver a mandarlo más tarde.
+
+Lo que el relevo **sí** ve, y hay que decirlo: cuántas conexiones hay en una sala, cuándo, de qué
+tamaño y con qué frecuencia. El contenido no. Ver [`js/sala.js`](js/sala.js).
+
+Y lo que el cifrado **no** protege: quien tenga el enlace entra y escribe, como en cualquier
+documento compartido por enlace. Por eso todo lo que llega de la sala —el nombre, el color, la
+posición del cursor— se **rearma campo por campo** antes de que lo vea nadie. El color sale de una
+paleta de diez que está en el código y nunca del que lo manda: y-codemirror lo mete adentro de un
+`style`, así que aceptar el color ajeno sería aceptar que un compañero te escriba CSS en la
+pantalla.
+
+### El relevo, gratis y propio
+
+> **ESLE2 no trae ningún relevo puesto, y eso es una decisión.** No hay ninguno público que se
+> pueda recomendar: se probaron los tres que se suelen nombrar mirando si **reenvían** y no si
+> conectan, y el que trae y-webrtc por omisión acepta la conexión y no reenvía nada —parece
+> conectado sin estarlo, que es la peor forma de fallar—, otro ya no existe y el tercero habla otro
+> protocolo. Mientras no haya uno, las tres cosas que usan la red (**Programar en grupo**,
+> **Batallas de código** y **Transmitir mi lógica**) lo dicen en pantalla en vez de dejar a alguien
+> esperando para siempre.
+
+Publicar el propio es gratis y son tres comandos:
+
+```
+cd servidor-senas/cloudflare
+npx wrangler login
+npx wrangler deploy
+```
+
+Sale algo como `wss://esle2-senas.TU-USUARIO.workers.dev`. Esa dirección se carga **una vez**, en
+«Programar en grupo → Para el profesor», o se pone en `PROPIOS` en [`js/juntos.js`](js/juntos.js)
+para todo el mundo. El enlace de la sala **ya la lleva adentro**, así que a los alumnos no hay que
+configurarles nada; cuando un enlace trae un servidor que no es el propio, se muestra el dominio y
+hay que aceptarlo con un tilde antes de conectarse.
+
+Hay dos versiones del mismo relevo, con el mismo protocolo:
+[`servidor-senas/`](servidor-senas/) para cualquier máquina que corra Node, y
+[`servidor-senas/cloudflare/`](servidor-senas/cloudflare/) para **Cloudflare Workers, que es
+gratis, no pide tarjeta y no se duerme**. Los planes gratuitos que corren Node no sirven acá:
+duermen el servicio a los quince minutos, tardan un minuto en despertar y cortan las conexiones
+abiertas al hacerlo. `test/test-senas.js` prueba las dos con la misma tanda de mensajes, y lo que
+comprueba es que **reenvíen**. Tiene que ser `wss://`: la CSP del sitio permite `wss:` y nada más,
+y un socket sin cifrar desde una página cifrada el navegador no lo abre.
+
+### Lo que se comparte y lo que no
 
 Se comparte **solo el texto del programa**. La entrada, la salida, la base de ESLE2 BD y el
-progreso del curso siguen siendo de cada uno, y cada uno ejecuta en su máquina. Quien tenga el
-enlace puede entrar y escribir, como en cualquier documento compartido por enlace: está dicho en el
-diálogo con todas las letras. Al entrar por un enlace se **avisa antes** de reemplazar lo que había
-en el editor, y se guarda una copia.
+progreso del curso siguen siendo de cada uno, y cada uno ejecuta en su máquina. Llegar por un
+enlace **no conecta solo**, ni siquiera con el editor vacío: se abre el diálogo, se dice qué
+significa entrar y hay que apretar un botón. Antes de atar el editor se guarda una copia de lo que
+había.
+
+Mientras dura, una barra fina arriba del editor muestra quién está, con su nombre escrito y su
+color: identificar a alguien solo por un color deja afuera a quien no los distingue.
 
 Yjs está **vendido y fijado** en `vendor/yjs/`, como CodeMirror, así que no depende de ningún CDN.
 Pero **no se guarda para usar sin conexión y no se carga en cada visita**: son 214 KB que solo
 sirven conectado, y se traen recién al abrir el diálogo. Es la única parte de ESLE2 que necesita
 internet.
-
 ## Transmitir mi lógica
 
 **Archivo → Transmitir mi lógica…** da un enlace corto y dictable —`esle2.vercel.app/live/juan`—
@@ -956,7 +1002,7 @@ que se hace en el pizarrón, o para pedir ayuda sin escribir lo que ya está a l
 Es de **una sola mano**: el que transmite escribe y los que miran solo miran. La página de mirar
 ([`vivo.html`](vivo.html)) tiene el editor en modo lectura y ni siquiera se ata al documento
 compartido: copia el texto cuando cambia. Atarlo lo volvería de ida y vuelta, que es justo lo que
-acá no va. Eso lo separa de «Programar de a dos», que es de dos manos y por eso lleva una contraseña
+acá no va. Eso lo separa de «Programar en grupo», que es de muchas manos y por eso lleva un secreto
 larga adentro del enlace.
 
 > **El enlace es público, y hay que decirlo.** El nombre es corto para poder dictarlo, así que
@@ -1655,7 +1701,8 @@ la copia vieja y el cambio no llega a nadie. `npm run revisar` compara las fecha
 | `js/estilo.js` | Sugerencias de estilo del botón *Revisar*. |
 | `js/examen.js` | Modo examen: armarlo, rendirlo, corregirlo y leer la entrega. |
 | `js/aula.js` · `js/aula-ui.js` | Modo aula: la guía, el enlace que la lleva y el cartel de la clase. |
-| `js/juntos.js` · `js/juntos-ui.js` · `vendor/yjs/` | Programar de a dos: la sala, el enlace y Yjs. |
+| `js/sala.js` · `js/sala-ui.js` | El sobre cerrado, quién está en la sala y el transporte por el relevo. |
+| `js/juntos.js` · `js/juntos-ui.js` · `vendor/yjs/` | Programar en grupo: la sala, el enlace y Yjs. |
 | `js/duelo.js` · `js/duelo-ui.js` | Batallas: el código de sala, el emparejado y el puntaje. |
 | `js/animo.js` · `js/animo-ui.js` | Detectar que alguien se trabó, y decirlo bien. |
 | `js/enfoque.js` · `js/enfoque-ui.js` | Modo enfoque y su música, calculada nota por nota. |
@@ -1722,7 +1769,8 @@ la copia vieja y el cambio no llega a nadie. `npm run revisar` compara las fecha
 | `test/test-contraste.js` | Toda la paleta llega al contraste mínimo de WCAG AA (167). |
 | `test/test-examen.js` | Modo examen: paquete, cronómetro, plantillas y planilla (33). |
 | `test/test-aula.js` | Modo aula: la guía, el enlace de ida y vuelta y los ids (30). |
-| `test/test-juntos.js` | La sala y su enlace: que no se adivine y que vuelva entero (20). |
+| `test/test-juntos.js` | La sala y su enlace: que no se adivine y que vuelva entero (48). |
+| `test/test-sala.js` | El sobre cerrado, la repetición y lo que llega de un compañero (70). |
 | `test/test-duelo.js` | Que las dos máquinas calculen lo mismo sin hablarse (39). |
 | `test/test-animo.js` | Cuándo avisar y —sobre todo— cuándo no (17). |
 | `test/test-enfoque.js` | Que la música no desafine, no grite ni se repita igual (28). |

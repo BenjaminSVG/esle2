@@ -1,8 +1,12 @@
-# El servidor de señas, gratis y despierto
+# El relevo, gratis y despierto
 
-Esta es la versión del servidor de señas para **Cloudflare Workers**. Hace exactamente lo mismo que
-[`../servidor.js`](../servidor.js) —presenta a dos computadoras y se va— pero se puede tener **gratis
-y encendido todo el tiempo**, que es lo que hacía falta.
+Esta es la versión del relevo para **Cloudflare Workers**. Hace exactamente lo mismo que
+[`../servidor.js`](../servidor.js) —reparte sobres cerrados entre los que están en la misma sala—
+pero se puede tener **gratis y encendido todo el tiempo**, que es lo que hacía falta.
+
+Antes esto solo presentaba a dos computadoras para que se hablaran directo por WebRTC. Ese camino
+no existe en el wifi de una escuela, así que ahora **todo el tráfico pasa por acá**. Lo que no
+cambió es lo que este servidor puede leer: nada. Ver [`../../js/sala.js`](../../js/sala.js).
 
 ## Por qué acá y no en otro lado
 
@@ -29,29 +33,31 @@ Al terminar te dice la dirección, algo como `https://esle2-senas.TU-USUARIO.wor
 
 ## Apuntar ESLE2 a él
 
-En la consola del navegador, en el sitio, **una sola vez por computadora**:
+Lo más simple: en el sitio, **Archivo → Programar en grupo… → Para el profesor**, pegar la
+dirección y guardar. Queda en esa computadora, y **el enlace de cada sala la lleva adentro**, así
+que a los alumnos no hay que configurarles nada.
 
-```js
-localStorage.esle2_senas = 'wss://esle2-senas.TU-USUARIO.workers.dev'
-```
+Fijate que sea **`wss://`** y no `https://` ni `ws://`: el sitio se sirve cifrado, el navegador no
+deja abrir un socket sin cifrar desde una página cifrada, y la CSP del sitio solo permite `wss:`.
 
-Fijate que sea **`wss://`** y no `https://` ni `ws://`: el sitio se sirve cifrado y el navegador no
-deja abrir un socket sin cifrar desde una página cifrada.
-
-Si abrís esa dirección en el navegador te muestra una página de estado con la línea ya armada, para
-copiar y pegar.
+Si abrís esa dirección en el navegador te muestra una página de estado.
 
 Para que quede fijo para todos sin tocar nada en cada máquina, ponelo en `PROPIOS`, en
 [`js/juntos.js`](../../js/juntos.js).
 
 ## Cuánto aguanta el plan gratuito
 
-De sobra. Por acá pasa **solo el saludo** entre dos computadoras: en cuanto se encontraron, el
-programa viaja directo entre ellas y este servidor deja de intervenir. El plan gratuito da del orden
-de tres millones de pedidos por mes, y encima los mensajes que entran se cuentan de a veinte. Un
-colegio entero no lo roza.
+Alcanza, pero ahora hay que mirarlo: desde que el tráfico dejó de ir de máquina a máquina, **por acá
+pasa todo lo que se escribe**, no solo el saludo. El plan gratuito da del orden de tres millones de
+pedidos por mes y los mensajes entrantes se cuentan de a veinte; una clase de treinta escribiendo
+una hora entra cómoda, pero si un día una escuela entera lo usa a la vez, conviene ver el tablero de
+Cloudflare antes que suponer. «Gratis» no quiere decir «ilimitado»: pasado el cupo, las operaciones
+fallan.
 
-Tampoco se guarda nada —no se escribe una sola fila— así que el cobro por almacenamiento no aplica.
+Lo que no cambió: no se guarda nada —no se escribe una sola fila— así que el cobro por
+almacenamiento no aplica, y lo que pasa va cifrado con una llave que este servidor nunca recibe.
+Hay dos topes puestos: **32 personas por sala** y **un mega por mensaje**, y los dos se miran antes
+de parsear nada.
 
 ## Probarlo antes de publicar
 

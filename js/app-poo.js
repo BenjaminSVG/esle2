@@ -946,7 +946,7 @@
   });
   $('#btnAula').addEventListener('click', () => aulaUI.abrir());
 
-  /* Programar de a dos. El paquete que lo hace posible pesa 214 KB y se trae
+  /* Programar en grupo. El paquete que lo hace posible pesa 214 KB y se trae
      recién al abrir el diálogo: es lo único del sitio que necesita internet,
      y no tiene por qué pagarlo quien no lo usa. */
   JuntosUI.iniciar({
@@ -955,7 +955,7 @@
     estado: (t, c) => estado(t, c)
   });
 
-  /* Batallas de código. Usa la misma sala de Yjs que «programar de a dos»,
+  /* Batallas de código. Usa la misma sala de Yjs que «programar en grupo»,
      pero acá NO viaja el código de nadie: solo «terminé, en tantos segundos».
      Corrige cada máquina con los casos de prueba del ejercicio. */
   DueloUI.iniciar({

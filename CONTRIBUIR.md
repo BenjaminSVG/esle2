@@ -23,9 +23,9 @@ viaja adentro de un enlace, después del `#`.
 después de que el autor se recibe. Un sitio estático publicado en cualquier lado sigue andando solo
 durante años. Y el día del parcial no se cae nada, porque no hay nada que se pueda caer.
 
-La única excepción es el servidor de señas de `servidor-senas/`, que **solo presenta a dos
-computadoras** y no ve el contenido: lo que viaja va cifrado y directo entre ellas. Si se cae, se
-caen tres funciones y el resto del sitio sigue entero.
+La única excepción es el relevo de `servidor-senas/`, que **solo reparte sobres cerrados** y no
+ve el contenido: lo que pasa por ahí va cifrado con una llave que ese servidor nunca recibe. Si se
+cae, se caen tres funciones y el resto del sitio sigue entero.
 
 ### 2. No hay IA
 
@@ -238,8 +238,12 @@ Están acá para que no haya que volver a descubrirlos.
 * **Una sola clave de `localStorage` para todo el sitio.** El examen en curso se guardaba con la
   misma clave en los tres dialectos: quien estaba rindiendo en el IDE y abría Visual se encontraba
   ese examen, con ejercicios que Visual no tiene y sin forma de salir.
-* **Creer que "conectado" es "funciona".** Un servidor de señas puede aceptar la conexión y no
-  reenviar nada. Hay que probar el reenvío, no la conexión.
+* **Creer que "conectado" es "funciona".** Un relevo puede aceptar la conexión y no reenviar
+  nada. Hay que probar el reenvío, no la conexión.
+* **Creer que "se conectan" es "se encuentran".** Esto costó una versión entera: de máquina a
+  máquina (WebRTC) las dos puntas se anuncian bien y después no hay ruta entre ellas, porque el
+  wifi de un colegio aísla a los alumnos entre sí. La señal de que algo anda es que el otro vea lo
+  que escribís, no que la pantalla diga «conectado».
 
 ---
 

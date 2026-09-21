@@ -21,18 +21,17 @@
  *
  * De ahí salen dos consecuencias que el código respeta:
  *
- *   · el programa igual viaja cifrado. La contraseña sale del propio nombre,
- *     así que no protege de alguien que sepa el nombre (no puede: el que mira
+ *   · el programa igual viaja cifrado. El secreto sale del propio nombre, así
+ *     que no protege de alguien que sepa el nombre (no puede: el que mira
  *     tiene que poder desencriptar sabiendo solo el enlace). Sí evita que el
- *     servidor que presenta a las máquinas —que es ajeno— pueda leer lo que
- *     pasa por él sin saber a qué transmisión mirar;
+ *     relevo —que es ajeno— pueda leer lo que pasa por él sin saber a qué
+ *     transmisión mirar;
  *   · dos personas con el mismo nombre caen en la misma transmisión. Se avisa
  *     en pantalla cuando se detecta a alguien más transmitiendo ahí.
  *
- * No hay servidor de ESLE2 en el medio: el texto va directo del que transmite
- * al que mira, por WebRTC, igual que en «Programar de a dos». No se guarda
- * nada en ningún lado; cuando el que transmite cierra la pestaña, no queda
- * nada que mirar.
+ * El texto va por el mismo camino que «Programar en grupo»: un relevo que
+ * reparte sobres cerrados y no guarda nada. Cuando el que transmite cierra la
+ * pestaña, no queda nada que mirar, ni ahí ni en ningún lado.
  *
  * API (cálculo puro, sin red ni DOM: lo prueba test/test-vivo.js)
  *   Vivo.limpiarNombre(texto)   -> el nombre como va a quedar en el enlace

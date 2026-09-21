@@ -1,20 +1,21 @@
 /*
- * Programar de a dos: la parte que se puede pensar sin red.
+ * Programar en grupo: la parte que se puede pensar sin red.
  *
- * Una «sala» es un nombre al azar y una contraseña, también al azar, que
- * viajan los dos adentro del enlace, después del «#». Con eso alcanza:
+ * Una «sala» es un nombre al azar y un secreto, también al azar, que viajan
+ * los dos adentro del enlace, después del «#». Con eso alcanza:
  *
- *   · el nombre solo sirve para que las dos computadoras se encuentren. Lo ve
- *     el servidor de señas, que no es nuestro, así que no dice nada de nadie:
- *     es «sle2-rio-verde-8f3a», no el nombre de la escuela;
- *   · la contraseña cifra el contenido. El servidor de señas presenta a las
- *     dos máquinas y después se va; el código viaja directo de una a la otra y
- *     cifrado, así que ni ese servidor ni nadie en el medio lo puede leer.
+ *   · el nombre solo sirve para que las computadoras se encuentren. Lo ve el
+ *     relevo, que no es nuestro, así que no dice nada de nadie: es
+ *     «esle2-rio-verde-8f3a», no el nombre de la escuela;
+ *   · el secreto cifra el contenido. De él sale la llave con la que se cierra
+ *     todo lo que pasa por el relevo (ver js/sala.js), y el relevo nunca lo
+ *     recibe: reparte sobres que no puede abrir.
  *
  * Como el enlace lleva las dos cosas, quien lo tiene puede entrar y escribir.
  * Es a propósito, y es lo mismo que un documento compartido por enlace: para
  * una clase alcanza, y evita tener cuentas. Está dicho en la documentación con
- * todas las letras, que es lo que corresponde.
+ * todas las letras, y en el propio diálogo antes de entrar, que es lo que
+ * corresponde.
  *
  * API (cálculo puro, sin red ni DOM: lo prueba test/test-juntos.js)
  *   Juntos.crearSala()          -> { sala, clave }
@@ -44,27 +45,57 @@
 
   const enBase36 = bytes => Array.from(bytes).map(b => b.toString(36)).join('').slice(0, 12);
 
+  /* base64 «url»: entra en un enlace sin escaparse y no se parte al copiarlo. */
+  function enTexto(bytes) {
+    if (global.Sala) return global.Sala.aTexto(bytes);
+    return Buffer.from(bytes).toString('base64')
+      .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+
+  /* El secreto es de 256 bits. Antes eran unos veinte caracteres de base36,
+     que alcanzaban para que nadie lo escribiera de memoria pero no para ser la
+     única puerta de una sala: ahora de este secreto sale la llave con la que
+     se cifra todo lo que pasa por el relevo, así que tiene que ser una llave
+     de verdad. */
   function crearSala() {
-    const b = azar(16);
+    const b = azar(4);
     const dos = [PALABRAS[b[0] % PALABRAS.length], PALABRAS[b[1] % PALABRAS.length]];
     return {
-      sala: 'esle2-' + dos.join('-') + '-' + enBase36(b.slice(2, 6)).slice(0, 6),
-      clave: enBase36(b.slice(6)) + enBase36(azar(8))
+      sala: 'esle2-' + dos.join('-') + '-' + enBase36(b.slice(2)).slice(0, 6),
+      clave: enTexto(azar(32))
     };
   }
 
   const limpio = t => String(t || '').replace(/[^A-Za-z0-9_-]/g, '');
 
-  function enlace(sala, clave, base) {
+  /* El relevo puede viajar en el enlace para que una escuela con servidor
+     propio no tenga que tocar nada en cada computadora. Va como texto
+     codificado y NO se usa sin preguntar: ver leerUrl y el diálogo. */
+  const guardarRelevo = url => (url ? '.' + enTexto(new TextEncoder().encode(url)) : '');
+
+  function enlace(sala, clave, base, relevo) {
     const raiz = base || (typeof location !== 'undefined' ? location.origin + location.pathname : '');
-    return raiz + '#juntos=' + limpio(sala) + '.' + limpio(clave);
+    return raiz + '#juntos=' + limpio(sala) + '.' + limpio(clave) + guardarRelevo(relevo);
+  }
+
+  /* Un relevo que viene de un enlace ajeno es una dirección a la que el
+     navegador del alumno se va a conectar porque se lo pidió un papelito. Se
+     devuelve aparte, se muestra el dominio y recién se usa si dicen que sí. */
+  function leerRelevo(texto) {
+    if (!texto || !global.Sala) return null;
+    const b = global.Sala.aBytes(texto);
+    if (!b || b.length > 200) return null;
+    let url;
+    try { url = new TextDecoder().decode(b); } catch (e) { return null; }
+    if (!/^wss:\/\/[A-Za-z0-9._-]+(:\d+)?(\/[A-Za-z0-9._~\-/]*)?$/.test(url)) return null;
+    return url;
   }
 
   function leerUrl(hash) {
     const h = hash === undefined && typeof location !== 'undefined' ? location.hash : (hash || '');
-    const m = /[#&]juntos=([A-Za-z0-9_-]+)\.([A-Za-z0-9_-]+)/.exec(h);
+    const m = /[#&]juntos=([A-Za-z0-9_-]+)\.([A-Za-z0-9_-]+)(?:\.([A-Za-z0-9_-]+))?/.exec(h);
     if (!m) return null;
-    return { sala: m[1], clave: m[2] };
+    return { sala: m[1], clave: m[2], relevo: leerRelevo(m[3]) };
   }
 
   const NOMBRES = ('Ana Beto Cata Dani Elsa Fabio Gaby Hugo Ivo Juli Kevin Lu '
@@ -76,37 +107,46 @@
   }
 
   /* Un color estable a partir del nombre: la misma persona se ve siempre del
-     mismo color, en las dos pantallas, sin ponerse de acuerdo en nada. Se
-     eligen tonos oscuros para que el nombre se lea sobre ellos en blanco. */
-  function color(nombre) {
-    let h = 5381;
-    const t = String(nombre || '');
-    for (let i = 0; i < t.length; i++) h = ((h * 33) ^ t.charCodeAt(i)) >>> 0;
-    return 'hsl(' + (h % 360) + ', 62%, 38%)';
-  }
+     mismo color, en todas las pantallas, sin ponerse de acuerdo en nada.
+     Sale de la paleta de js/sala.js y no de una cuenta, por una razón que
+     costó encontrar: y-codemirror le pega dos dígitos más para la
+     transparencia («#1d4ed8» + «70»), y un hsl(...) con eso atrás no es un
+     color. Por eso la selección del compañero no se veía nunca. */
+  const color = nombre => (global.Sala ? global.Sala.colorDe(nombre) : '#1d4ed8');
 
-  /* Los servidores de señas, en orden. Solo presentan a las dos computadoras:
-     no ven el contenido, que va cifrado y directo entre ellas.
+  /* Los relevos, en orden. Un relevo reparte sobres cerrados: reenvía a los
+     demás de la sala lo que publica uno, y no puede leer nada de lo que
+     reparte (ver js/sala.js).
 
-     Son varios a propósito. El que trae la librería por omisión se cae cada
-     tanto —comprobado: durante el desarrollo de esto estaba caído— y con uno
-     solo, ese día no anda nada. Con la lista, alcanza con que uno responda.
-     Si un día no responde ninguno, se avisa en pantalla en vez de dejar a
-     alguien esperando para siempre. */
-  const PROPIOS = [
-    /* Poné acá el tuyo: ver servidor-senas/README.md. Mientras no haya uno,
-       se prueba con el de la librería, que anda a veces. */
-    'wss://y-webrtc-eu.fly.dev'
-  ];
+     La lista está vacía a propósito, y eso es una decisión, no un olvido: no
+     hay ningún servidor público que se pueda recomendar. Los de y-webrtc
+     estaban rotos de la peor manera —aceptaban la conexión y no reenviaban
+     nada, así que la pantalla decía «conectado» y nadie se encontraba nunca—
+     y apuntar a uno ajeno sería hacerle creer a una escuela que tiene algo
+     que no tiene.
 
-  /* Una escuela puede apuntar al suyo sin tocar el código, desde la consola:
+     Publicar el propio son tres comandos y es gratis: está escrito y probado
+     en servidor-senas/cloudflare. Cuando lo tengas, ponelo acá y listo para
+     todo el mundo, o pasalo por el diálogo, que lo guarda en esta
+     computadora. */
+  const PROPIOS = [];
+
+  /* Una escuela puede apuntar al suyo sin tocar el código:
        localStorage.esle2_senas = 'wss://senas.mi-escuela.edu.py'
-     Se admiten varios separados por coma. */
-  function servidores() {
+     Se admiten varios separados por coma. El diálogo escribe acá. */
+  function servidores(primero) {
     let propio = '';
     try { propio = localStorage.getItem('esle2_senas') || ''; } catch (e) { /* modo privado */ }
     const suyos = propio.split(',').map(t => t.trim()).filter(t => /^wss?:\/\//.test(t));
-    return suyos.concat(PROPIOS);
+    const todos = (primero ? [primero] : []).concat(suyos, PROPIOS);
+    return todos.filter((u, i) => todos.indexOf(u) === i);
+  }
+
+  /* Guardar el relevo de la escuela en esta computadora. Devuelve si valía. */
+  function recordarServidor(url) {
+    if (!/^wss:\/\/[A-Za-z0-9._-]+(:\d+)?(\/\S*)?$/.test(String(url || ''))) return false;
+    try { localStorage.setItem('esle2_senas', String(url)); } catch (e) { /* modo privado */ }
+    return true;
   }
 
   /* ------------------------------------------------------------------ */
@@ -187,6 +227,7 @@
     return bueno ? bueno.url : null;
   }
 
-  global.Juntos = { crearSala, enlace, leerUrl, nombreSugerido, color, PALABRAS, servidores, PROPIOS,
+  global.Juntos = { crearSala, enlace, leerUrl, leerRelevo, nombreSugerido, color, PALABRAS,
+    servidores, recordarServidor, PROPIOS,
     probarRelevo, alguienReenvia, pruebaDeRelevo, esEco, temaDePrueba };
 })(typeof window !== 'undefined' ? window : globalThis);

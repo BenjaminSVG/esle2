@@ -7,7 +7,7 @@
  *
  * Al publicar una versión nueva hay que subir VERSION: eso borra la caché vieja.
  */
-const VERSION = 'esle2-v63';
+const VERSION = 'esle2-v64';
 
 const ARCHIVOS = [
   './',
@@ -101,14 +101,14 @@ const ARCHIVOS = [
   'js/duelo.js',
   'js/duelo-ui.js',
   /* vendor/yjs/juntos.min.js NO se guarda a propósito: son 214 KB que solo
-     sirven conectado, y se traen recién al abrir «Programar de a dos». */
+     sirven conectado, y se traen recién al abrir «Programar en grupo». */
   'js/juntos.js',
   'js/juntos-ui.js',
   'js/enfoque.js',
   'js/enfoque-ui.js',
   'js/viaje.js',
   'js/viaje-ui.js',
-  /* La transmisión en vivo necesita internet igual que «Programar de a dos»,
+  /* La transmisión en vivo necesita internet igual que «Programar en grupo»,
      pero la página se guarda igual: así, si alguien abre /live/… sin señal,
      ve la explicación en vez de un error del navegador. */
   'vivo.html',
@@ -218,6 +218,8 @@ const ARCHIVOS = [
   'img/logo-visual.svg',
   'js/seguro.js',
   'js/vivo-pagina.js',
+  'js/sala.js',
+  'js/sala-ui.js',
 ];
 
 /* Lo que esta caché acepta guardar. Sin esto, una respuesta que viniera de

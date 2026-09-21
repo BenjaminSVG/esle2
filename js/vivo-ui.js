@@ -10,7 +10,7 @@
  *     copia el texto cuando cambia. Un editor atado es de ida y vuelta por
  *     definición, y acá la vuelta no existe.
  *
- * Por debajo es lo mismo que «Programar de a dos»: Yjs sobre WebRTC, con el
+ * Por debajo es lo mismo que «Programar en grupo»: Yjs sobre un relevo, con el
  * paquete vendido en vendor/yjs/ y traído recién cuando hace falta, y los
  * mismos servidores de señas (ver js/juntos.js). Lo que va por la red es el
  * texto del programa y nada más: ni la entrada, ni la salida, ni el progreso.
@@ -41,7 +41,7 @@
     return cargando;
   }
 
-  const servidores = () => (global.Juntos ? global.Juntos.servidores() : ['wss://y-webrtc-eu.fly.dev']);
+  const servidores = () => (global.Juntos ? global.Juntos.servidores() : []);
 
   /* ==================================================================== */
   /* El que transmite                                                     */
@@ -154,20 +154,27 @@
       const mio = editor.getValue();
       doc = new Y.Y.Doc();
       const texto = doc.getText('programa');
-      proveedor = new Y.WebrtcProvider(s.sala, doc, { password: s.clave, signaling: servidores() });
-      proveedor.awareness.setLocalStateField('user', { name: nombre, papel: 'transmite' });
-      atadura = new Y.CodemirrorBinding(texto, editor, proveedor.awareness);
-      if (mio.trim()) setTimeout(() => { if (texto.length === 0) texto.insert(0, mio); }, 600);
+      /* El programa se pone antes de conectar y antes de atar el editor: la
+         transmisión recién arranca, no hay con qué chocar. Antes acá había un
+         temporizador que miraba si el documento seguía vacío, y un programa
+         vacío es un estado tan válido como cualquier otro. */
+      if (mio.trim()) texto.insert(0, mio);
+      proveedor = global.SalaUI.conectar({
+        Y: Y.Y, doc, sala: s.sala, secreto: s.clave,
+        servidores: servidores(), alias: nombre, papel: 'transmite'
+      });
+      atadura = new Y.CodemirrorBinding(texto, editor, proveedor.vecinos);
 
-      proveedor.awareness.on('change', pintarGente);
+      proveedor.vecinos.on('change', pintarGente);
       pintarGente();
 
-      /* No alcanza con que el servidor conteste: si no reenvía, nadie te ve
+      /* No alcanza con que el servidor conteste: si no reparte, nadie te ve
          nunca y la pantalla diría «en vivo» igual. */
-      global.Juntos.alguienReenvia().then(bueno => {
-        if (!proveedor || bueno) return;
-        campo('error').textContent = 'Ningún servidor está reenviando, así que nadie te va a poder '
-          + 'ver. Hace falta un servidor de señas propio: está listo para publicar en servidor-senas/cloudflare, y es gratis.';
+      proveedor.al('estado', e => {
+        if (e.conectado || e.motivo !== 'sin relevo') return;
+        campo('error').textContent = 'No hay ningún servidor que reparta los mensajes, así que '
+          + 'nadie te va a poder ver. Hace falta el de la escuela: se publica gratis desde '
+          + 'servidor-senas/cloudflare y se carga en «Programar en grupo».';
         campo('estado').value = 'sin señal';
       });
 
@@ -183,7 +190,7 @@
 
     function pintarGente() {
       if (!proveedor) return;
-      const estados = Array.from(proveedor.awareness.getStates().values()).filter(e => e && e.user);
+      const estados = Array.from(proveedor.vecinos.getStates().values()).filter(e => e && e.user);
       const mirando = estados.filter(e => e.user.papel === 'mira').length;
       const otros = estados.filter(e => e.user.papel === 'transmite').length - 1;
       campo('gente').textContent = mirando === 0 ? 'Todavía no te está mirando nadie.'
@@ -196,7 +203,7 @@
 
     function cortar() {
       if (atadura) { atadura.destroy(); atadura = null; }
-      if (proveedor) { proveedor.destroy(); proveedor = null; }
+      if (proveedor) { proveedor.destruir(); proveedor = null; }
       if (doc) { doc.destroy(); doc = null; }
       if (dlg) {
         campo('estado').value = 'sin transmitir';
@@ -233,7 +240,7 @@
 
     /* Cerrar la pestaña corta la transmisión sola —no queda nada dando
        vueltas— pero se hace explícito igual, para soltar la conexión rápido. */
-    global.addEventListener('pagehide', () => { if (proveedor) proveedor.destroy(); });
+    global.addEventListener('pagehide', () => { if (proveedor) proveedor.destruir(); });
 
     return { abrir, cortar, get enVivo() { return enVivo(); } };
   }
@@ -262,8 +269,10 @@
 
       doc = new Y.Y.Doc();
       const texto = doc.getText('programa');
-      proveedor = new Y.WebrtcProvider(s.sala, doc, { password: s.clave, signaling: servidores() });
-      proveedor.awareness.setLocalStateField('user', { name: 'alguien', papel: 'mira' });
+      proveedor = global.SalaUI.conectar({
+        Y: Y.Y, doc, sala: s.sala, secreto: s.clave,
+        servidores: servidores(), alias: 'alguien', papel: 'mira'
+      });
 
       /* Nada de atar el editor: acá se copia el texto y listo. Atarlo lo
          volvería de ida y vuelta, y esto es de una sola mano. Se conserva la
@@ -279,8 +288,8 @@
       };
       texto.observe(refrescar);
 
-      proveedor.awareness.on('change', () => {
-        const estados = Array.from(proveedor.awareness.getStates().values()).filter(e => e && e.user);
+      proveedor.vecinos.on('change', () => {
+        const estados = Array.from(proveedor.vecinos.getStates().values()).filter(e => e && e.user);
         const hay = estados.some(e => e.user.papel === 'transmite');
         decir(hay ? 'En vivo' : 'Nadie está transmitiendo en este enlace ahora mismo.',
               hay ? 'ok' : null);
@@ -288,9 +297,10 @@
 
       setTimeout(async () => {
         if (!proveedor) return;
-        if (!(await global.Juntos.alguienReenvia())) {
-          decir('Ningún servidor está reenviando, así que no se puede ver ninguna transmisión. '
-              + 'Hace falta un servidor de señas propio: está listo para publicar en servidor-senas/cloudflare, y es gratis.', 'error');
+        if (!proveedor.conectado) {
+          decir('No hay ningún servidor que reparta los mensajes, así que no se puede ver ninguna '
+              + 'transmisión. Hace falta el de la escuela: se publica gratis desde '
+              + 'servidor-senas/cloudflare.', 'error');
         } else if (!texto.toString()) {
           decir('Nadie está transmitiendo en este enlace ahora mismo.');
         }
@@ -298,7 +308,7 @@
     }
 
     function cortar() {
-      if (proveedor) { proveedor.destroy(); proveedor = null; }
+      if (proveedor) { proveedor.destruir(); proveedor = null; }
       if (doc) { doc.destroy(); doc = null; }
     }
 

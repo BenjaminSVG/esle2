@@ -22,6 +22,19 @@
    por sala— y así nunca se llega al límite. */
 export const MAX_TEMAS = 20;
 
+/* Cuánta gente entra en una sala. Es un número de producto, no un límite
+   técnico: un curso chico entra, y pasado eso conviene que alguien se entere
+   en vez de que se ponga lento para todos. */
+export const MAX_POR_SALA = 32;
+
+/* Lo más grande que se acepta de una sola vez. Adentro va un sobre cerrado de
+   hasta 1 MiB (ver js/sala.js) más el envoltorio del protocolo. Sin este tope,
+   una sola persona le llena la memoria al servidor y a toda su clase. */
+export const TOPE_MENSAJE = 1024 * 1024 + 8192;
+
+/* Se mide ANTES de parsear: parsear un megabyte de basura ya es el ataque. */
+export const cabe = texto => typeof texto === 'string' && texto.length <= TOPE_MENSAJE;
+
 /* Lo que la plataforma contesta sola, sin despertar al objeto. y-webrtc manda
    exactamente esto para saber si seguimos vivos. */
 export const PING = JSON.stringify({ type: 'ping' });

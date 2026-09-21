@@ -50,7 +50,7 @@
  * sola fila en la base del objeto, así que tampoco hay nada que borrar ni que
  * pagar.
  */
-import { decidir, PING, PONG } from './logica.js';
+import { decidir, cabe, MAX_POR_SALA, PING, PONG } from './logica.js';
 
 export class Senas {
   constructor(ctx, env) {
@@ -82,10 +82,30 @@ export class Senas {
     } catch (e) { return []; }
   }
 
+  /* Cuántas conexiones hay ya en una sala. Se recorren las abiertas: es lineal
+     en la gente conectada y con un curso entero es nada. */
+  cuantosEn(tema) {
+    let n = 0;
+    for (const otro of this.ctx.getWebSockets()) if (this.temasDe(otro).includes(tema)) n++;
+    return n;
+  }
+
   async webSocketMessage(ws, datos) {
-    if (typeof datos !== 'string') return;          // acá todo es JSON en texto
+    if (!cabe(datos)) { try { ws.close(1009, 'mensaje demasiado grande'); } catch (e) {} return; }
     let m;
     try { m = JSON.parse(datos); } catch (e) { return; }
+
+    /* La sala llena se dice, no se deja entrar en silencio: entrar y no ver a
+       nadie nunca es el peor de los dos resultados posibles. */
+    if (m && m.type === 'subscribe') {
+      for (const t of (m.topics || [])) {
+        if (typeof t !== 'string' || this.temasDe(ws).includes(t)) continue;
+        if (this.cuantosEn(t) >= MAX_POR_SALA) {
+          try { ws.send(JSON.stringify({ type: 'lleno', topic: t })); } catch (e) {}
+          return;
+        }
+      }
+    }
 
     const r = decidir(m, this.temasDe(ws));
 

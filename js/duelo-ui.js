@@ -1,8 +1,8 @@
 /*
  * Batallas de código, la parte que se conecta.
  *
- * Se apoya en lo que ya está: la sala de Yjs de «programar de a dos» (mismo
- * transporte, mismo servidor de señas, mismo cifrado) y los casos de prueba de
+ * Se apoya en lo que ya está: la sala de Yjs de «programar en grupo» (mismo
+ * transporte, mismo relevo, mismo cifrado) y los casos de prueba de
  * los ejercicios del curso, que ya corrigen solos. Lo que agrega es el
  * cronómetro y la cuenta de quién llegó primero.
  *
@@ -90,7 +90,7 @@
       nom.value = localStorage.getItem(CLAVE_NOMBRE) || global.Juntos.nombreSugerido();
       nom.addEventListener('input', () => {
         try { localStorage.setItem(CLAVE_NOMBRE, nom.value); } catch (e) { /* almacén lleno */ }
-        if (proveedor) proveedor.awareness.setLocalStateField('user', quienSoy());
+        if (proveedor) proveedor.vecinos.setLocalStateField('user', quienSoy());
       });
 
       dlg.addEventListener('click', ev => {
@@ -146,22 +146,23 @@
       const s = global.Duelo.sala(codigo);
       doc = new Y.Y.Doc();
       mapa = doc.getMap('batalla');
-      proveedor = new Y.WebrtcProvider(s.sala, doc, {
-        password: s.clave,
-        signaling: global.Juntos.servidores()
+      proveedor = global.SalaUI.conectar({
+        Y: Y.Y, doc, sala: s.sala, secreto: s.clave,
+        servidores: global.Juntos.servidores(),
+        alias: quienSoy().name, papel: 'edita'
       });
-      proveedor.awareness.setLocalStateField('user', quienSoy());
-      yo = String(proveedor.awareness.clientID);
+      yo = String(proveedor.vecinos.clientID);
 
-      proveedor.awareness.on('change', pintarGente);
+      proveedor.vecinos.on('change', pintarGente);
       mapa.observe(alCambiarLaBatalla);
 
-      /* Conectado no es lo mismo que útil: si el servidor no reenvía, los dos
-         se quedan esperando una batalla que no va a empezar nunca. */
-      global.Juntos.alguienReenvia().then(bueno => {
-        if (!proveedor || bueno) return;
-        campo('error').textContent = 'Ningún servidor está reenviando, así que la batalla no puede '
-          + 'empezar. Hace falta un servidor de señas propio: está listo para publicar en servidor-senas/cloudflare, y es gratis.';
+      /* Conectado no es lo mismo que útil: si no hay un relevo que reparta,
+         los dos se quedan esperando una batalla que no va a empezar nunca. */
+      proveedor.al('estado', e => {
+        if (e.conectado || e.motivo !== 'sin relevo') return;
+        campo('error').textContent = 'No hay ningún servidor que reparta los mensajes, así que la '
+          + 'batalla no puede empezar. Hace falta el de la escuela: se publica gratis desde '
+          + 'servidor-senas/cloudflare y se carga en «Programar en grupo».';
         campo('estado').textContent = 'sin señal';
       });
 
@@ -173,7 +174,7 @@
       pintarGente();
     }
 
-    const conectados = () => Array.from(proveedor.awareness.getStates().entries())
+    const conectados = () => Array.from(proveedor.vecinos.getStates().entries())
       .filter(([, e]) => e && e.user)
       .map(([id, e]) => ({ id: String(id), nombre: e.user.name, color: e.user.color }));
 
@@ -363,7 +364,7 @@
 
     function salir(cerrarTodo) {
       clearInterval(reloj);
-      if (proveedor) { proveedor.destroy(); proveedor = null; }
+      if (proveedor) { proveedor.destruir(); proveedor = null; }
       if (doc) { doc.destroy(); doc = null; }
       mapa = null; codigo = null; ejercicio = null; rival = null;
       if (barra) barra.classList.add('oculto');
