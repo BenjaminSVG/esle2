@@ -213,23 +213,37 @@
 <main class="vista" id="vista-curso">
   <div class="curso">
     <aside class="lista-ejercicios">
-      <div class="filtros" id="filtros">
-        <button class="chip activa" data-nivel="todos">Todos</button>
-        <button class="chip" data-nivel="facil">Fácil</button>
-        <button class="chip" data-nivel="medio">Medio</button>
-        <button class="chip" data-nivel="avanzado">Avanzado</button>
+      <div class="curso-grupo">
+        <h3 class="curso-grupo-titulo">Ejercicios</h3>
+        <div class="filtros" id="filtros">
+          <button class="chip activa" data-nivel="todos" aria-pressed="true">Todos</button>
+          <button class="chip" data-nivel="facil" aria-pressed="false">Fácil</button>
+          <button class="chip" data-nivel="medio" aria-pressed="false">Medio</button>
+          <button class="chip" data-nivel="avanzado" aria-pressed="false">Avanzado</button>
+        </div>
+        <ol id="listaEjercicios" class="curso-lista"></ol>
       </div>
-      <ol id="listaEjercicios"></ol>
       <section class="repaso oculto" id="panelRepaso" aria-label="Para repasar hoy"></section>
-      <section class="stats oculto" id="panelStats" aria-label="Cómo venís"></section>
-      <button class="btn" id="btnExamen" title="Armar o rendir un examen">Modo examen…</button>
-      <button class="btn" id="btnAula" title="Armar una guía de clase y repartirla como enlace">Modo aula…</button>
-      <button class="btn sin-perfil" id="btnPerfil" title="Si compartís esta máquina, decí quién sos">¿Quién sos?</button>
-      <div class="acciones-progreso">
-        <button class="btn" id="btnExportar" title="Bajar un archivo con tu avance">Exportar progreso</button>
-        <button class="btn" id="btnImportar" title="Cargar un archivo de avance">Importar…</button>
+
+      <div class="curso-grupo">
+        <h3 class="curso-grupo-titulo">Más formas de practicar</h3>
+        <button class="curso-accion curso-accion-practica" id="btnExamen" data-ic="revisar" title="Armar o rendir un examen">Modo examen…</button>
+        <button class="curso-accion curso-accion-practica" id="btnAula" data-ic="proyectar" title="Armar una guía de clase y repartirla como enlace">Modo aula…</button>
       </div>
-      <button class="btn borrar" id="btnReiniciar">Reiniciar progreso</button>
+
+      <div class="curso-grupo">
+        <h3 class="curso-grupo-titulo">Tu progreso</h3>
+        <button class="btn sin-perfil" id="btnPerfil" title="Si compartís esta máquina, decí quién sos">¿Quién sos?</button>
+        <section class="stats oculto" id="panelStats" aria-label="Cómo venís"></section>
+        <div class="acciones-progreso">
+          <button class="btn" id="btnExportar" data-ic="exportar" title="Bajar un archivo con tu avance">Exportar</button>
+          <button class="btn" id="btnImportar" data-ic="importar" title="Cargar un archivo de avance">Importar…</button>
+        </div>
+      </div>
+
+      <div class="curso-grupo curso-reinicio">
+        <button class="btn borrar" id="btnReiniciar" data-ic="borrar">Reiniciar progreso</button>
+      </div>
     </aside>
 
     <article class="detalle" id="detalleEjercicio">

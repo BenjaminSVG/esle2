@@ -917,22 +917,34 @@ fin
     ol.innerHTML = '';
     EJERCICIOS.filter(e => filtro === 'todos' || e.nivel === filtro).forEach(e => {
       const li = document.createElement('li');
-      li.className = (progreso[e.id] ? 'hecho ' : '') + (seleccionado === e.id ? 'sel' : '');
+      const hecho = !!progreso[e.id];
+      li.className = (hecho ? 'hecho ' : '') + (seleccionado === e.id ? 'sel' : '');
       const nivel = Seguro.deLista(e.nivel, Seguro.NIVELES, 'facil');
-      li.innerHTML = `<span class="marca-ok">${progreso[e.id] ? '●' : '○'}</span>
-                      <span class="tit"></span>
-                      <span class="etq ${nivel}">${NIVELES[nivel]}</span>`;
+      li.innerHTML = `<button type="button" class="curso-ejercicio">
+                      <span class="marca-ok">${hecho ? '●' : '○'}</span>
+                      <span class="curso-ej-texto">
+                        <span class="tit"></span>
+                        <span class="curso-ej-nivel">${NIVELES[nivel]}${hecho ? ' · resuelto' : ''}</span>
+                      </span>
+                    </button>`;
       li.querySelector('.tit').textContent = e.titulo;
-      li.addEventListener('click', () => mostrarEjercicio(e.id));
+      li.querySelector('.curso-ejercicio').addEventListener('click', () => mostrarEjercicio(e.id));
       ol.appendChild(li);
     });
   }
 
+  /* Se busca .chip solo adentro de este panel: el de «Mis ejercicios» y el
+     del examen tienen sus propios .chip, y tocarlos acá era un error que
+     esperaba a pasar. */
   $('#filtros').addEventListener('click', ev => {
     const c = ev.target.closest('.chip');
     if (!c) return;
     filtro = c.dataset.nivel;
-    document.querySelectorAll('.chip').forEach(x => x.classList.toggle('activa', x === c));
+    $('#filtros').querySelectorAll('.chip').forEach(x => {
+      const activa = x === c;
+      x.classList.toggle('activa', activa);
+      x.setAttribute('aria-pressed', String(activa));
+    });
     pintarLista();
   });
 

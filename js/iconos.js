@@ -113,7 +113,20 @@
     verificar: '<circle cx="12" cy="12" r="8.5"/><path d="m8.2 12.2 2.6 2.6 5-5.6"/>',
     salir: '<path d="M14 4.5H6.5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2H14"/><path d="M18.5 12H10"/>' +
            '<path d="m15 8.5 3.5 3.5-3.5 3.5"/>',
-    menu: '<path d="m6 9.5 6 6 6-6"/>'
+    menu: '<path d="m6 9.5 6 6 6-6"/>',
+
+    /* Una cabeza y los hombros: quién está usando la máquina. */
+    perfil: '<circle cx="12" cy="8.2" r="3.7"/>' +
+            '<path d="M4.5 20c.9-4 3.8-6.2 7.5-6.2s6.6 2.2 7.5 6.2"/>',
+    /* Dos banderines encontrados: la batalla de código es de a dos. */
+    duelo: '<path d="M6 21V4"/><path d="M6 4.5h6l-1.6 3 1.6 3H6"/>' +
+           '<path d="M18 21V9"/><path d="M18 9.5h-6l1.6 3-1.6 3h6"/>',
+    /* Una flecha que entra a una bandeja: bajar el progreso a un archivo. */
+    exportar: '<path d="M12 3v11"/><path d="m8 10.5 4 4 4-4"/>' +
+              '<path d="M4.5 16.5V19a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5v-2.5"/>',
+    /* La misma bandeja, con la flecha saliendo: traer un archivo de vuelta. */
+    importar: '<path d="M12 14V3"/><path d="m8 6.5 4-4 4 4"/>' +
+              '<path d="M4.5 16.5V19a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5v-2.5"/>'
   };
 
   const NOMBRES = Object.keys(D);

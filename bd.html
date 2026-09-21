@@ -188,16 +188,26 @@
 <main class="vista" id="vista-curso" tabindex="-1">
   <div class="curso">
     <aside class="lista-ejercicios">
-      <div class="filtros" id="filtrosBD">
-        <button class="chip activa" data-nivel="todos" type="button">Todos</button>
-        <button class="chip" data-nivel="facil" type="button">Fácil</button>
-        <button class="chip" data-nivel="medio" type="button">Medio</button>
-        <button class="chip" data-nivel="dificil" type="button">Difícil</button>
+      <div class="curso-grupo">
+        <h3 class="curso-grupo-titulo">Ejercicios</h3>
+        <div class="filtros" id="filtrosBD">
+          <button class="chip activa" data-nivel="todos" type="button" aria-pressed="true">Todos</button>
+          <button class="chip" data-nivel="facil" type="button" aria-pressed="false">Fácil</button>
+          <button class="chip" data-nivel="medio" type="button" aria-pressed="false">Medio</button>
+          <button class="chip" data-nivel="dificil" type="button" aria-pressed="false">Difícil</button>
+        </div>
+        <p class="mini" id="cuentaBD">0 de 50</p>
+        <ol id="listaEjerciciosBD" class="curso-lista"></ol>
       </div>
-      <p class="mini" id="cuentaBD">0 de 50</p>
-      <ol id="listaEjerciciosBD"></ol>
-      <button class="btn sin-perfil" id="btnPerfil" type="button" title="Si compartís esta máquina, decí quién sos">¿Quién sos?</button>
-      <button class="btn borrar" id="btnReiniciarBD" type="button">Reiniciar progreso</button>
+
+      <div class="curso-grupo">
+        <h3 class="curso-grupo-titulo">Tu progreso</h3>
+        <button class="btn sin-perfil" id="btnPerfil" type="button" title="Si compartís esta máquina, decí quién sos">¿Quién sos?</button>
+      </div>
+
+      <div class="curso-grupo curso-reinicio">
+        <button class="btn borrar" id="btnReiniciarBD" type="button" data-ic="borrar">Reiniciar progreso</button>
+      </div>
     </aside>
 
     <article class="detalle" id="detalleEjercicioBD" tabindex="-1">

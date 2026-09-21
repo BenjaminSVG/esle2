@@ -665,28 +665,42 @@
     ol.replaceChildren();
     EJERCICIOS.filter(e => filtro === 'todos' || e.nivel === filtro).forEach(e => {
       const li = document.createElement('li');
-      li.className = (progreso[e.id] ? 'hecho ' : '') + (seleccionado === e.id ? 'sel' : '');
+      const hecho = !!progreso[e.id];
+      li.className = (hecho ? 'hecho ' : '') + (seleccionado === e.id ? 'sel' : '');
+      const boton = document.createElement('button');
+      boton.type = 'button';
+      boton.className = 'curso-ejercicio';
       const marca = document.createElement('span');
       marca.className = 'marca-ok';
-      marca.textContent = progreso[e.id] ? '●' : '○';
+      marca.textContent = hecho ? '●' : '○';
+      const texto = document.createElement('span');
+      texto.className = 'curso-ej-texto';
       const tit = document.createElement('span');
       tit.className = 'tit';
       tit.textContent = e.titulo;
-      const etq = document.createElement('span');
+      const nivelSpan = document.createElement('span');
       const nivel = Seguro.deLista(e.nivel, Seguro.NIVELES, 'facil');
-      etq.className = 'etq ' + nivel;
-      etq.textContent = NIVELES[nivel];
-      li.append(marca, tit, etq);
-      li.addEventListener('click', () => mostrarEjercicio(e.id));
+      nivelSpan.className = 'curso-ej-nivel';
+      nivelSpan.textContent = NIVELES[nivel] + (hecho ? ' · resuelto' : '');
+      texto.append(tit, nivelSpan);
+      boton.append(marca, texto);
+      boton.addEventListener('click', () => mostrarEjercicio(e.id));
+      li.appendChild(boton);
       ol.appendChild(li);
     });
   }
 
+  /* Se busca .chip solo adentro de este panel: hay otros .chip en la página
+     y tocarlos acá era un error que esperaba a pasar. */
   $('#filtros').addEventListener('click', ev => {
     const c = ev.target.closest('.chip');
     if (!c) return;
     filtro = c.dataset.nivel;
-    document.querySelectorAll('.chip').forEach(x => x.classList.toggle('activa', x === c));
+    $('#filtros').querySelectorAll('.chip').forEach(x => {
+      const activa = x === c;
+      x.classList.toggle('activa', activa);
+      x.setAttribute('aria-pressed', String(activa));
+    });
     pintarLista();
   });
 

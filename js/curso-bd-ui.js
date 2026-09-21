@@ -185,8 +185,11 @@
         const b = ev.target.closest('.chip');
         if (!b) return;
         filtro = b.dataset.nivel;
-        filtros.querySelectorAll('.chip').forEach(x =>
-          x.classList.toggle('activa', x === b));
+        filtros.querySelectorAll('.chip').forEach(x => {
+          const activa = x === b;
+          x.classList.toggle('activa', activa);
+          x.setAttribute('aria-pressed', String(activa));
+        });
         pintarLista();
       });
     }
