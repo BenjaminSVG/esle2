@@ -86,13 +86,99 @@
       abrir(r.archivo.nombre);
     }
 
-    function nuevaCarpeta() {
-      const carpeta = prompt('Nombre de la carpeta nueva:', 'parcial');
+    /* Una carpeta se crea sola, sin archivo adentro. Antes había que crearle
+       uno para que existiera —una carpeta vacía no se podía deducir de nada— y
+       eso obligaba a inventar un programa que nadie pidió. */
+    function nuevaCarpeta(dentroDe) {
+      const base = (dentroDe ? dentroDe + '/' : '') + 'carpeta';
+      const carpeta = prompt('Nombre de la carpeta nueva:', base);
       if (carpeta === null) return;
       const limpio = String(carpeta).trim().replace(/^\/+|\/+$/g, '');
       if (!limpio) return;
-      /* Una carpeta vacía no existe: se crea con su primer archivo adentro. */
-      nuevo(limpio);
+      const r = P.crearCarpeta(st, limpio);
+      if (r.error) { alert(r.error); return; }
+      st = r.estado;
+      abiertas.add(limpio);
+      grabar();
+      pintar();
+    }
+
+    function renombrarCarpeta(ruta) {
+      const nueva = prompt('Nuevo nombre de la carpeta:', ruta);
+      if (nueva === null) return;
+      const r = P.renombrarCarpeta(st, ruta, String(nueva).trim());
+      if (r.error) { alert(r.error); return; }
+      guardarActual();
+      st = r.estado;
+      grabar();
+      pintar();
+      if (st.activo) {
+        const a = st.archivos.find(x => x.nombre === st.activo);
+        if (a && cfg.estado) cfg.estado(a.nombre);
+      }
+    }
+
+    function borrarCarpeta(ruta) {
+      const adentro = st.archivos.filter(a => P.dentroDe(ruta, a.nombre)).length;
+      const aviso = adentro
+        ? `Se va a borrar la carpeta «${ruta}» con ${adentro} archivo(s) adentro. No se puede deshacer.`
+        : `¿Borrar la carpeta vacía «${ruta}»?`;
+      if (!confirm(aviso)) return;
+      const eraElAbierto = st.activo && P.dentroDe(ruta, st.activo);
+      st = P.borrarCarpeta(st, ruta).estado;
+      grabar();
+      if (eraElAbierto && st.archivos.length) abrir(st.archivos[0].nombre);
+      else pintar();
+    }
+
+    /* ------------------------ llevarse y traer ------------------------- */
+
+    async function exportarCarpeta(ruta) {
+      guardarActual();
+      try {
+        const bytes = await global.Carpeta.comprimir(global.Carpeta.armar(st, ruta));
+        const url = URL.createObjectURL(new Blob([bytes], { type: 'application/gzip' }));
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = global.Carpeta.nombreDeArchivo(ruta);
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      } catch (e) {
+        alert('No se pudo armar el archivo de la carpeta.');
+      }
+    }
+
+    function importarCarpeta() {
+      const campo = document.createElement('input');
+      campo.type = 'file';
+      campo.accept = global.Carpeta.EXTENSION;
+      campo.addEventListener('change', async () => {
+        const f = campo.files && campo.files[0];
+        if (!f) return;
+        /* El tamaño se mira ANTES de leer: un archivo de 800 MB no es un
+           ataque elaborado, pero cuelga la pestaña igual. */
+        if (f.size > global.Carpeta.LIMITES.archivo) {
+          alert('Ese archivo es demasiado grande para ser una carpeta de ESLE2.');
+          return;
+        }
+        let paquete;
+        try {
+          paquete = await global.Carpeta.descomprimir(new Uint8Array(await f.arrayBuffer()));
+        } catch (e) { paquete = null; }
+        if (!paquete) { alert('Ese archivo no es una carpeta de ESLE2, o está roto.'); return; }
+
+        const propuesta = prompt('¿En qué carpeta la traigo?', paquete.raiz || 'importado');
+        if (propuesta === null) return;
+        const r = global.Carpeta.fundir(st, paquete, String(propuesta).trim());
+        if (r.error) { alert(r.error); return; }
+        guardarActual();
+        st = r.estado;
+        abiertas.add(r.raiz);
+        grabar();
+        pintar();
+        alert(`Listo: ${r.cuantos} archivo(s) en «${r.raiz}».`);
+      });
+      campo.click();
     }
 
     function renombrar(nombre) {
@@ -192,11 +278,35 @@
       return det;
     }
 
+    /* Los botones de una carpeta NO van adentro del <summary>: un botón
+       adentro de otro elemento que ya es un botón es exactamente lo que axe
+       llama «nested-interactive», y para quien navega con teclado o lector de
+       pantalla es un lío. Van al lado, en la misma fila, puestos con CSS. */
+    function accionesDeCarpeta(ruta) {
+      const acciones = nodo('span', 'exp-acciones exp-acciones-carpeta');
+      const mini = (ic, titulo, fn) => {
+        const x = nodo('button', 'exp-mini');
+        x.type = 'button';
+        x.title = titulo;
+        x.setAttribute('aria-label', titulo + ' la carpeta ' + ruta);
+        x.innerHTML = global.Iconos ? global.Iconos.svg(ic) : titulo[0];
+        x.addEventListener('click', ev => { ev.stopPropagation(); fn(ruta); });
+        acciones.appendChild(x);
+      };
+      mini('nuevo', 'Nuevo archivo en', nuevo);
+      mini('archivos', 'Nueva carpeta dentro de', nuevaCarpeta);
+      mini('guardar', 'Exportar', exportarCarpeta);
+      mini('renombrar', 'Renombrar', renombrarCarpeta);
+      mini('borrar', 'Borrar', borrarCarpeta);
+      return acciones;
+    }
+
     function pintarLista(nodoArbol) {
       const ul = nodo('ul', 'exp-lista');
       nodoArbol.carpetas.forEach(c => {
-        const li = nodo('li');
+        const li = nodo('li', 'exp-fila-carpeta');
         li.appendChild(pintarCarpeta(c));
+        li.appendChild(accionesDeCarpeta(c.ruta));
         ul.appendChild(li);
       });
       nodoArbol.archivos.forEach(a => ul.appendChild(filaArchivo(a)));
@@ -206,7 +316,7 @@
     function pintar() {
       const cuerpo = $('#expCuerpo');
       cuerpo.replaceChildren();
-      if (!st.archivos.length) {
+      if (!st.archivos.length && !st.carpetas.length) {
         cuerpo.appendChild(nodo('p', 'nota', 'No hay archivos todavía. Creá uno con «Nuevo archivo».'));
       } else {
         /* Arriba de todo, la raíz del proyecto: cierra y abre el árbol entero,
@@ -215,7 +325,7 @@
         raiz.open = true;
         const sum = nodo('summary', 'exp-sum');
         sum.appendChild(nodo('span', 'exp-nombre', cfg.proyecto || 'Mis programas'));
-        raiz.append(sum, pintarLista(P.arbol(st.archivos)));
+        raiz.append(sum, pintarLista(P.arbol(st.archivos, st.carpetas)));
         cuerpo.appendChild(raiz);
       }
       $('#expCuenta').textContent = st.archivos.length === 1
@@ -237,7 +347,7 @@
         /* Primera vez: lo que hay en el editor pasa a ser el primer archivo. */
         const r = P.crear([], 'programa' + (cfg.ext || '.sl'),
           { ext: cfg.ext, codigo: cfg.editor.getValue(), entrada: cfg.entrada() });
-        st = { archivos: r.lista, activo: r.archivo.nombre };
+        st = P.normalizar({ archivos: r.lista, carpetas: st.carpetas, activo: r.archivo.nombre });
         grabar();
       } else if (encendido && st.activo) {
         const a = st.archivos.find(x => x.nombre === st.activo);
@@ -259,7 +369,9 @@
       aplicarModo(v);
     });
     $('#expNuevo').addEventListener('click', () => nuevo(''));
-    $('#expNuevaCarpeta').addEventListener('click', nuevaCarpeta);
+    $('#expNuevaCarpeta').addEventListener('click', () => nuevaCarpeta(''));
+    const btnImportar = $('#expImportar');
+    if (btnImportar) btnImportar.addEventListener('click', importarCarpeta);
 
     cfg.editor.on('change', () => {
       if (!encendido || cambiando) return;

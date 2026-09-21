@@ -1364,9 +1364,45 @@ abierto resaltado de lado a lado con una barra de acento a la izquierda. Las car
 quedan cerradas aunque la lista se vuelva a dibujar.
 
 **Las carpetas son parte del nombre.** `parcial/ej1.sl` vive dentro de «parcial» y no hay ninguna
-estructura extra que mantener: el árbol se arma partiendo los nombres por `/`, mover un archivo de
-carpeta es renombrarlo, y una carpeta existe mientras tenga algo adentro. Es la decisión que hace
-que todo el modelo sea una lista de `{nombre, código, entrada}` y nada más.
+estructura extra que mantener: el árbol se arma partiendo los nombres por `/`, y mover un archivo de
+carpeta es renombrarlo. Es la decisión que hace que el modelo sea una lista de
+`{nombre, código, entrada}` y nada más.
+
+Lo único que se guarda aparte es la lista de las carpetas **vacías**, porque esas no se pueden
+deducir de ningún nombre. Se probó primero con un archivo escondido adentro para que la carpeta
+«existiera», y es peor: aparece en la cuenta de archivos, en lo que se exporta y en lo que se borra,
+y hay que acordarse de esquivarlo en cada lugar. Una lista de rutas no tiene excepciones. Un proyecto
+guardado antes de que existieran las carpetas vacías simplemente no la trae, y eso no es un error.
+
+Renombrar o borrar una carpeta se lleva lo que tiene adentro, comparando con `ruta + '/'` y no con
+el prefijo a secas: si no, renombrar «parcial» se llevaría puesta «parcial2», que es otra carpeta.
+
+### Llevarse una carpeta y traerla
+
+Cada carpeta tiene **Exportar**, que baja un `.esle2carpeta` con los programas, lo que cada uno
+tenía escrito en la entrada de datos y las subcarpetas, incluso las vacías. **Importar** lo trae de
+vuelta, siempre adentro de una carpeta nueva que se elige al momento, así nunca pisa nada.
+
+Adentro es un JSON comprimido con el gzip que el navegador ya trae, no un `.zip`. Un `.zip` se abre
+en cualquier lado, que es una ventaja real, pero leer `.zip` es leer un formato entero —con sus
+variantes y sus campos raros— y quien lo iba a leer es el navegador de un alumno con lo que le den.
+Para sacar un programa suelto y abrirlo en otro lado ya está **Guardar .sl**, que no cambió.
+
+El archivo lo elige el alumno de su propio disco, así que es texto de un desconocido:
+
+- se mira el tamaño **antes** de leerlo (2 MiB), y el de lo descomprimido **mientras** se
+  descomprime: cuarenta kilobytes se pueden descomprimir en cientos de megas si alguien los arma
+  para eso;
+- nada se copia tal cual: el paquete se rearma campo por campo;
+- las rutas pasan por la misma regla que las escritas a mano, que rechaza `..`, las barras al revés,
+  los caracteres invisibles y las carpetas sin nombre. Un `../../otra cosa` adentro de un archivo
+  ajeno es el truco de siempre para escribir donde no corresponde;
+- el largo se mide con la carpeta destino adelante, porque el nombre final recién existe ahí;
+- se revisa **todo** el resultado antes de tocar nada: una importación que falla a la mitad y deja
+  el proyecto mezclado es peor que una que no empieza.
+
+Y lo que se dice en pantalla: **la copia exportada no tiene contraseña.** Quien tenga el archivo la
+abre.
 
 Cada IDE tiene su proyecto (`esle2_proyecto` y `esle2poo_proyecto` en `localStorage`), con tope de
 60 archivos, nombres únicos sin distinguir mayúsculas y sin los caracteres que rompen una ruta.
@@ -1761,6 +1797,7 @@ la copia vieja y el cambio no llega a nadie. `npm run revisar` compara las fecha
 | `js/ejercicios-visual.js` · `js/verificar-visual.js` | El curso de 50 ejercicios visuales y su corrección automática. |
 | `visual-documentacion.html` · `img/visual/` | La referencia de ESLE2 Visual y las capturas de la interfaz que la ilustran. |
 | `js/proyecto.js` · `js/proyecto-ui.js` | Explorador de archivos: el proyecto y su barra lateral. |
+| `js/carpeta.js` | Llevarse una carpeta en un archivo y traerla de vuelta. |
 | `js/disenador.js` · `js/disenador-ui.js` | Diseñar la ventana arrastrando, reescribiendo los números del programa. |
 | `tools/soltar.js` · `tools/probar.js` · `tools/revisar-cache.js` | Publicar: pruebas, índice, caché y `VERSION` en un comando. |
 | `js/perfil.js` · `js/perfil-ui.js` | Un cajón por alumno en las máquinas compartidas. |
@@ -1830,6 +1867,7 @@ la copia vieja y el cambio no llega a nadie. `npm run revisar` compara las fecha
 | `test/test-visual.js` | Ventanas, controles, eventos y dibujo de ESLE2 Visual (46). |
 | `test/test-ejercicios-visual.js` | Los 50 ejercicios del curso Visual, sus soluciones de referencia y que ninguna plantilla apruebe sola (1011). |
 | `test/test-proyecto.js` | Archivos, carpetas y nombres del explorador (54). |
+| `test/test-carpeta.js` | Carpetas vacías, exportar/importar y rutas que vienen de afuera (61). |
 | `test/test-iconos.js` | Iconos, cabecera común de las diez páginas, barra agrupada y botones sin cablear (531). |
 | `test/test-manifest.js` | Manifiesto, iconos y etiquetas de instalación en el celular (108). |
 | `test/test-sonido.js` | Efectos, envolventes y apagado de los micro-sonidos (54). |

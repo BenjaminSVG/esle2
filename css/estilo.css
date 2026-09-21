@@ -769,6 +769,23 @@ body.en-examen .lista-ejercicios { opacity: .4; pointer-events: none; }
 .exp-acciones { display: flex; gap: 1px; padding-right: 4px; opacity: 0; transition: opacity .12s; }
 .exp-item:hover .exp-acciones,
 .exp-item:focus-within .exp-acciones { opacity: 1; }
+
+/* Los botones de una carpeta van al lado del <summary> y no adentro: un botón
+   adentro de otro botón deja el teclado y el lector de pantalla en un lío.
+   Como están afuera, se los ubica encima de la fila con posición. */
+.exp-fila-carpeta { position: relative; }
+.exp-acciones-carpeta {
+  position: absolute; top: 1px; right: 0; z-index: 1;
+  background: linear-gradient(90deg, transparent, var(--panel) 22%);
+  padding-left: 10px;
+}
+.exp-fila-carpeta:hover > .exp-acciones-carpeta,
+.exp-fila-carpeta:focus-within > .exp-acciones-carpeta { opacity: 1; }
+/* Sin esto, los botones de la carpeta de adentro también se encienden al
+   pasar por la de afuera, y aparecen cinco filas de botones de golpe. */
+.exp-fila-carpeta .exp-fila-carpeta > .exp-acciones-carpeta { opacity: 0; }
+.exp-fila-carpeta .exp-fila-carpeta:hover > .exp-acciones-carpeta,
+.exp-fila-carpeta .exp-fila-carpeta:focus-within > .exp-acciones-carpeta { opacity: 1; }
 .exp-mini {
   display: inline-flex; align-items: center; justify-content: center;
   background: transparent; border: 0; border-radius: 4px; cursor: pointer;
