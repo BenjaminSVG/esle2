@@ -139,7 +139,7 @@
     btnExamen: { nombre: 'Modo examen…', que: 'Arma una prueba con los ejercicios que elijas y la corrige al final, sin pistas ni soluciones a mano.' },
     btnMisEj: { nombre: 'Mis ejercicios…', que: 'Crear tus propios ejercicios, con sus datos de prueba, y repartirlos como enlace.' },
     btnAula: { nombre: 'Modo aula…', que: 'Una guía de clase —varios ejercicios en orden— que se reparte con un solo enlace.' },
-    btnPerfil: { nombre: '¿Quién sos?', que: 'Si la máquina es compartida, esto separa tu avance del de los demás. Cada perfil tiene su progreso y sus programas.' },
+    btnPerfil: { nombre: 'Usuarios', que: 'Creá tu usuario con contraseña para separar tus trabajos en este navegador. Desde acá también podés cambiar la contraseña, cerrar sesión o crear otro usuario.' },
     btnDuelo: { nombre: 'Batallas de código…', que: 'Dos personas, el mismo problema, cinco minutos. Necesita internet.' },
     btnExportar: { nombre: 'Exportar progreso', que: 'Baja un archivo con tu avance, para pasarlo a otra computadora o guardarlo antes de formatear.' },
     btnImportar: { nombre: 'Importar…', que: 'Carga uno de esos archivos. Lo que traiga se suma a lo que ya tenías.' },
@@ -178,7 +178,7 @@
       capturas: { clasico: 'barra-clasico.png', poo: 'barra-poo.png', visual: 'barra-visual.png', bd: 'barra-bd.png' },
       alt: 'La barra de arriba: el logo, las pestañas y los botones de la derecha.',
       controles: ['vistaIde', 'vistaCurso', 'pestDoc', 'pestDialecto', 'pestDiseno', 'racha', 'progresoGlobal',
-        'btnInstalar', 'btnBuscar', 'btnProyectar', 'btnSonido', 'btnTema', 'btnTutorial'],
+        'btnInstalar', 'btnBuscar', 'btnProyectar', 'btnPerfil', 'btnSonido', 'btnTema', 'btnTutorial'],
       cambios: { bd: { quitar: ['racha', 'progresoGlobal'] } }
     },
     {
@@ -352,12 +352,12 @@
         'Los botones de acá abajo están al final de la lista de la izquierda: hay que bajar para verlos.',
       capturas: { clasico: 'curso-clasico.png', poo: 'curso-poo.png', visual: 'curso-visual.png', bd: 'curso-bd.png' },
       alt: 'La pantalla del curso: la lista de ejercicios a la izquierda y el enunciado a la derecha.',
-      controles: ['filtros', 'listaEjercicios', 'btnExamen', 'btnMisEj', 'btnAula', 'btnPerfil', 'btnDuelo',
+      controles: ['filtros', 'listaEjercicios', 'btnExamen', 'btnMisEj', 'btnAula', 'btnDuelo',
         'btnExportar', 'btnImportar', 'btnReiniciar'],
       cambios: {
         visual: { quitar: ['btnMisEj', 'btnDuelo'] },
         bd: {
-          quitar: ['btnExamen', 'btnMisEj', 'btnAula', 'btnPerfil', 'btnDuelo', 'btnExportar', 'btnImportar', 'btnReiniciar'],
+          quitar: ['btnExamen', 'btnMisEj', 'btnAula', 'btnDuelo', 'btnExportar', 'btnImportar', 'btnReiniciar'],
           agregar: ['btnReiniciarBD']
         }
       }

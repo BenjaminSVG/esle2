@@ -1682,37 +1682,39 @@ body.enfoque.enfoque-salida .columna { display: grid; }
 }
 
 /* ------------------------------ perfiles -------------------------------- */
-/* Quién está usando la máquina. El botón se ve distinto cuando todavía no lo
-   dijo nadie, pero sin alarmar: en una máquina de una sola persona no hay
-   nada que arreglar. */
-#btnPerfil { text-align: left; }
-#btnPerfil.sin-perfil { opacity: .85; }
+/* Quién está usando la máquina: un botón de icono en el encabezado, igual en
+   las cuatro páginas. Icono solo siempre —nunca desaparece en un teléfono
+   angosto, que es justo donde más se comparte una máquina—; con un usuario
+   adentro se le agrega un borde con el color de acento, sin gritar: tener
+   una sesión abierta no es una alarma. */
+#btnPerfil.activo { border-color: var(--acento); background: var(--acento-sua); color: var(--acento); }
 
-.perfil-lista { list-style: none; margin: .6rem 0; padding: 0; }
+.perfil-nombre-grande { margin: 2px 0 10px; font-size: 17px; font-weight: 600; }
+.perfil-lista { list-style: none; margin: .5rem 0 0; padding: 0; }
 .perfil-lista li {
   display: flex; align-items: center; gap: .5rem;
-  padding: .45rem .6rem; border: 1px solid var(--borde); border-radius: 6px;
+  padding: .45rem .6rem; border: 1px solid var(--linea); border-radius: var(--r);
   margin-bottom: .35rem;
 }
 .perfil-lista li.abierto { border-color: var(--acento); background: var(--acento-sua); }
-.perfil-lista li.nota { display: block; border: 0; background: none; padding: .2rem 0; }
 .perfil-nombre { font-weight: 600; }
-.perfil-alta { display: flex; align-items: flex-end; gap: .5rem; flex-wrap: wrap; }
-.perfil-alta label { flex: 1; min-width: 10rem; }
 
-/* El interruptor del modo usuario y lo que dice debajo. */
-.perfil-modo {
-  margin: .9rem 0; padding: .7rem .9rem; border: 1px solid var(--linea);
-  border-left: 3px solid var(--acento); border-radius: 8px; background: var(--panel-2);
+.dlg-perfil form, .dlg-entrada form {
+  display: flex; flex-direction: column; gap: 10px; margin-top: 4px;
 }
+
+/* El interruptor de «pedir contraseña» y lo que dice debajo: ya no es lo
+   primero que se ve del diálogo, así que no necesita el marco con acento que
+   tenía cuando era la única forma de encenderlo. */
+.perfil-modo { margin: 14px 0 4px; }
 .perfil-interruptor { display: flex; gap: .5rem; align-items: flex-start; cursor: pointer; }
 .perfil-interruptor input { margin-top: .15rem; flex: 0 0 auto; }
-.perfil-modo .nota { margin: .5rem 0 0; }
 
-/* La pantalla de entrada: angosta, sin nada que distraiga. */
+/* La pantalla de entrada: angosta, sin nada que distraiga. Sus dos acciones
+   principales —Crear usuario / Iniciar sesión— van lado a lado hasta en un
+   teléfono, apoyadas en que .dlg-fila ya deja pasar a la línea siguiente si
+   no entran, así que no hace falta una regla especial para eso. */
 .dlg-entrada { max-width: 420px; }
-.dlg-entrada .perfil-alta { flex-direction: column; align-items: stretch; }
-.dlg-entrada .perfil-alta label { width: 100%; }
 
 /* --------------------------- los primeros pasos ------------------------- */
 /* El cartel NO es modal ni tapa la pantalla: la persona tiene que poder mirar
