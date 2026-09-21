@@ -126,7 +126,15 @@
               '<path d="M4.5 16.5V19a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5v-2.5"/>',
     /* La misma bandeja, con la flecha saliendo: traer un archivo de vuelta. */
     importar: '<path d="M12 14V3"/><path d="m8 6.5 4-4 4 4"/>' +
-              '<path d="M4.5 16.5V19a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5v-2.5"/>'
+              '<path d="M4.5 16.5V19a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5v-2.5"/>',
+
+    /* Una carpeta cerrada, con su pestaña arriba a la izquierda. */
+    carpeta: '<path d="M3.5 6.5a1.5 1.5 0 0 1 1.5-1.5h4.6l1.6 2h9.3a1.5 1.5 0 0 1 1.5 1.5v9.5' +
+             'a1.5 1.5 0 0 1-1.5 1.5H5a1.5 1.5 0 0 1-1.5-1.5Z"/>',
+    /* Tres puntos parados: «más acciones», el mismo signo de siempre. */
+    mas: '<circle cx="12" cy="5.5" r="1.4" fill="currentColor" stroke="none"/>' +
+         '<circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/>' +
+         '<circle cx="12" cy="18.5" r="1.4" fill="currentColor" stroke="none"/>'
   };
 
   const NOMBRES = Object.keys(D);

@@ -724,10 +724,19 @@ body.en-examen .lista-ejercicios { opacity: .4; pointer-events: none; }
   }
 }
 .panel.explorador { min-width: 0; }
+
+/* Antes tres botones apretados en una fila, con el texto peleando por
+   lugar. Dos columnas, con «Exportar» agregado al lado de «Importar»: antes
+   solo se podía exportar carpeta por carpeta, escondido, y nunca el
+   proyecto entero de una. */
 .exp-barra {
-  display: flex; gap: 6px; padding: 6px 8px; border-bottom: 1px solid var(--linea-2);
+  display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 8px;
+  border-bottom: 1px solid var(--linea-2);
 }
-.exp-barra .btn { flex: 1 1 auto; justify-content: center; font-size: 11.5px; padding: 4px 6px; }
+.exp-barra .btn {
+  justify-content: center; font-size: 12px; padding: 6px; min-height: 34px;
+  white-space: normal; line-height: 1.2;
+}
 .exp-cuerpo { flex: 1 1 auto; overflow: auto; padding: 4px 0 12px; font-size: 12.5px; }
 .exp-cuerpo .nota { padding: 8px 12px; }
 .exp-lista { list-style: none; margin: 0; padding: 0; }
@@ -737,14 +746,18 @@ body.en-examen .lista-ejercicios { opacity: .4; pointer-events: none; }
 .exp-carpeta > .exp-lista { margin-left: 9px; border-left: 1px solid var(--linea-2); }
 .exp-raiz > .exp-lista { margin-left: 6px; border-left: 0; }
 
-/* Filas: bajas, sin bordes y con el resaltado de lado a lado. */
+/* Filas: bajas, sin bordes y con el resaltado de lado a lado. El disparador
+   ⋮ reserva su propio lugar a la derecha —nunca se superpone al nombre— y
+   está siempre visible: no hace falta pasar el mouse por encima para
+   enterarse de que existe, que es justo lo que lo volvía invisible en un
+   celular. */
 .exp-item { display: flex; align-items: center; }
 .exp-item:hover, .exp-carpeta > summary:hover { background: var(--fondo-2); }
 .exp-item.activo { background: var(--acento-sua); box-shadow: inset 2px 0 0 var(--acento); }
 .exp-archivo {
   flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 6px;
   background: transparent; border: 0; cursor: pointer; text-align: left;
-  padding: 3px 4px 3px 6px; font-family: var(--sans); font-size: 12.5px; color: var(--texto-2);
+  padding: 5px 2px 5px 6px; font-family: var(--sans); font-size: 12.5px; color: var(--texto-2);
 }
 .exp-item.activo .exp-archivo { color: var(--texto); }
 .exp-nombre { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -759,10 +772,16 @@ body.en-examen .lista-ejercicios { opacity: .4; pointer-events: none; }
 .exp-archivo.ext-md   .ic { color: var(--error); }
 .exp-archivo.ext-otro .ic { color: var(--tenue); }
 
-/* Carpetas: el triangulito a la izquierda, como en todos lados. */
+/* Una carpeta y su disparador van en la misma fila, uno al lado del otro:
+   no es el disparador flotando ENCIMA del nombre con un degradé para
+   disimular el corte, es un lugar propio que el nombre nunca invade porque
+   se trunca antes de llegar (min-width: 0 en el <details>). */
+.exp-fila-sum { display: flex; align-items: center; }
+.exp-fila-sum:hover, .exp-fila-sum:focus-within { background: var(--fondo-2); }
+.exp-carpeta { flex: 1 1 auto; min-width: 0; }
 .exp-carpeta > summary {
   display: flex; align-items: center; gap: 6px; cursor: pointer; list-style: none;
-  padding: 3px 4px 3px 4px; font-size: 12.5px; color: var(--texto-2);
+  padding: 5px 2px 5px 4px; font-size: 12.5px; color: var(--texto-2);
 }
 .exp-carpeta > summary::-webkit-details-marker { display: none; }
 .exp-carpeta > summary::before {
@@ -771,44 +790,62 @@ body.en-examen .lista-ejercicios { opacity: .4; pointer-events: none; }
   border-bottom: 3.5px solid transparent; transition: transform .12s;
 }
 .exp-carpeta[open] > summary::before { transform: rotate(90deg); }
+.exp-carpeta > summary .ic { flex: 0 0 auto; width: 15px; height: 15px; color: var(--acento); }
 .exp-raiz > summary {
   text-transform: uppercase; letter-spacing: .04em; font-weight: 600;
   font-size: 11.5px; color: var(--texto);
 }
+.exp-raiz > summary .ic { display: none; }
 
-.exp-acciones { display: flex; gap: 1px; padding-right: 4px; opacity: 0; transition: opacity .12s; }
-.exp-item:hover .exp-acciones,
-.exp-item:focus-within .exp-acciones { opacity: 1; }
-
-/* Los botones de una carpeta van al lado del <summary> y no adentro: un botón
-   adentro de otro botón deja el teclado y el lector de pantalla en un lío.
-   Como están afuera, se los ubica encima de la fila con posición. */
-.exp-fila-carpeta { position: relative; }
-.exp-acciones-carpeta {
-  position: absolute; top: 1px; right: 0; z-index: 1;
-  background: linear-gradient(90deg, transparent, var(--panel) 22%);
-  padding-left: 10px;
-}
-.exp-fila-carpeta:hover > .exp-acciones-carpeta,
-.exp-fila-carpeta:focus-within > .exp-acciones-carpeta { opacity: 1; }
-/* Sin esto, los botones de la carpeta de adentro también se encienden al
-   pasar por la de afuera, y aparecen cinco filas de botones de golpe. */
-.exp-fila-carpeta .exp-fila-carpeta > .exp-acciones-carpeta { opacity: 0; }
-.exp-fila-carpeta .exp-fila-carpeta:hover > .exp-acciones-carpeta,
-.exp-fila-carpeta .exp-fila-carpeta:focus-within > .exp-acciones-carpeta { opacity: 1; }
-.exp-mini {
+/* El disparador ⋮: chico, quieto, siempre ahí. Nada que se revele al pasar
+   el mouse: lo que no depende de hover funciona igual con mouse, teclado y
+   dedo. */
+.exp-mini, .exp-disparador {
   display: inline-flex; align-items: center; justify-content: center;
-  background: transparent; border: 0; border-radius: 4px; cursor: pointer;
-  padding: 3px; color: var(--tenue);
+  background: transparent; border: 0; border-radius: 5px; cursor: pointer;
+  color: var(--tenue); flex: 0 0 auto;
 }
-.exp-mini:hover { background: var(--panel-2); color: var(--texto); }
-.exp-mini .ic { width: 14px; height: 14px; }
-/* Con el dedo no hay «pasar por encima»: los botones se ven siempre. */
+.exp-disparador { width: 26px; height: 26px; margin-right: 2px; }
+.exp-disparador:hover, .exp-disparador[aria-expanded="true"] { background: var(--panel-2); color: var(--texto); }
+.exp-mini .ic, .exp-disparador .ic { width: 15px; height: 15px; }
+
+/* El dedo no tiene «pasar por encima»: acá ya no hacía falta ni una regla
+   aparte para eso —el disparador nunca dependió de hover—, pero el blanco
+   para tocar sí tiene que crecer. */
 @media (pointer: coarse) {
-  .exp-acciones { opacity: 1; }
-  .exp-archivo { padding-top: 7px; padding-bottom: 7px; }
-  .exp-carpeta > summary { padding-top: 7px; padding-bottom: 7px; }
+  .exp-archivo, .exp-carpeta > summary { padding-top: 9px; padding-bottom: 9px; }
+  .exp-disparador { width: 40px; height: 40px; }
 }
+
+/* --------------------------- el menú de acciones ---------------------- */
+/* Un solo panel compartido por todas las filas: se arma una vez, se mueve
+   al lado de quien lo abrió. Ver Iconos.svg('mas') y ProyectoUI para el
+   porqué: cinco botones de icono escondidos hasta el hover eran invisibles
+   en cualquier pantalla táctil, y ni en escritorio avisaban que estaban. */
+.exp-menu {
+  position: fixed; z-index: 80; background: var(--panel); color: var(--texto);
+  border: 1px solid var(--linea); border-radius: var(--r);
+  box-shadow: 0 12px 30px -14px rgba(20, 25, 35, .5);
+  padding: 6px; max-height: 70vh; overflow: auto;
+}
+.exp-menu.oculto { display: none; }
+.exp-menu-titulo {
+  margin: 2px 6px 6px; font-size: 11px; color: var(--tenue);
+  overflow-wrap: break-word; border-bottom: 1px solid var(--linea-2); padding-bottom: 6px;
+}
+.exp-menu-acciones { display: flex; flex-direction: column; gap: 2px; }
+.exp-menu-accion {
+  display: flex; align-items: center; gap: 9px; width: 100%; min-height: 36px;
+  font-family: var(--sans); font-size: 13px; text-align: left;
+  background: transparent; border: 0; border-radius: 5px; padding: 6px 8px;
+  color: var(--texto); cursor: pointer;
+}
+.exp-menu-accion:hover, .exp-menu-accion:focus-visible { background: var(--fondo-2); }
+.exp-menu-accion .ic { flex: 0 0 auto; width: 16px; height: 16px; color: var(--tenue); }
+.exp-menu-borrar { color: var(--error); }
+.exp-menu-borrar .ic { color: var(--error); }
+.exp-menu-borrar:hover, .exp-menu-borrar:focus-visible { background: var(--error-sua); }
+@media (pointer: coarse) { .exp-menu-accion { min-height: 44px; } }
 
 /* -------------------- barras para cambiar el tamaño ------------------- */
 .divisor { border-radius: 5px; background: transparent; transition: background .12s; }

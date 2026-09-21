@@ -165,6 +165,30 @@ const estadoBase = () => ({
   }
 
   /* ------------------------------------------------------------------ */
+  /* «Exportar todo el proyecto» del botón nuevo del explorador es, ni más ni
+     menos, armar('') — la raíz es una carpeta como cualquier otra. */
+  seccion('Exportar el proyecto entero (ruta vacía)');
+  {
+    const e = estadoBase();
+    const paq = Carpeta.armar(e, '');
+    comprobar('van TODOS los archivos, de cualquier carpeta',
+      paq.archivos.map(a => a.nombre).sort().join(' ')
+        === 'parcial/ej1.sl parcial/ej2.sl parcial/viejos/ej0.sl parcial2/otro.sl suelto.sl',
+      paq.archivos.map(a => a.nombre).join(' '));
+    comprobar('el archivo suelto de la raíz también', paq.archivos.some(a => a.nombre === 'suelto.sl'));
+    comprobar('las rutas no llevan nada relativo raro',
+      !paq.archivos.some(a => a.nombre.startsWith('/') || a.nombre.startsWith('.')));
+    comprobar('la carpeta vacía viaja también', paq.carpetas.includes('parcial/vacia'), paq.carpetas.join(' '));
+
+    const bytes = await Carpeta.comprimir(paq);
+    const vuelta = await Carpeta.descomprimir(bytes);
+    comprobar('la ida y vuelta por gzip no pierde nada', JSON.stringify(vuelta) === JSON.stringify(paq));
+
+    comprobar('el nombre por defecto es «proyecto.esle2carpeta»',
+      Carpeta.nombreDeArchivo('') === 'proyecto.esle2carpeta', Carpeta.nombreDeArchivo(''));
+  }
+
+  /* ------------------------------------------------------------------ */
   seccion('Un archivo que vino de cualquier lado');
   {
     const limpio = { archivos: [], carpetas: [], activo: null };

@@ -39,6 +39,112 @@
     if (!panel || !boton || !global.Proyecto) return null;
 
     const P = global.Proyecto;
+
+    /* ----------------------- el menú de una fila ------------------------ */
+    /*
+     * Antes cada carpeta tenía CINCO botones de icono pegados uno al lado del
+     * otro, invisibles hasta pasar el mouse por encima: en una pantalla táctil
+     * no hay «pasar por encima», así que en un celular esos botones no
+     * existían. Y ni en escritorio se entendían: nada avisaba que ahí había
+     * algo para tocar.
+     *
+     * Ahora cada fila tiene UN disparador (⋮), siempre visible, que abre un
+     * panel con las acciones escritas con su nombre. Es el mismo panel
+     * compartido para todas las filas: se arma una vez y se reubica.
+     */
+    let menuEl = null;
+    let menuTitulo = null;
+    let menuAcciones = null;
+    let menuDisparador = null;   // el botón que lo abrió, para devolverle el foco
+
+    function menu() {
+      if (menuEl) return menuEl;
+      menuEl = nodo('div', 'exp-menu oculto');
+      menuEl.id = 'expMenu';
+      menuEl.setAttribute('role', 'group');
+      menuTitulo = nodo('p', 'exp-menu-titulo');
+      menuTitulo.id = 'expMenuTitulo';
+      menuEl.setAttribute('aria-labelledby', 'expMenuTitulo');
+      menuAcciones = nodo('div', 'exp-menu-acciones');
+      menuEl.append(menuTitulo, menuAcciones);
+      /* Escape lo cierra a ÉL, y no también al programa: si no se corta acá,
+         el mismo Escape sigue de largo hasta el atajo global que detiene la
+         ejecución, y cerrar un menú terminaría cortando el programa. */
+      menuEl.addEventListener('keydown', ev => {
+        if (ev.key !== 'Escape') return;
+        ev.preventDefault();
+        ev.stopPropagation();
+        cerrarMenu(true);
+      });
+      document.body.appendChild(menuEl);
+      return menuEl;
+    }
+
+    function cerrarMenu(devolverFoco) {
+      if (!menuEl || menuEl.classList.contains('oculto')) return;
+      menuEl.classList.add('oculto');
+      if (menuDisparador) {
+        menuDisparador.setAttribute('aria-expanded', 'false');
+        if (devolverFoco) menuDisparador.focus();
+      }
+      menuDisparador = null;
+    }
+
+    /* «acciones» es una lista de { etiqueta, icono, fn, peligrosa }. Cada
+       botón cierra el menú y llama a fn ANTES de que fn haga su prompt() o su
+       confirm(): con el menú todavía abierto, ese diálogo nativo queda
+       tapando un panel que ya no hace falta ver. */
+    function abrirMenu(disparador, titulo, acciones) {
+      const m = menu();
+      if (menuDisparador === disparador) { cerrarMenu(true); return; }  // toggle
+      cerrarMenu(false);
+      menuDisparador = disparador;
+      menuTitulo.textContent = titulo;
+      menuAcciones.replaceChildren();
+      acciones.forEach(a => {
+        const b = nodo('button', 'exp-menu-accion' + (a.peligrosa ? ' exp-menu-borrar' : ''));
+        b.type = 'button';
+        if (a.icono && global.Iconos) b.insertAdjacentHTML('afterbegin', global.Iconos.svg(a.icono));
+        b.appendChild(nodo('span', null, a.etiqueta));
+        b.addEventListener('click', () => { cerrarMenu(false); a.fn(); });
+        menuAcciones.appendChild(b);
+      });
+      m.classList.remove('oculto');
+      disparador.setAttribute('aria-expanded', 'true');
+      posicionarMenu(disparador);
+      const primero = menuAcciones.querySelector('button');
+      if (primero) primero.focus();
+    }
+
+    /* Fijo, al lado del disparador: adentro de .exp-cuerpo el menú se
+       recortaría o se scrollearía junto con el árbol, que no es lo que se
+       quiere. Se calcula con el rectángulo de la pantalla, no con el del
+       contenedor, y se acomoda si no entra abajo o a la derecha. */
+    function posicionarMenu(disparador) {
+      const m = menu();
+      const r = disparador.getBoundingClientRect();
+      const ANCHO = 216, MARGEN = 8;
+      m.style.width = ANCHO + 'px';
+      let izq = Math.min(r.left, window.innerWidth - ANCHO - MARGEN);
+      izq = Math.max(MARGEN, izq);
+      m.style.left = izq + 'px';
+      /* Se mide afuera de la pantalla y no con visibility:hidden: oculto así
+         no se puede enfocar, y el primer botón necesita foco apenas se abre.
+         Estar fuera de la pantalla no se nota —no hay flash— y sí se puede
+         enfocar. */
+      m.style.top = '-9999px';
+      const alto = m.getBoundingClientRect().height;
+      let arriba = r.bottom + 4;
+      if (arriba + alto > window.innerHeight - MARGEN) arriba = Math.max(MARGEN, r.top - alto - 4);
+      m.style.top = arriba + 'px';
+    }
+
+    document.addEventListener('click', ev => {
+      if (!menuEl || menuEl.classList.contains('oculto')) return;
+      if (menuEl.contains(ev.target) || (menuDisparador && menuDisparador.contains(ev.target))) return;
+      cerrarMenu(false);
+    });
+    global.addEventListener('resize', () => cerrarMenu(false));
     let st = P.cargar(cfg.clave);
     let encendido = false;
     let cambiando = false;    // mientras se cambia de archivo no se guarda nada
@@ -100,18 +206,30 @@
       st = r.estado;
       abiertas.add(limpio);
       grabar();
-      pintar();
+      pintar(limpio);
     }
 
     function renombrarCarpeta(ruta) {
       const nueva = prompt('Nuevo nombre de la carpeta:', ruta);
       if (nueva === null) return;
-      const r = P.renombrarCarpeta(st, ruta, String(nueva).trim());
+      const destino = String(nueva).trim();
+      const r = P.renombrarCarpeta(st, ruta, destino);
       if (r.error) { alert(r.error); return; }
       guardarActual();
       st = r.estado;
+      /* «abiertas» recuerda quién estaba desplegado por su ruta VIEJA: sin
+         esto, la carpeta que se acaba de renombrar —y todo lo que tenía
+         adentro abierto— se cerraba sola en el mismo repintado, como si el
+         cambio de nombre también hubiera guardado el árbol. */
+      for (const vieja of [...abiertas]) {
+        if (vieja === ruta) { abiertas.delete(vieja); abiertas.add(destino); }
+        else if (vieja.startsWith(ruta + '/')) {
+          abiertas.delete(vieja);
+          abiertas.add(destino + vieja.slice(ruta.length));
+        }
+      }
       grabar();
-      pintar();
+      pintar(destino);
       if (st.activo) {
         const a = st.archivos.find(x => x.nombre === st.activo);
         if (a && cfg.estado) cfg.estado(a.nombre);
@@ -125,10 +243,13 @@
         : `¿Borrar la carpeta vacía «${ruta}»?`;
       if (!confirm(aviso)) return;
       const eraElAbierto = st.activo && P.dentroDe(ruta, st.activo);
+      /* Al padre si lo tiene, o a la barra de arriba si la carpeta borrada
+         estaba en la raíz: eso decide pintar() cuando la ruta no existe. */
+      const padre = ruta.includes('/') ? ruta.slice(0, ruta.lastIndexOf('/')) : null;
       st = P.borrarCarpeta(st, ruta).estado;
       grabar();
       if (eraElAbierto && st.archivos.length) abrir(st.archivos[0].nombre);
-      else pintar();
+      else pintar(padre);
     }
 
     /* ------------------------ llevarse y traer ------------------------- */
@@ -189,7 +310,7 @@
       st.archivos = r.lista;
       if (st.activo === nombre) st.activo = r.archivo.nombre;
       grabar();
-      pintar();
+      pintar(r.archivo.nombre);
     }
 
     function duplicar(nombre) {
@@ -198,11 +319,12 @@
       if (r.error) { alert(r.error); return; }
       st.archivos = r.lista;
       grabar();
-      pintar();
+      pintar(r.archivo.nombre);
     }
 
     function borrar(nombre) {
       if (!confirm(`¿Borrar «${nombre}»? No se puede deshacer.`)) return;
+      const padre = nombre.includes('/') ? nombre.slice(0, nombre.lastIndexOf('/')) : null;
       st.archivos = P.borrar(st.archivos, nombre).lista;
       if (st.activo === nombre) {
         st.activo = st.archivos.length ? st.archivos[0].nombre : null;
@@ -214,7 +336,7 @@
         }
       }
       grabar();
-      pintar();
+      pintar(padre);
     }
 
     /* Un archivo nuevo arranca con el esqueleto mínimo que compila; cada
@@ -231,8 +353,26 @@
       return 'ext-' + (['sl', 'slp', 'txt', 'json', 'md', 'csv'].includes(ext) ? ext : 'otro');
     }
 
+    /* El disparador ⋮ de una fila: siempre visible, con o sin mouse. Un solo
+       botón en vez de tres o cinco es lo que hace que quepa en una barra
+       lateral angosta y que en el celular no ocupe la fila entera. */
+    function disparador(etiqueta, ruta) {
+      const x = nodo('button', 'exp-mini exp-disparador');
+      x.type = 'button';
+      x.setAttribute('data-ic', 'mas');
+      if (global.Iconos) x.innerHTML = global.Iconos.svg('mas');
+      x.setAttribute('aria-haspopup', 'true');
+      x.setAttribute('aria-expanded', 'false');
+      x.setAttribute('aria-controls', 'expMenu');
+      x.setAttribute('aria-label', etiqueta);
+      x.title = etiqueta;
+      x.dataset.ruta = ruta;
+      return x;
+    }
+
     function filaArchivo(a) {
       const li = nodo('li', 'exp-item' + (a.nombre === st.activo ? ' activo' : ''));
+      li.dataset.ruta = a.nombre;
 
       const b = nodo('button', 'exp-archivo ' + claseExtension(a.nombre));
       b.type = 'button';
@@ -242,21 +382,17 @@
       b.appendChild(nodo('span', 'exp-nombre', a.etiqueta || a.nombre));
       b.addEventListener('click', () => abrir(a.nombre));
 
-      const acciones = nodo('span', 'exp-acciones');
-      const mini = (ic, titulo, fn) => {
-        const x = nodo('button', 'exp-mini');
-        x.type = 'button';
-        x.title = titulo;
-        x.setAttribute('aria-label', titulo + ' ' + a.nombre);
-        x.innerHTML = global.Iconos ? global.Iconos.svg(ic) : titulo[0];
-        x.addEventListener('click', ev => { ev.stopPropagation(); fn(a.nombre); });
-        acciones.appendChild(x);
-      };
-      mini('renombrar', 'Renombrar', renombrar);
-      mini('archivos', 'Duplicar', duplicar);
-      mini('borrar', 'Borrar', borrar);
+      const disp = disparador('Acciones del archivo «' + a.nombre + '»', a.nombre);
+      disp.addEventListener('click', ev => {
+        ev.stopPropagation();
+        abrirMenu(disp, a.nombre, [
+          { etiqueta: 'Renombrar', icono: 'renombrar', fn: () => renombrar(a.nombre) },
+          { etiqueta: 'Duplicar', icono: 'archivos', fn: () => duplicar(a.nombre) },
+          { etiqueta: 'Borrar…', icono: 'borrar', peligrosa: true, fn: () => borrar(a.nombre) }
+        ]);
+      });
 
-      li.append(b, acciones);
+      li.append(b, disp);
       return li;
     }
 
@@ -272,48 +408,48 @@
         if (det.open) abiertas.add(c.ruta); else abiertas.delete(c.ruta);
       });
       const sum = nodo('summary', 'exp-sum');
+      sum.innerHTML = global.Iconos ? global.Iconos.svg('carpeta') : '';
       sum.appendChild(nodo('span', 'exp-nombre', c.nombre));
-      det.appendChild(sum);
-      det.appendChild(pintarLista(c));
-      return det;
-    }
+      det.append(sum, pintarLista(c));
 
-    /* Los botones de una carpeta NO van adentro del <summary>: un botón
-       adentro de otro elemento que ya es un botón es exactamente lo que axe
-       llama «nested-interactive», y para quien navega con teclado o lector de
-       pantalla es un lío. Van al lado, en la misma fila, puestos con CSS. */
-    function accionesDeCarpeta(ruta) {
-      const acciones = nodo('span', 'exp-acciones exp-acciones-carpeta');
-      const mini = (ic, titulo, fn) => {
-        const x = nodo('button', 'exp-mini');
-        x.type = 'button';
-        x.title = titulo;
-        x.setAttribute('aria-label', titulo + ' la carpeta ' + ruta);
-        x.innerHTML = global.Iconos ? global.Iconos.svg(ic) : titulo[0];
-        x.addEventListener('click', ev => { ev.stopPropagation(); fn(ruta); });
-        acciones.appendChild(x);
-      };
-      mini('nuevo', 'Nuevo archivo en', nuevo);
-      mini('archivos', 'Nueva carpeta dentro de', nuevaCarpeta);
-      mini('guardar', 'Exportar', exportarCarpeta);
-      mini('renombrar', 'Renombrar', renombrarCarpeta);
-      mini('borrar', 'Borrar', borrarCarpeta);
-      return acciones;
+      /* El disparador va afuera del <summary> y no adentro: un botón adentro
+         de otro elemento que ya es un botón es lo que axe llama
+         «nested-interactive», y para quien navega con teclado o lector de
+         pantalla es un lío. Ocupa su propio hueco reservado con CSS, así que
+         nunca tapa el nombre de la carpeta. */
+      const disp = disparador('Acciones de la carpeta «' + c.ruta + '»', c.ruta);
+      disp.addEventListener('click', ev => {
+        ev.stopPropagation();
+        abrirMenu(disp, c.ruta, [
+          { etiqueta: 'Nuevo archivo acá', icono: 'nuevo', fn: () => nuevo(c.ruta) },
+          { etiqueta: 'Nueva carpeta acá', icono: 'carpeta', fn: () => nuevaCarpeta(c.ruta) },
+          { etiqueta: 'Renombrar carpeta', icono: 'renombrar', fn: () => renombrarCarpeta(c.ruta) },
+          { etiqueta: 'Exportar carpeta', icono: 'exportar', fn: () => exportarCarpeta(c.ruta) },
+          { etiqueta: 'Borrar carpeta…', icono: 'borrar', peligrosa: true, fn: () => borrarCarpeta(c.ruta) }
+        ]);
+      });
+
+      const fila = nodo('div', 'exp-fila-sum');
+      fila.append(det, disp);
+      const li = nodo('li', 'exp-fila-carpeta');
+      li.dataset.ruta = c.ruta;
+      li.appendChild(fila);
+      return li;
     }
 
     function pintarLista(nodoArbol) {
       const ul = nodo('ul', 'exp-lista');
-      nodoArbol.carpetas.forEach(c => {
-        const li = nodo('li', 'exp-fila-carpeta');
-        li.appendChild(pintarCarpeta(c));
-        li.appendChild(accionesDeCarpeta(c.ruta));
-        ul.appendChild(li);
-      });
+      nodoArbol.carpetas.forEach(c => ul.appendChild(pintarCarpeta(c)));
       nodoArbol.archivos.forEach(a => ul.appendChild(filaArchivo(a)));
       return ul;
     }
 
-    function pintar() {
+    /* «enfocarRuta» es adónde vuelve el teclado después de repintar: al
+       disparador de esa fila si sigue existiendo, o si no —se borró, por
+       ejemplo— al primer botón de la barra de arriba. Sin esto, cada acción
+       dejaba el foco tirado en un botón que el repintado acababa de destruir. */
+    function pintar(enfocarRuta) {
+      cerrarMenu(false);
       const cuerpo = $('#expCuerpo');
       cuerpo.replaceChildren();
       if (!st.archivos.length && !st.carpetas.length) {
@@ -332,6 +468,21 @@
         ? '1 archivo' : st.archivos.length + ' archivos';
       const tit = $('#tituloArchivo');
       if (tit) tit.textContent = encendido && st.activo ? st.activo : tit.dataset.porDefecto;
+
+      /* undefined: no se toca el foco (abrir un archivo, prender el
+         explorador). null o una ruta: se pidió explícitamente, y si esa ruta
+         ya no existe —se acaba de borrar, por ejemplo— se cae a la barra de
+         arriba en vez de dejar el foco tirado en un botón que ya no está. */
+      if (enfocarRuta !== undefined) {
+        const fila = enfocarRuta === null ? null
+          : cuerpo.querySelector('[data-ruta="' + String(enfocarRuta).replace(/"/g, '\\"') + '"]');
+        /* «:scope >» y no un querySelector cualquiera: una carpeta con algo
+           adentro tiene MÁS de un .exp-disparador en su subárbol —el suyo y
+           los de lo que tiene dentro—, y sin acotar al hijo directo el foco
+           podía terminar en el disparador de una carpeta anidada. */
+        const disp = fila && fila.querySelector(':scope > .exp-fila-sum > .exp-disparador, :scope > .exp-disparador');
+        if (disp) disp.focus(); else { const n = $('#expNuevo'); if (n) n.focus(); }
+      }
     }
 
     /* --------------------------- encender ------------------------------ */
@@ -372,6 +523,16 @@
     $('#expNuevaCarpeta').addEventListener('click', () => nuevaCarpeta(''));
     const btnImportar = $('#expImportar');
     if (btnImportar) btnImportar.addEventListener('click', importarCarpeta);
+    /* Todo el proyecto es «la carpeta raíz»: Carpeta.armar(st, '') ya trae
+       todo lo que hay, así que exportar el proyecto entero no es un camino
+       aparte, es exportarCarpeta('') con el mismo botón de siempre. */
+    const btnExportar = $('#expExportar');
+    if (btnExportar) btnExportar.addEventListener('click', () => exportarCarpeta(''));
+
+    /* Adentro del árbol el menú se movería con lo que scrollea; se cierra en
+       vez de perseguirlo. */
+    const cuerpoExp = $('#expCuerpo');
+    if (cuerpoExp) cuerpoExp.addEventListener('scroll', () => cerrarMenu(false));
 
     cfg.editor.on('change', () => {
       if (!encendido || cambiando) return;
