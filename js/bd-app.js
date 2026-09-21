@@ -551,6 +551,12 @@
     avisar: t => estado(t, 'ok'),
     usar: codigo => { editor.setValue(codigo); editor.focus(); estado('el código del diagrama está en el editor', 'ok'); }
   });
+  /* Quién está usando esta máquina. Faltaba justo acá: los otros tres IDE lo
+     tenían y BD no, así que el avance de un alumno en el curso de BD se lo
+     encontraba el siguiente —y con el modo usuario encendido, abrir bd.html
+     era entrar sin pasar por la pantalla de entrada—. */
+  if (window.PerfilUI) window.PerfilUI.iniciar({ boton: document.querySelector('#btnPerfil') });
+
   Presentacion.crear();
   Iconos.pintar(document);
 
