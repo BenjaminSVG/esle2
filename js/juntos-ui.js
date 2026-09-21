@@ -4,8 +4,14 @@
  * Dos personas, o toda la clase, escribiendo el mismo programa. Usa Yjs
  * (vendido en vendor/yjs/) para que los editores se junten solos sin pisarse,
  * y js/sala-ui.js para el transporte: sobres cerrados que un relevo reparte
- * sin poder leerlos. El porqué de ese camino —y no el directo entre máquinas,
- * que en una escuela no anda— está arriba de js/sala.js.
+ * sin poder leerlos, y —de a pocos y con permiso— un camino directo de una
+ * máquina a la otra. El porqué de los dos está arriba de js/sala.js.
+ *
+ * El permiso para el camino directo se pide acá, en pantalla, y en ningún otro
+ * lado: abrir una conexión directa le muestra la dirección IP del alumno a
+ * quien esté del otro lado, y del otro lado puede estar cualquiera que tenga
+ * el enlace. Hasta que no lo aprietan, no se crea ninguna conexión ni se le
+ * pregunta nada a ningún servidor STUN.
  *
  * El paquete de Yjs pesa 214 KB y se carga SOLO al abrir este diálogo, no en
  * cada visita. Tampoco se guarda para usar sin conexión, por la razón obvia:
@@ -102,6 +108,21 @@
           <ul class="juntos-gente" data-campo="gente" aria-live="polite"
               aria-label="Quiénes están en la sala"></ul>
 
+          <div class="juntos-invitacion oculto" data-campo="caja-directa">
+            <p class="juntos-titulo">Conexión directa</p>
+            <p class="nota">Siendo pocos, las computadoras pueden hablarse <strong>directo</strong>,
+               sin pasar por ningún servidor: en el mismo laboratorio va más rápido y no gasta el
+               cupo de nadie.</p>
+            <p class="nota"><strong>Lo que cuesta:</strong> una conexión directa le muestra tu
+               dirección IP a la otra persona, y del otro lado puede estar cualquiera que tenga
+               este enlace. Para armarla también se le pregunta la dirección a un servidor STUN.
+               Si no la activás, seguís igual por el servidor, que no muestra tu IP a nadie.</p>
+            <div class="dlg-fila">
+              <button class="btn" data-accion="directo">Activar la conexión directa</button>
+              <span class="juntos-estado" data-campo="estado-directo"></span>
+            </div>
+          </div>
+
           <div class="dlg-fila">
             <button class="btn peligro" data-accion="salir">Salir de la sala</button>
           </div>
@@ -157,6 +178,7 @@
         else if (a === 'salir') salir();
         else if (a === 'copiar') copiar();
         else if (a === 'guardar-relevo') guardarRelevo();
+        else if (a === 'directo') activarDirecto();
       });
     }
 
@@ -201,13 +223,16 @@
       prov = global.SalaUI.conectar({
         Y: Y.Y, doc, sala, secreto: clave,
         servidores: global.Juntos.servidores(relevo),
-        alias: miAlias(), papel: 'edita'
+        alias: miAlias(), papel: 'edita',
+        /* Apagado hasta que lo digan: ver activarDirecto(). */
+        directo: { permitido: false, hasta: 4, iceServers: global.Sala.STUN }
       });
 
       atadura = new Y.CodemirrorBinding(texto, editor, prov.vecinos);
       estadoDelDialogo('buscando el servidor…');
 
       prov.al('estado', e => {
+        pintarDirecto(e);
         estadoDelDialogo(e.conectado
           ? (e.gente <= 1 ? 'conectado · esperando a alguien más' : 'conectado · ' + e.gente + ' personas')
           : (e.motivo || 'buscando…'));
@@ -224,6 +249,31 @@
       pintarBoton();
       mostrarBarra();
       avisar('programando en grupo', 'ok');
+    }
+
+    /* ---------------------------- lo directo -------------------------- */
+
+    /* El permiso se da acá y en ningún otro lado. Hasta que no se aprieta este
+       botón no se crea ninguna conexión directa ni se le pregunta nada a un
+       servidor STUN, así que la dirección IP no sale de la máquina. */
+    function activarDirecto() {
+      if (!prov) return;
+      prov.encenderDirecto();
+      accion('directo').disabled = true;
+      accion('directo').textContent = 'Conexión directa activada';
+    }
+
+    function pintarDirecto(e) {
+      if (!dlg) return;
+      const caja = campo('caja-directa');
+      /* Se ofrece solo cuando tiene sentido: de a pocos. En una clase entera
+         serían decenas de conexiones por máquina y no vale la pena. */
+      caja.classList.toggle('oculto', e.gente > 4);
+      campo('estado-directo').textContent = !e.directo ? ''
+        : e.directos > 0
+          ? (e.directos === 1 ? 'andando, sin pasar por el servidor'
+            : 'andando con ' + e.directos + ', sin pasar por el servidor')
+          : 'buscando el camino directo… mientras tanto va por el servidor';
     }
 
     function sinRelevo() {

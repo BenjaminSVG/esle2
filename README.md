@@ -922,9 +922,10 @@ entre sí, el NAT del router no deja entrar nada de afuera, y cuando eso pasa We
 servidor **TURN** que retransmita. TURN gratis no existe. El resultado en pantalla era el peor
 posible: «conectado», y los dos esperándose para siempre.
 
-Ahora las máquinas no se hablan entre sí: todas hablan con el mismo **relevo**, que reenvía. Eso
-anda en cualquier red donde ande el sitio, y cada navegador abre una conexión en vez de una por
-cada compañero.
+Así que el piso es un **relevo**: todas hablan con el mismo servidor, que reenvía. Eso anda en
+cualquier red donde ande el sitio, y cada navegador abre una conexión en vez de una por cada
+compañero. Arriba de ese piso, de a pocos y con permiso, se intenta además el camino directo: ver
+más abajo.
 
 ### Lo que el relevo no puede hacer
 
@@ -943,6 +944,47 @@ posición del cursor— se **rearma campo por campo** antes de que lo vea nadie.
 paleta de diez que está en el código y nunca del que lo manda: y-codemirror lo mete adentro de un
 `style`, así que aceptar el color ajeno sería aceptar que un compañero te escriba CSS en la
 pantalla.
+
+### El camino directo, de a pocos y con permiso
+
+Arriba del relevo, que es el piso y nunca se apaga, hay un segundo camino: de a
+dos en el mismo laboratorio, las computadoras pueden hablarse **directo**. Ahí no
+pasa por ningún servidor, va más rápido y no gasta el cupo de nadie.
+
+No se enciende solo. Aparece un botón en el diálogo, con lo que cuesta dicho
+antes de apretarlo:
+
+> Una conexión directa le muestra tu dirección IP a la otra persona, y del otro
+> lado puede estar cualquiera que tenga este enlace. Para armarla también se le
+> pregunta la dirección a un servidor STUN. Si no la activás, seguís igual por el
+> servidor, que no muestra tu IP a nadie.
+
+Hasta que no lo aprietan **no se crea ninguna conexión ni se contacta a nadie**, y
+una oferta que mande otro no alcanza para abrirla: quien está en la sala conoce
+la sesión de sus compañeros y podría intentarlo, y no le sirve de nada. Está
+probado.
+
+Cómo está hecho, y por qué no con el proveedor WebRTC de la librería:
+
+- por el camino directo viaja **el mismo sobre cerrado** que va por el relevo, y
+  los dos entran por la misma función. Así hay **un solo lugar** donde se revisa
+  lo que manda un desconocido. Con el proveedor de la librería no sería así: la
+  presencia que llega por WebRTC entra por su propia puerta —escribe derecho en
+  su tabla de estados— y se saltearía toda la revisión de [`js/sala.js`](js/sala.js);
+- las señas para encontrarse (oferta, respuesta, candidatos) viajan **adentro de
+  un sobre cerrado**, por el relevo. El relevo las reparte sin poder leerlas;
+- **no hay TURN**, y es una decisión. TURN retransmite todo el tráfico: el camino
+  dejaría de ser directo y pasaría por un tercero con un cupo de gigas por mes.
+  Para eso ya está el relevo, que es propio. Si el camino directo no se arma
+  —porque el wifi del colegio aísla a los alumnos, que es lo común—, no se avisa
+  de nada raro: se sigue por el relevo, que nunca se apagó;
+- solo se intenta hasta **cuatro personas**. Más arriba es una malla de
+  conexiones que no escala, y el relevo hace ese trabajo mejor;
+- se deja de mandar por el relevo **solo** cuando todas las personas de las que
+  se oyó algo tienen su canal directo abierto, comparando sesión por sesión y no
+  contando cabezas: un número igual puede ser gente distinta, y ahí alguien deja
+  de recibir sin que nadie se entere. Si entra uno nuevo, el relevo vuelve a
+  llevar todo en el acto.
 
 ### El relevo, gratis y propio
 

@@ -2,22 +2,27 @@
  * Una sala compartida: el sobre, la llave y quiénes están. Sin red ni DOM.
  *
  * ------------------------------------------------------------------------
- * Por qué esto dejó de ir por WebRTC
+ * Por qué el piso es un relevo y no el camino directo
  * ------------------------------------------------------------------------
- * «Programar de a dos» iba de máquina a máquina, que suena mejor y en una
- * escuela no anda. Para que dos navegadores se hablen directo hacen falta tres
- * cosas: encontrarse (eso lo arregla un servidor de señas), y después una ruta
- * de verdad entre ellos. Esa ruta es la que no aparece: el wifi de un colegio
- * suele aislar a los alumnos entre sí, el NAT del router no deja entrar nada
- * de afuera, y cuando eso pasa WebRTC necesita un servidor TURN que retransmita
- * —y TURN gratis no existe—. El resultado en pantalla era el peor posible:
+ * «Programar de a dos» iba solo de máquina a máquina, que suena mejor y en una
+ * escuela falla callado. Para que dos navegadores se hablen directo hacen
+ * falta dos cosas: encontrarse —eso lo arregla el servidor de señas— y que
+ * exista una ruta entre ellos. La ruta es la que no aparece: el wifi de un
+ * colegio suele aislar a los alumnos entre sí y el NAT del router no deja
+ * entrar nada de afuera. El resultado en pantalla era el peor posible:
  * «conectado», y los dos esperándose para siempre.
  *
- * Ahora las máquinas no se hablan entre sí: las dos hablan con el mismo
- * servidor, que reenvía. Eso anda en cualquier red donde ande el sitio. Lo que
- * se pierde es que ese servidor ve pasar los mensajes, y por eso existe este
- * archivo: los mensajes van CIFRADOS, con una llave que sale del enlace y que
- * el servidor nunca recibe. El servidor reparte sobres cerrados.
+ * Así que el piso es un relevo: todos hablan con el mismo servidor, que
+ * reenvía, y eso anda en cualquier red donde ande el sitio. Lo que se pierde
+ * es que ese servidor ve pasar los mensajes, y por eso existe este archivo:
+ * van CIFRADOS, con una llave que sale del enlace y que el servidor nunca
+ * recibe. El servidor reparte sobres cerrados.
+ *
+ * Arriba de ese piso, y solo de a pocos y con permiso, se intenta además el
+ * camino directo (ver js/sala-ui.js): de a dos en el mismo laboratorio es un
+ * salto de red local, no pasa por ningún servidor y no gasta el cupo de nadie.
+ * Cuando no se puede armar, no se avisa de nada raro: sigue andando por el
+ * relevo, que nunca se apagó.
  *
  * Lo que el servidor sí ve, y hay que decirlo: cuántas conexiones hay en una
  * sala, cuándo, de qué tamaño y con qué frecuencia. El contenido no.
@@ -67,6 +72,24 @@
      compañero no se veía nunca. */
   const PALETA = ['#1d4ed8', '#b91c1c', '#047857', '#6d28d9', '#b45309',
                   '#0e7490', '#be185d', '#4d7c0f', '#4338ca', '#a21caf'];
+
+  /* Los servidores que ayudan a armar el camino directo. Son STUN y nada más:
+     contestan «desde afuera te ven en esta dirección» y se van. No ven el
+     contenido y no retransmiten nada.
+
+     NO hay TURN acá, y es una decisión. TURN sí retransmite todo el tráfico, o
+     sea que el camino dejaría de ser directo y pasaría por un tercero con un
+     cupo de gigas por mes. Para eso ya está el relevo, que es nuestro y no
+     tiene ese problema. Si el camino directo no se arma, se sigue por el
+     relevo y listo.
+
+     Que quede dicho igual: preguntarle a un STUN le muestra tu dirección IP a
+     ese servidor, y armar el camino directo se la muestra a la persona del
+     otro lado. Por eso no se hace nada de esto sin permiso. */
+  const STUN = [
+    { urls: 'stun:stun.cloudflare.com:3478' },
+    { urls: 'stun:stun.l.google.com:19302' }
+  ];
 
   function huella(texto) {
     let h = 5381;
@@ -376,7 +399,7 @@
   }
 
   global.Sala = {
-    LIMITES, PALETA, alias, colorDe, papel, presencia, cursor, posicion,
+    LIMITES, PALETA, STUN, alias, colorDe, papel, presencia, cursor, posicion,
     Vecinos, Vigia, claveDe, contexto, cerrar, abrir,
     aTexto, aBytes, azar, nuevaSesion, huella
   };
