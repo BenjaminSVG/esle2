@@ -105,10 +105,11 @@
       document.body.appendChild(dlg);
 
       /* «vista» dice qué se está mostrando adentro del mismo diálogo:
-         'gestion' (la normal), 'crear' (usuario nuevo) o 'clave' (poner o
-         cambiar la contraseña de uno que ya existe). Un solo diálogo con
-         vistas adentro, y no un diálogo por paso: así no hay que decidir
-         cuál se cierra cuando se cancela desde el medio. */
+         'gestion' (la normal), 'crear' (usuario nuevo), 'clave' (poner
+         contraseña a uno que todavía no tiene) o 'entrar' (pedirle SU
+         contraseña a uno que ya tiene, para cambiarse a él). Un solo
+         diálogo con vistas adentro, y no un diálogo por paso: así no hay
+         que decidir cuál se cierra cuando se cancela desde el medio. */
       let vista = { tipo: 'gestion' };
 
       function pintar() {
@@ -117,6 +118,7 @@
         cuerpo.className = 'dlg-cuerpo';
         cuerpo.innerHTML = vista.tipo === 'crear' ? vistaCrear()
           : vista.tipo === 'clave' ? vistaClave(vista.quien)
+          : vista.tipo === 'entrar' ? vistaEntrar(vista.quien)
           : vistaGestion();
         dlg.appendChild(cuerpo);
         atarEventos(cuerpo);
@@ -167,16 +169,27 @@
           </div>`;
       }
 
+      /* Entrar a un usuario CON contraseña siempre pide esa contraseña acá
+         —sin importar si esta máquina tiene prendido el pedido general—:
+         que «modo» esté apagado quiere decir que no se muestra la pantalla
+         de entrada al abrir ESLE2, no que cualquiera pueda meterse en un
+         usuario ajeno que sí eligió proteger el suyo.
+
+         Y por la misma razón, «Cambiar contraseña» de un usuario ajeno que
+         YA tiene una no aparece acá: eso permitiría ponerle una contraseña
+         nueva sin saber la vieja y entrar igual, lo que deja sin efecto el
+         cuidado de arriba. Cambiarla solo se puede desde adentro de ese
+         mismo usuario (arriba, en «Tu usuario»), una vez que ya entraste.
+         Ponerle una primera contraseña a uno que todavía no tiene ninguna
+         sigue disponible acá: ahí no hay nada que proteger todavía. */
       function filaUsuario(n) {
-        const abierto = perfil.actual() === n;
         const conClave = perfil.tieneClave(n);
-        const puedeEntrarDeUnClic = !abierto && !perfil.modo();
-        return `<li class="${abierto ? 'abierto' : ''}">
+        return `<li>
           <span class="perfil-nombre">${escapar(n)}</span>
           ${conClave ? '<span class="etq">con contraseña</span>' : ''}
           <span class="crece"></span>
-          ${puedeEntrarDeUnClic ? `<button class="btn chico" data-accion="entrar" data-nombre="${escapar(n)}">Entrar</button>` : ''}
-          <button class="btn chico" data-accion="ir-clave" data-nombre="${escapar(n)}">${conClave ? 'Cambiar' : 'Poner'} contraseña</button>
+          <button class="btn chico" data-accion="entrar" data-nombre="${escapar(n)}">Entrar</button>
+          ${conClave ? '' : `<button class="btn chico" data-accion="ir-clave" data-nombre="${escapar(n)}">Poner contraseña</button>`}
           <button class="btn chico borrar" data-accion="borrar" data-nombre="${escapar(n)}">Borrar</button>
         </li>`;
       }
@@ -219,6 +232,22 @@
           </form>`;
       }
 
+      function vistaEntrar(quien) {
+        return `
+          <h3>Entrá como ${escapar(quien)}</h3>
+          <form data-campo="form-entrar">
+            <label>Contraseña
+              <input type="password" data-campo="clave" class="control"
+                     autocomplete="current-password" aria-describedby="perfil-entrar-error">
+            </label>
+            <p class="mis-error" id="perfil-entrar-error" data-campo="error" aria-live="assertive"></p>
+            <div class="dlg-fila">
+              <button class="btn primario" type="submit" data-campo="boton-entrar">Entrar</button>
+              <button class="btn" type="button" data-accion="ir-gestion">Cancelar</button>
+            </div>
+          </form>`;
+      }
+
       /* ---------------------------- eventos --------------------------- */
 
       function atarEventos(cuerpo) {
@@ -233,7 +262,9 @@
           if (a === 'ir-crear') { vista = { tipo: 'crear' }; pintar(); return; }
           if (a === 'ir-clave') { vista = { tipo: 'clave', quien: b.dataset.nombre }; pintar(); return; }
           if (a === 'entrar') {
-            try { perfil.cambiar(b.dataset.nombre); location.reload(); }
+            const quien = b.dataset.nombre;
+            if (perfil.tieneClave(quien)) { vista = { tipo: 'entrar', quien }; pintar(); return; }
+            try { perfil.cambiar(quien); location.reload(); }
             catch (e) { err().textContent = e.message; }
             return;
           }
@@ -260,9 +291,10 @@
               return;
             }
             if (!quiere) {
-              if (!confirm('¿Dejar de pedir contraseña en esta máquina?\n\nCualquiera va a poder '
-                + 'cambiar de usuario sin contraseña. Los trabajos y las contraseñas guardadas '
-                + 'se conservan.')) {
+              if (!confirm('¿Dejar de pedir contraseña en esta máquina?\n\nAl abrir ESLE2 no va a '
+                + 'aparecer la pantalla de entrada. Para cambiarte a un usuario CON contraseña vas '
+                + 'a tener que escribirla igual. Los trabajos y las contraseñas guardadas se '
+                + 'conservan.')) {
                 modoCheck.checked = true;
                 return;
               }
@@ -291,6 +323,22 @@
             pintar();
             pintarBoton();
           } catch (e) { err().textContent = e.message; }
+        });
+
+        const formEntrar = cuerpo.querySelector('[data-campo="form-entrar"]');
+        if (formEntrar) formEntrar.addEventListener('submit', async ev => {
+          ev.preventDefault();
+          const $$ = c => cuerpo.querySelector(`[data-campo="${c}"]`);
+          const quien = vista.quien;
+          const boton = $$('boton-entrar');
+          boton.disabled = true;
+          err().textContent = 'Abriendo tus trabajos…';
+          const bien = await perfil.abrirSesion(quien, $$('clave').value);
+          if (bien) { location.reload(); return; }
+          boton.disabled = false;
+          $$('clave').value = '';
+          err().textContent = 'Esa contraseña no es.';
+          $$('clave').focus();
         });
       }
 
@@ -423,9 +471,9 @@
           if (b.dataset.accion === 'ir-crear') b.addEventListener('click', () => { vista = { tipo: 'crear' }; pintar(); });
           if (b.dataset.accion === 'ir-login') b.addEventListener('click', () => { vista = { tipo: 'login' }; pintar(); });
           if (b.dataset.accion === 'apagar') b.addEventListener('click', () => {
-            if (!confirm('¿Dejar de pedir contraseña en esta máquina?\n\nCualquiera va a poder '
-              + 'cambiar de usuario sin contraseña. Los trabajos y las contraseñas guardadas se '
-              + 'conservan.')) return;
+            if (!confirm('¿Dejar de pedir contraseña en esta máquina?\n\nAl abrir ESLE2 no va a '
+              + 'aparecer esta pantalla. Para cambiarte a un usuario CON contraseña vas a tener '
+              + 'que escribirla igual. Los trabajos y las contraseñas guardadas se conservan.')) return;
             perfil.ponerModo(false);
             location.reload();
           });

@@ -438,7 +438,9 @@ inicio
    v[1] = 5
 fin`],
   ['falta fin', `inicio
-   imprimir (1)`]
+   imprimir (1)`],
+  ['espacio inseparable pegado a una palabra', 'inicio\n imprimir(1)\nfin'],
+  ['espacio de ancho cero entre tokens', 'inicio\nimprimir​(1)\nfin']
 ];
 
 (async function () {
@@ -492,6 +494,27 @@ fin`],
       if (e instanceof SLE2.SLError) ok++;
       else falla(nombre, 'error inesperado: ' + e.message);
     }
+  }
+
+  console.log('— Caracteres invisibles —');
+  {
+    // El mensaje tiene que nombrar el código del carácter: si no, muestra
+    // comillas vacías y nadie entiende qué está mal.
+    try {
+      await correr('inicio\n imprimir(1)\nfin', '');
+      falla('mensaje con el código Unicode', 'no tiró error');
+    } catch (e) {
+      if (/U\+00A0/.test(e.message)) ok++;
+      else falla('mensaje con el código Unicode', e.message);
+    }
+    // Y adentro de una cadena, el mismo carácter sigue siendo texto válido:
+    // esto no es una lista de caracteres prohibidos, solo un mensaje más
+    // claro para cuando aparecen sueltos entre el código.
+    try {
+      const salida = await correr('inicio\n   imprimir ("a b")\nfin', '');
+      if (salida === 'a b') ok++;
+      else falla('sigue siendo válido dentro de una cadena', JSON.stringify(salida));
+    } catch (e) { falla('sigue siendo válido dentro de una cadena', String(e)); }
   }
 
   console.log('— Ejemplos del IDE (solo deben ejecutarse sin fallar) —');

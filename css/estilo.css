@@ -776,7 +776,12 @@ body.en-examen .lista-ejercicios { opacity: .4; pointer-events: none; }
    no es el disparador flotando ENCIMA del nombre con un degradé para
    disimular el corte, es un lugar propio que el nombre nunca invade porque
    se trunca antes de llegar (min-width: 0 en el <details>). */
-.exp-fila-sum { display: flex; align-items: center; }
+/* align-items: flex-start y no center: «.exp-carpeta» es el <details> ENTERO
+   —el resumen y, si está abierta, toda la lista de adentro— así que
+   centrarlo contra su hermano el disparador lo centraba contra la altura de
+   la carpeta abierta completa, no contra el nombre. El disparador quedaba
+   flotando en el medio de los archivos en vez de al lado de la carpeta. */
+.exp-fila-sum { display: flex; align-items: flex-start; }
 .exp-fila-sum:hover, .exp-fila-sum:focus-within { background: var(--fondo-2); }
 .exp-carpeta { flex: 1 1 auto; min-width: 0; }
 .exp-carpeta > summary {

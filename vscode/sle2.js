@@ -162,6 +162,19 @@
       if (c === '&' || c === '|')
         errC(`el operador "${c}" solo, no existe en SL`, linea,
           'SL usa las palabras and, or y not (también admite && y || como sinónimos).');
+      const cp = c.codePointAt(0);
+      /* Espacios y separadores que el navegador no dibuja: espacio inseparable,
+         espacio de ancho variable, los separadores Unicode, el espacio de ancho
+         cero, la marca de no unión y la marca de orden de bytes. Sin nombrarlos,
+         el error de más abajo mostraría comillas vacías y nadie entendería qué
+         está mal: la forma más común en que uno de estos termina en un programa
+         es copiar y pegar desde Word o desde otra página. */
+      const esInvisible = cp === 0x00a0 || cp === 0x1680 || (cp >= 0x2000 && cp <= 0x200f) ||
+        (cp >= 0x2028 && cp <= 0x202f) || cp === 0x205f || cp === 0x2060 || cp === 0x3000 || cp === 0xfeff;
+      if (esInvisible)
+        errC(`hay un espacio o un carácter invisible que no se ve (U+${cp.toString(16).toUpperCase().padStart(4, '0')})`,
+          linea, 'Probablemente lo trajiste al copiar y pegar de otro lado (Word, una página web). Borrá ese ' +
+          'pedacito y volvé a escribirlo a mano.');
       errC(`carácter no reconocido: "${c}"`, linea,
         'Revisá si te faltó una comilla o si copiaste un símbolo de otro lenguaje.');
     }

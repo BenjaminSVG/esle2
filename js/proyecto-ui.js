@@ -519,8 +519,16 @@
       grabarModo(v);
       aplicarModo(v);
     });
-    $('#expNuevo').addEventListener('click', () => nuevo(''));
-    $('#expNuevaCarpeta').addEventListener('click', () => nuevaCarpeta(''));
+    /* Los botones de la barra de arriba crean adentro de la carpeta del
+       archivo que está abierto, no siempre en la raíz: si estás mirando
+       «parcial/a.sl» y tocás «Nuevo archivo», lo esperable es que el
+       archivo nuevo quede en «parcial», no que aparezca en otro lado. Cada
+       carpeta también tiene su propio «Nuevo archivo acá» en el disparador
+       ⋮, que ya apunta a esa carpeta puntual y no cambia con esto. */
+    const carpetaActiva = () => (st.activo && st.activo.includes('/'))
+      ? st.activo.slice(0, st.activo.lastIndexOf('/')) : '';
+    $('#expNuevo').addEventListener('click', () => nuevo(carpetaActiva()));
+    $('#expNuevaCarpeta').addEventListener('click', () => nuevaCarpeta(carpetaActiva()));
     const btnImportar = $('#expImportar');
     if (btnImportar) btnImportar.addEventListener('click', importarCarpeta);
     /* Todo el proyecto es «la carpeta raíz»: Carpeta.armar(st, '') ya trae
