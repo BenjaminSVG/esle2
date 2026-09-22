@@ -180,14 +180,41 @@
       if (cfg.estado) cfg.estado(a.nombre);
     }
 
+    /* Un nombre escrito a mano, validado sin barras: quien crea un archivo
+       o una carpeta «acá» ya eligió el destino con el disparador que tocó,
+       así que el cuadro de texto solo pide el nombre propio, nunca la
+       ruta entera. Antes el destino vivía ADENTRO del mismo texto editable
+       (el valor propuesto ya traía «carpeta/» escrito delante) y bastaba
+       con borrar esa parte —lo más natural del mundo, si ya estás mirando
+       el menú de esa carpeta— para que el archivo apareciera en la raíz
+       sin ningún aviso de que el destino se había perdido. */
+    function pedirNombrePropio(mensajeBase, destino, valorInicial) {
+      const mensaje = destino ? `${mensajeBase} en «${destino}» (solo el nombre):`
+                               : `${mensajeBase} en la raíz (solo el nombre):`;
+      const escrito = prompt(mensaje, valorInicial);
+      if (escrito === null) return null;
+      const limpio = String(escrito).trim();
+      if (!limpio) { alert('Poné un nombre.'); return null; }
+      if (limpio.includes('/') || limpio.includes('\\')) {
+        alert('Escribí solo el nombre, sin barras. La carpeta de destino ya está elegida.');
+        return null;
+      }
+      return limpio;
+    }
+
     /* ---------------------------- acciones ----------------------------- */
     function nuevo(carpeta) {
+      /* Guardar ANTES de calcular: P.crear() arma la lista nueva a partir
+         de st.archivos tal como está en este instante, así que lo último
+         que se escribió tiene que estar adentro antes de preguntar nada. */
+      guardarActual();
       const propuesto = P.nombreLibre(st.archivos, (carpeta ? carpeta + '/' : '') + 'programa' + (cfg.ext || '.sl'));
-      const nombre = prompt('Nombre del archivo nuevo:', propuesto);
-      if (nombre === null) return;
+      const base = propuesto.slice(propuesto.lastIndexOf('/') + 1);
+      const limpio = pedirNombrePropio('Nombre del archivo nuevo', carpeta, base);
+      if (limpio === null) return;
+      const nombre = (carpeta ? carpeta + '/' : '') + limpio;
       const r = P.crear(st.archivos, nombre, { ext: cfg.ext, codigo: PLANTILLA() });
       if (r.error) { alert(r.error); return; }
-      guardarActual();
       st.archivos = r.lista;
       abrir(r.archivo.nombre);
     }
@@ -196,29 +223,54 @@
        uno para que existiera —una carpeta vacía no se podía deducir de nada— y
        eso obligaba a inventar un programa que nadie pidió. */
     function nuevaCarpeta(dentroDe) {
-      const base = (dentroDe ? dentroDe + '/' : '') + 'carpeta';
-      const carpeta = prompt('Nombre de la carpeta nueva:', base);
-      if (carpeta === null) return;
-      const limpio = String(carpeta).trim().replace(/^\/+|\/+$/g, '');
-      if (!limpio) return;
-      const r = P.crearCarpeta(st, limpio);
+      const limpio = pedirNombrePropio('Nombre de la carpeta nueva', dentroDe, 'carpeta');
+      if (limpio === null) return;
+      const ruta = (dentroDe ? dentroDe + '/' : '') + limpio;
+      const r = P.crearCarpeta(st, ruta);
       if (r.error) { alert(r.error); return; }
       st = r.estado;
-      abiertas.add(limpio);
+      abiertas.add(r.carpeta);
       grabar();
-      pintar(limpio);
+      pintar(r.carpeta);
     }
 
+    /* «Renombrar o mover» sigue siendo el mismo cuadro con la ruta entera
+       editable —acá sí hace falta, es la única forma de decirle a dónde
+       se muda— pero con el mensaje diciendo explícitamente que sirve para
+       eso, no solo para cambiarle el nombre. */
     function renombrarCarpeta(ruta) {
-      const nueva = prompt('Nuevo nombre de la carpeta:', ruta);
+      guardarActual();
+      const nueva = prompt(
+        'Escribí el nombre y la ruta completos. Para moverla, usá «destino/carpeta»; ' +
+        'para dejarla en la raíz, escribí solo el nombre:', ruta);
       if (nueva === null) return;
       const destino = String(nueva).trim();
+      if (destino === ruta) return;
+      /* Mover una carpeta ADENTRO de sí misma —o de una de sus propias
+         subcarpetas— no tiene ningún resultado sensato, y el modelo no lo
+         rechaza por su cuenta: lo cuidamos acá, antes de tocar nada. */
+      if (destino.startsWith(ruta + '/')) {
+        alert('No podés mover una carpeta adentro de sí misma.');
+        return;
+      }
       const r = P.renombrarCarpeta(st, ruta, destino);
       if (r.error) { alert(r.error); return; }
-      guardarActual();
+      /* Cada archivo o subcarpeta que viaja adentro se queda con la misma
+         «cola» después del nombre nuevo; P.renombrarCarpeta() no revisa
+         que esas rutas finales sigan siendo válidas (el tope de caracteres,
+         de niveles), así que se revisan acá, TODAS, antes de aplicar nada.
+         Una mudanza que se corta a la mitad porque una subcarpeta muy
+         anidada se pasó de largo es peor que una que nunca empieza. */
+      const rutasFinales = r.estado.archivos.map(a => a.nombre)
+        .concat(r.estado.carpetas)
+        .filter(n => n === destino || n.startsWith(destino + '/'));
+      for (const n of rutasFinales) {
+        const error = P.validarRuta(n);
+        if (error) { alert(`«${n}»: ${error.charAt(0).toLowerCase() + error.slice(1)}`); return; }
+      }
       st = r.estado;
       /* «abiertas» recuerda quién estaba desplegado por su ruta VIEJA: sin
-         esto, la carpeta que se acaba de renombrar —y todo lo que tenía
+         esto, la carpeta que se acaba de mover —y todo lo que tenía
          adentro abierto— se cerraba sola en el mismo repintado, como si el
          cambio de nombre también hubiera guardado el árbol. */
       for (const vieja of [...abiertas]) {
@@ -227,6 +279,15 @@
           abiertas.delete(vieja);
           abiertas.add(destino + vieja.slice(ruta.length));
         }
+      }
+      /* Y los ANTECESORES del destino también quedan abiertos: si «cinthia»
+         estaba cerrada y la carpeta se mudó adentro, tiene que desplegarse
+         sola para que se vea dónde quedó. */
+      const tramos = destino.split('/');
+      let acum = '';
+      for (let i = 0; i < tramos.length - 1; i++) {
+        acum += (acum ? '/' : '') + tramos[i];
+        abiertas.add(acum);
       }
       grabar();
       pintar(destino);
@@ -303,7 +364,10 @@
     }
 
     function renombrar(nombre) {
-      const nuevoNombre = prompt('Nuevo nombre (podés usar «carpeta/archivo» para moverlo):', nombre);
+      guardarActual();
+      const nuevoNombre = prompt(
+        'Escribí el nombre y la ruta completos. Para moverlo, usá «carpeta/archivo.sl»; ' +
+        'para dejarlo en la raíz, escribí solo el nombre:', nombre);
       if (nuevoNombre === null) return;
       const r = P.renombrar(st.archivos, nombre, nuevoNombre);
       if (r.error) { alert(r.error); return; }
@@ -386,7 +450,7 @@
       disp.addEventListener('click', ev => {
         ev.stopPropagation();
         abrirMenu(disp, a.nombre, [
-          { etiqueta: 'Renombrar', icono: 'renombrar', fn: () => renombrar(a.nombre) },
+          { etiqueta: 'Renombrar o mover…', icono: 'renombrar', fn: () => renombrar(a.nombre) },
           { etiqueta: 'Duplicar', icono: 'archivos', fn: () => duplicar(a.nombre) },
           { etiqueta: 'Borrar…', icono: 'borrar', peligrosa: true, fn: () => borrar(a.nombre) }
         ]);
@@ -423,7 +487,7 @@
         abrirMenu(disp, c.ruta, [
           { etiqueta: 'Nuevo archivo acá', icono: 'nuevo', fn: () => nuevo(c.ruta) },
           { etiqueta: 'Nueva carpeta acá', icono: 'carpeta', fn: () => nuevaCarpeta(c.ruta) },
-          { etiqueta: 'Renombrar carpeta', icono: 'renombrar', fn: () => renombrarCarpeta(c.ruta) },
+          { etiqueta: 'Renombrar o mover carpeta…', icono: 'renombrar', fn: () => renombrarCarpeta(c.ruta) },
           { etiqueta: 'Exportar carpeta', icono: 'exportar', fn: () => exportarCarpeta(c.ruta) },
           { etiqueta: 'Borrar carpeta…', icono: 'borrar', peligrosa: true, fn: () => borrarCarpeta(c.ruta) }
         ]);
