@@ -346,6 +346,22 @@
       }
     }
 
+    /* Compartido entre importar desde el selector de archivos y traer un
+       .esle2carpeta que el sistema operativo le pasó a la PWA instalada:
+       una vez descomprimido, fundirlo en el proyecto es lo mismo siempre. */
+    function fundirPaquete(paquete) {
+      const propuesta = prompt('¿En qué carpeta la traigo?', paquete.raiz || 'importado');
+      if (propuesta === null) return;
+      const r = global.Carpeta.fundir(st, paquete, String(propuesta).trim());
+      if (r.error) { alert(r.error); return; }
+      guardarActual();
+      st = r.estado;
+      abiertas.add(r.raiz);
+      grabar();
+      pintar();
+      alert(`Listo: ${r.cuantos} archivo(s) en «${r.raiz}».`);
+    }
+
     function importarCarpeta() {
       const campo = document.createElement('input');
       campo.type = 'file';
@@ -364,19 +380,22 @@
           paquete = await global.Carpeta.descomprimir(new Uint8Array(await f.arrayBuffer()));
         } catch (e) { paquete = null; }
         if (!paquete) { alert('Ese archivo no es una carpeta de ESLE2, o está roto.'); return; }
-
-        const propuesta = prompt('¿En qué carpeta la traigo?', paquete.raiz || 'importado');
-        if (propuesta === null) return;
-        const r = global.Carpeta.fundir(st, paquete, String(propuesta).trim());
-        if (r.error) { alert(r.error); return; }
-        guardarActual();
-        st = r.estado;
-        abiertas.add(r.raiz);
-        grabar();
-        pintar();
-        alert(`Listo: ${r.cuantos} archivo(s) en «${r.raiz}».`);
+        fundirPaquete(paquete);
       });
       campo.click();
+    }
+
+    /* Un .esle2carpeta que llegó de AFUERA (el sistema operativo, vía la PWA
+       instalada): mismas reglas que importarlo a mano, sin el selector. */
+    async function importarCarpetaExterna(bytes) {
+      if (bytes.length > global.Carpeta.LIMITES.archivo) {
+        alert('Ese archivo es demasiado grande para ser una carpeta de ESLE2.');
+        return;
+      }
+      let paquete;
+      try { paquete = await global.Carpeta.descomprimir(bytes); } catch (e) { paquete = null; }
+      if (!paquete) { alert('Ese archivo no es una carpeta de ESLE2, o está roto.'); return; }
+      fundirPaquete(paquete);
     }
 
     function renombrar(nombre) {
@@ -683,7 +702,7 @@
 
     return {
       activo: () => (encendido ? st.activo : null), guardarActual, abrir, encendido: () => encendido,
-      estadoCompleto, establecer, abrirExterno
+      estadoCompleto, establecer, abrirExterno, importarCarpetaExterna
     };
   }
 

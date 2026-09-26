@@ -814,20 +814,30 @@ fin
     });
   }
 
-  /* Si el alumno instaló ESLE2 como aplicación y abre un .sl con «Abrir con»
-     o doble clic, el navegador arranca acá con ese archivo en vez de vacía.
-     Sin instalar, PwaArchivos.disponible() da false y esto no hace nada. */
+  /* Si el alumno instaló ESLE2 como aplicación y abre un .sl o un
+     .esle2carpeta con «Abrir con» o doble clic, el navegador arranca acá con
+     ese archivo en vez de vacía. Sin instalar, PwaArchivos.disponible() da
+     false y esto no hace nada. */
   if (window.PwaArchivos) {
     PwaArchivos.escuchar({
-      extensiones: ['.sl'],
-      maxBytes: Seguro.LIMITES.archivo,
-      onArchivo: (nombre, codigo) => {
+      extensiones: ['.sl', '.esle2carpeta'],
+      binarias: ['.esle2carpeta'],
+      maxBytes: Math.max(Seguro.LIMITES.archivo, (window.Carpeta && Carpeta.LIMITES.archivo) || 0),
+      onArchivo: (nombre, contenido) => {
+        if (nombre.toLowerCase().endsWith('.esle2carpeta')) {
+          if (!proyecto || !proyecto.encendido()) {
+            alert('Para traer una carpeta primero tenés que prender el explorador de archivos (menú Ver).');
+            return;
+          }
+          proyecto.importarCarpetaExterna(contenido);
+          return;
+        }
         if (proyecto && proyecto.encendido()) {
-          const r = proyecto.abrirExterno(nombre, codigo);
+          const r = proyecto.abrirExterno(nombre, contenido);
           if (r.error) { alert(r.error); return; }
         } else {
           historial.registrar('previa', 'Antes de abrir ' + nombre);
-          editor.setValue(codigo);
+          editor.setValue(contenido);
         }
         salirDeEjercicio();
         estado('abierto ' + nombre);

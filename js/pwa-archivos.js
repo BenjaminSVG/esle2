@@ -10,10 +10,12 @@
  * hace nada: abrir un archivo con el selector de siempre sigue andando igual.
  *
  * No toca el DOM ni el editor directamente: solo lee el o los archivos y se
- * los pasa a quien lo inició, uno por uno, en el orden que llegaron.
+ * los pasa a quien lo inició, uno por uno, en el orden que llegaron. Un .sl
+ * llega como texto; un .esle2carpeta (gzip binario) llega como Uint8Array,
+ * según su extensión esté o no en «binarias».
  *
  * API:  PwaArchivos.disponible()                     -> boolean
- *       PwaArchivos.escuchar({ extensiones, maxBytes, onArchivo, onError })
+ *       PwaArchivos.escuchar({ extensiones, binarias, maxBytes, onArchivo, onError })
  */
 (function (global) {
   'use strict';
@@ -24,7 +26,7 @@
 
   /* Cada «archivo recibido» de launchQueue es un FileSystemFileHandle, no un
      File: hace falta pedirle el contenido con getFile(). */
-  async function leer(handle, extensiones, maxBytes) {
+  async function leer(handle, extensiones, binarias, maxBytes) {
     const archivo = await handle.getFile();
     const punto = archivo.name.lastIndexOf('.');
     const ext = punto >= 0 ? archivo.name.slice(punto).toLowerCase() : '';
@@ -32,8 +34,10 @@
       return { error: `«${archivo.name}» no es un archivo que ESLE2 sepa abrir así.` };
     if (maxBytes && archivo.size > maxBytes)
       return { error: `«${archivo.name}» es demasiado grande para abrirlo de esta forma.` };
-    const texto = await archivo.text();
-    return { nombre: archivo.name, codigo: texto };
+    const contenido = (binarias && binarias.includes(ext))
+      ? new Uint8Array(await archivo.arrayBuffer())
+      : await archivo.text();
+    return { nombre: archivo.name, contenido };
   }
 
   /* Se registra una sola vez, apenas la página termina de armar el editor y
@@ -43,15 +47,16 @@
   function escuchar(cfg) {
     if (!disponible()) return false;
     const extensiones = cfg.extensiones || null;
+    const binarias = cfg.binarias || null;
     const maxBytes = cfg.maxBytes || null;
     global.launchQueue.setConsumer(async lanzamiento => {
       const archivos = lanzamiento.files || [];
       for (const handle of archivos) {
         let r;
-        try { r = await leer(handle, extensiones, maxBytes); }
+        try { r = await leer(handle, extensiones, binarias, maxBytes); }
         catch (e) { r = { error: 'No se pudo leer ese archivo.' }; }
         if (r.error) { if (cfg.onError) cfg.onError(r.error); continue; }
-        if (cfg.onArchivo) cfg.onArchivo(r.nombre, r.codigo);
+        if (cfg.onArchivo) cfg.onArchivo(r.nombre, r.contenido);
       }
     });
     return true;

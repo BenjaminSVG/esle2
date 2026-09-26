@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Carpeta de ESLE2">
+  <title>Carpeta de ESLE2</title>
+  <path d="M64 144a24 24 0 0 1 24-24h104l40 40h192a24 24 0 0 1 24 24v208a24 24 0 0 1-24 24H88a24 24 0 0 1-24-24Z"
+        fill="#008080"/>
+  <path d="M64 208h384v168a24 24 0 0 1-24 24H88a24 24 0 0 1-24-24Z" fill="#006666"/>
+  <rect x="176" y="248" width="160" height="112" rx="10" fill="#0000c0"/>
+  <path d="m216 288-24 24 24 24" fill="none" stroke="#ffff55" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="m296 288 24 24-24 24" fill="none" stroke="#ffff55" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -23,7 +23,13 @@
     {
       "action": "./index.html",
       "accept": { "text/plain": [".sl"] },
-      "icons": [{ "src": "img/icono-512.png", "sizes": "512x512", "type": "image/png" }],
+      "icons": [{ "src": "img/icono-archivo-sl-512.png", "sizes": "512x512", "type": "image/png" }],
+      "launch_type": "single-client"
+    },
+    {
+      "action": "./index.html",
+      "accept": { "application/gzip": [".esle2carpeta"] },
+      "icons": [{ "src": "img/icono-carpeta-esle2-512.png", "sizes": "512x512", "type": "image/png" }],
       "launch_type": "single-client"
     }
   ],

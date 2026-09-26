@@ -75,6 +75,40 @@ const m = JSON.parse(leer('manifest.json'));
     t ? `${t.ancho}x${t.alto}` : 'no existe');
 }
 
+/* ------------------------- abrir archivos del sistema -------------------- */
+{
+  /* file_handlers: si el alumno instaló ESLE2, esto es lo que le permite al
+     sistema operativo ofrecerla para abrir un .sl o un .esle2carpeta. Un
+     icono roto acá no rompe nada visible tampoco: la asociación se hace
+     igual, solo que con un dibujo vacío o el genérico del navegador. */
+  comprobar('hay manejadores de archivo', Array.isArray(m.file_handlers) && m.file_handlers.length >= 2,
+    String((m.file_handlers || []).length));
+  const extensiones = new Set();
+  for (const h of m.file_handlers || []) {
+    comprobar('la acción de cada manejador existe', fs.existsSync(path.join(RAIZ, h.action.replace('./', ''))), h.action);
+    comprobar('usa una sola pestaña', h.launch_type === 'single-client', h.launch_type);
+    for (const exts of Object.values(h.accept || {})) for (const e of exts) extensiones.add(e);
+    for (const i of h.icons || []) {
+      const existe = fs.existsSync(path.join(RAIZ, i.src));
+      comprobar(`el icono ${i.src} del manejador existe`, existe);
+      if (!existe) continue;
+      const t = tamanoPNG(i.src);
+      comprobar(`${i.src} es un PNG de verdad`, !!t);
+      if (!t) continue;
+      comprobar(`${i.src} mide lo que dice`, `${t.ancho}x${t.alto}` === i.sizes, `${t.ancho}x${t.alto} contra ${i.sizes}`);
+      comprobar(`${i.src} no es una imagen vacía`, t.bytes > 500, t.bytes + ' bytes');
+      comprobar(`el service worker guarda ${i.src}`, leer('sw.js').includes(`'${i.src}'`));
+    }
+  }
+  comprobar('sabe abrir .sl y .esle2carpeta', extensiones.has('.sl') && extensiones.has('.esle2carpeta'),
+    [...extensiones].join());
+  /* Cada tipo de archivo con su propio dibujo, no los dos con el icono
+     genérico de la app: es justo lo que se distingue en el Explorador. */
+  const iconosPorTipo = (m.file_handlers || []).map(h => (h.icons && h.icons[0] && h.icons[0].src) || '');
+  comprobar('cada manejador tiene un icono propio, no repetido',
+    new Set(iconosPorTipo).size === iconosPorTipo.length, iconosPorTipo.join());
+}
+
 /* ------------------------------- atajos --------------------------------- */
 {
   comprobar('hay atajos', Array.isArray(m.shortcuts) && m.shortcuts.length >= 2);
