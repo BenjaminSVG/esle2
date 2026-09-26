@@ -17,7 +17,8 @@
         "id": "sle2",
         "aliases": ["SLE2", "sle2", "pseudocódigo"],
         "extensions": [".sl", ".sle", ".slp", ".sldb"],
-        "configuration": "./language-configuration.json"
+        "configuration": "./language-configuration.json",
+        "icon": { "light": "./icons/sle2-light.svg", "dark": "./icons/sle2-dark.svg" }
       }
     ],
     "grammars": [

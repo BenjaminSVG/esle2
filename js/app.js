@@ -814,6 +814,28 @@ fin
     });
   }
 
+  /* Si el alumno instaló ESLE2 como aplicación y abre un .sl con «Abrir con»
+     o doble clic, el navegador arranca acá con ese archivo en vez de vacía.
+     Sin instalar, PwaArchivos.disponible() da false y esto no hace nada. */
+  if (window.PwaArchivos) {
+    PwaArchivos.escuchar({
+      extensiones: ['.sl'],
+      maxBytes: Seguro.LIMITES.archivo,
+      onArchivo: (nombre, codigo) => {
+        if (proyecto && proyecto.encendido()) {
+          const r = proyecto.abrirExterno(nombre, codigo);
+          if (r.error) { alert(r.error); return; }
+        } else {
+          historial.registrar('previa', 'Antes de abrir ' + nombre);
+          editor.setValue(codigo);
+        }
+        salirDeEjercicio();
+        estado('abierto ' + nombre);
+      },
+      onError: msg => alert(msg)
+    });
+  }
+
   AutocompletarUI.iniciar(editor, { poo: false });
   MemoriaUI.iniciar({
     codigo: () => editor.getValue(),

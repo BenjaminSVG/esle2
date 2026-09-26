@@ -19,6 +19,14 @@
     { "src": "img/icono-mask-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
     { "src": "img/logo.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
   ],
+  "file_handlers": [
+    {
+      "action": "./index.html",
+      "accept": { "text/plain": [".sl"] },
+      "icons": [{ "src": "img/icono-512.png", "sizes": "512x512", "type": "image/png" }],
+      "launch_type": "single-client"
+    }
+  ],
   "shortcuts": [
     {
       "name": "Curso de SLE2",

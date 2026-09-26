@@ -104,6 +104,12 @@
     /* -------------------------- explorador ---------------------------- */
     documento: '<path d="M13 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9Z"/>' +
                '<path d="M13 3v6h6"/>',
+    /* El mismo documento, pero con «</>» adentro: así se distingue un
+       archivo de código (.sl y sus variantes) de un documento cualquiera
+       con solo mirar la forma, no el color. */
+    'documento-sl': '<path d="M13 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9Z"/>' +
+                    '<path d="M13 3v6h6"/>' +
+                    '<path d="m9.3 13-1.8 1.8 1.8 1.8"/><path d="m14.7 13 1.8 1.8-1.8 1.8"/>',
     renombrar: '<path d="M4 20h4L20 8a2.1 2.1 0 0 0-3-3L5 17Z"/><path d="m14.5 6.5 3 3"/>',
     borrar: '<path d="M4.5 6.5h15"/><path d="M9.5 6.5V4.8a1.3 1.3 0 0 1 1.3-1.3h2.4a1.3 1.3 0 0 1 1.3 1.3v1.7"/>' +
             '<path d="M6.5 6.5 7.4 19a2 2 0 0 0 2 1.9h5.2a2 2 0 0 0 2-1.9l.9-12.5"/>' +

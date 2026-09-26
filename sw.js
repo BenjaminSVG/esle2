@@ -7,7 +7,7 @@
  *
  * Al publicar una versión nueva hay que subir VERSION: eso borra la caché vieja.
  */
-const VERSION = 'esle2-v80';
+const VERSION = 'esle2-v81';
 
 const ARCHIVOS = [
   './',
@@ -150,6 +150,7 @@ const ARCHIVOS = [
   'js/bienvenida.js',
   'js/cobertura.js',
   'js/otra-forma.js',
+  'js/pwa-archivos.js',
   'js/soluciones.js',   // se pide a mano; ningún HTML lo nombra
   'img/visual/diseno-y-ejecucion.png',
   'img/visual/coordenadas-formulario.png',

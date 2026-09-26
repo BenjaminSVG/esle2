@@ -219,6 +219,22 @@
       abrir(r.archivo.nombre);
     }
 
+    /* Un archivo que llegó de AFUERA (el sistema operativo, vía la PWA
+       instalada) entra a la raíz del proyecto, nunca pisa uno que ya
+       existía: si el nombre está ocupado, se le suma «2», «3», etc., como
+       en cualquier explorador de verdad. Solo tiene sentido llamarla con
+       el explorador prendido; con el explorador apagado quien llama tiene
+       que aplicar el código directo al editor, como con «Abrir…» de disco. */
+    function abrirExterno(nombre, codigo) {
+      guardarActual();
+      const propuesto = P.nombreLibre(st.archivos, nombre);
+      const r = P.crear(st.archivos, propuesto, { ext: cfg.ext, codigo });
+      if (r.error) return { error: r.error };
+      st.archivos = r.lista;
+      abrir(r.archivo.nombre);
+      return { archivo: r.archivo.nombre };
+    }
+
     /* Una carpeta se crea sola, sin archivo adentro. Antes había que crearle
        uno para que existiera —una carpeta vacía no se podía deducir de nada— y
        eso obligaba a inventar un programa que nadie pidió. */
@@ -417,6 +433,17 @@
       return 'ext-' + (['sl', 'slp', 'txt', 'json', 'md', 'csv'].includes(ext) ? ext : 'otro');
     }
 
+    /* Los archivos de código (el .sl de cada dialecto y sus variantes) llevan
+       una forma de icono distinta a un documento cualquiera, no solo otro
+       color: así se distinguen aunque el alumno no vea bien los colores. */
+    const EXT_CODIGO = ['sl', 'slp', 'sldb', 'slv'];
+    function iconoDocumento(nombre) {
+      const u = nombre.slice(nombre.lastIndexOf('/') + 1);
+      const punto = u.lastIndexOf('.');
+      const ext = punto > 0 ? u.slice(punto + 1).toLowerCase() : '';
+      return EXT_CODIGO.includes(ext) ? 'documento-sl' : 'documento';
+    }
+
     /* El disparador ⋮ de una fila: siempre visible, con o sin mouse. Un solo
        botón en vez de tres o cinco es lo que hace que quepa en una barra
        lateral angosta y que en el celular no ocupe la fila entera. */
@@ -442,7 +469,7 @@
       b.type = 'button';
       b.title = a.nombre;
       b.setAttribute('aria-current', a.nombre === st.activo ? 'true' : 'false');
-      b.innerHTML = global.Iconos ? global.Iconos.svg('documento') : '';
+      b.innerHTML = global.Iconos ? global.Iconos.svg(iconoDocumento(a.nombre)) : '';
       b.appendChild(nodo('span', 'exp-nombre', a.etiqueta || a.nombre));
       b.addEventListener('click', () => abrir(a.nombre));
 
@@ -656,7 +683,7 @@
 
     return {
       activo: () => (encendido ? st.activo : null), guardarActual, abrir, encendido: () => encendido,
-      estadoCompleto, establecer
+      estadoCompleto, establecer, abrirExterno
     };
   }
 
