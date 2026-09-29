@@ -219,6 +219,31 @@ for (const p of CON_MENUS) {
   }
 }
 
+/* --------------------- todo diálogo tiene nombre accesible -------------- */
+{
+  /* menus.js le pone aria-labelledby a todo <dialog> que no lo traiga ya,
+     apuntando a su h1-h4 —incluso a los que un módulo arma recién al
+     abrirse, vía el observador—. Acá se comprueba lo que SÍ se puede saber
+     sin navegador: que el mecanismo existe y está cableado, y que cada
+     <dialog> escrito a mano en el HTML tiene un título del que agarrarse. */
+  const menus = leer('js/menus.js');
+  comprobar('js/menus.js le pone nombre a los diálogos', menus.includes('function nombrarDialogo'));
+  comprobar('con un observador para los que se arman recién al abrirse',
+    menus.includes('MutationObserver'));
+  comprobar('y se activa al iniciar', /function iniciar\(\)\s*\{[^}]*nombrarDialogos\(\)/.test(menus));
+
+  for (const p of PAGINAS) {
+    const html = leer(p);
+    for (const m of html.matchAll(/<dialog id="(\w+)"[^>]*>/g)) {
+      const desde = m.index + m[0].length;
+      const cierre = html.indexOf('</dialog>', desde);
+      const adentro = html.slice(desde, cierre);
+      comprobar(`${p}: «${m[1]}» tiene un título del que agarrar el nombre accesible`,
+        /<h[1-4][ >]/.test(adentro));
+    }
+  }
+}
+
 /* ------------------- los iconos de ESLE2 Visual ------------------------- */
 /* El menú «Insertar» y el árbol de controles piden el icono por el nombre del
    control o de la orden, sin acentos. Si falta uno queda la letra vieja y no

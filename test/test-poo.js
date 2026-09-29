@@ -474,6 +474,33 @@ fin`, 'no tiene constructor']
     catch (err) { falla(e.nombre, String(err)); }
   }
 
+  console.log('— «Todos» en orden pedagógico —');
+  /* p1-p8 ya quedaban en orden al agregarse; p9-p50 se sumaron después y
+     vuelven a arrancar en fácil, así que el ARRAY no está ordenado por
+     dificultad —eso lo resuelve js/app-poo.js al pintar la lista, ordenando
+     sin tocar EJERCICIOS ni los ids. Esto prueba el mismo criterio de orden
+     que usa esa función, sobre los datos reales del curso. */
+  {
+    const NIVEL_ORDEN = { facil: 0, medio: 1, avanzado: 2 };
+    const ordenado = CURSO_POO.EJERCICIOS.slice()
+      .sort((a, b) => (NIVEL_ORDEN[a.nivel] ?? 1) - (NIVEL_ORDEN[b.nivel] ?? 1));
+
+    if (ordenado.every((e, i) => i === 0 || NIVEL_ORDEN[ordenado[i - 1].nivel] <= NIVEL_ORDEN[e.nivel])) ok++;
+    else falla('orden por dificultad', 'algún fácil quedó después de un medio o avanzado');
+
+    const idsAntes = new Set(CURSO_POO.EJERCICIOS.map(e => e.id));
+    const idsDespues = new Set(ordenado.map(e => e.id));
+    if (idsAntes.size === idsDespues.size && [...idsAntes].every(id => idsDespues.has(id))) ok++;
+    else falla('ningún ejercicio se pierde al ordenar', `${idsAntes.size} antes, ${idsDespues.size} después`);
+
+    /* Estable: dentro del mismo nivel, p9 sigue antes que p10, como en el
+       array original —no se mezclan al azar. */
+    const facilesOriginal = CURSO_POO.EJERCICIOS.filter(e => e.nivel === 'facil').map(e => e.id);
+    const facilesOrdenado = ordenado.filter(e => e.nivel === 'facil').map(e => e.id);
+    if (facilesOriginal.join() === facilesOrdenado.join()) ok++;
+    else falla('el orden es estable dentro de cada nivel', `${facilesOriginal.join()} vs ${facilesOrdenado.join()}`);
+  }
+
   console.log(`\n${ok} verificaciones correctas, ${fallos} fallos.`);
   assert.strictEqual(fallos, 0, 'hay pruebas fallidas');
 })();

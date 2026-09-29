@@ -212,9 +212,12 @@
 
     /* ------------------------------ estado ----------------------------- */
     const CLAVE_ESTADO = claveDe(cfg.lenguaje);
+    /* Guardado.escribir() avisa —una sola vez— si esto no se pudo guardar:
+       el examen sigue igual, pero ahora el alumno sabe que no va a
+       sobrevivir a un recargado, en vez de enterarse recién si pasa. */
     const guardar = () => {
-      try { localStorage.setItem(CLAVE_ESTADO, JSON.stringify(estado)); }
-      catch (e) { /* almacén lleno: el examen sigue, pero no sobrevive a recargar */ }
+      if (global.Guardado) { global.Guardado.escribir(CLAVE_ESTADO, JSON.stringify(estado)); return; }
+      try { localStorage.setItem(CLAVE_ESTADO, JSON.stringify(estado)); } catch (e) { /* nada más que hacer */ }
     };
     function recuperar() {
       try {

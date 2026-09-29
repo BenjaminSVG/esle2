@@ -39,8 +39,34 @@
     }, true);
   }
 
+  /* Un <dialog> sin aria-label ni aria-labelledby no tiene nombre accesible:
+     un lector de pantalla anuncia «diálogo», sin decir cuál. Casi todos ya
+     traen su título en un h1–h4 adentro; alcanza con apuntarles el nombre
+     ahí. Se arregla acá, con un observador, y no en cada módulo que arma un
+     diálogo, porque son diez y en cuatro páginas, y la mayoría se construye
+     recién al abrirse —no existe todavía cuando esta página carga. */
+  function nombrarDialogo(d) {
+    if (!d || d.hasAttribute('aria-label') || d.hasAttribute('aria-labelledby')) return;
+    const titulo = d.querySelector('h1, h2, h3, h4');
+    if (!titulo) return;
+    if (!titulo.id) titulo.id = (d.id ? d.id + '-titulo' : 'dlg-titulo-' + Math.random().toString(36).slice(2, 8));
+    d.setAttribute('aria-labelledby', titulo.id);
+  }
+
+  function nombrarDialogos() {
+    document.querySelectorAll('dialog').forEach(nombrarDialogo);
+    new MutationObserver(muts => {
+      for (const m of muts) for (const n of m.addedNodes) {
+        if (n.nodeType !== 1) continue;
+        if (n.tagName === 'DIALOG') nombrarDialogo(n);
+        if (n.querySelectorAll) n.querySelectorAll('dialog').forEach(nombrarDialogo);
+      }
+    }).observe(document.body, { childList: true, subtree: true });
+  }
+
   function iniciar() {
     frenarAtajosConUnDialogoAbierto();
+    nombrarDialogos();
     const menus = todos();
     if (!menus.length) return;
 

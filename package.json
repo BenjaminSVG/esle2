@@ -1,8 +1,16 @@
 {
   "name": "esle2",
   "version": "44.0.0",
-  "private": true,
+  "private": false,
   "description": "ESLE2: IDE, curso y documentación del lenguaje SL/SLE2 (CNC-UNA). Sitio estático, sin dependencias.",
+  "homepage": "https://esle2.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BenjaminSVG/esle2.git"
+  },
+  "bugs": {
+    "url": "https://github.com/BenjaminSVG/esle2/issues"
+  },
   "scripts": {
     "test": "node tools/probar.js",
     "revisar": "node tools/soltar.js",

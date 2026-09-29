@@ -56,5 +56,19 @@ let compilaSw = true, porque = '';
 try { new Function(sw); } catch (e) { compilaSw = false; porque = e.message; }
 chk(compilaSw, 'sw.js es JavaScript válido: ' + porque);
 
+/* Una actualización a medias —la conexión se corta durante la instalación—
+   no tiene que poder borrar una copia anterior que sí funcionaba. Esto es
+   una comprobación de forma sobre el código, no de comportamiento real
+   (simular el Cache API entero es más gestor de lo que hace falta acá):
+   confirma que el borrado de cachés viejas está adentro de la condición
+   de «versión completa», y que hay una red de contención hacia una
+   versión anterior cuando la petición falla. */
+chk(/if \(await versionCompleta\(cache\)\) \{[\s\S]{0,200}caches\.delete/.test(sw),
+  'activate solo borra cachés viejas si esta versión quedó completa');
+chk(/const vieja = await deOtraVersion\(req\.url\);[\s\S]{0,60}if \(vieja\) return vieja;/.test(sw),
+  'fetch busca en una versión anterior antes de rendirse');
+chk(/await deOtraVersion\(destino\)/.test(sw),
+  'y también al mostrar la página de repuesto sin conexión');
+
 console.log(bien + ' bien, ' + mal + ' mal');
 process.exit(mal ? 1 : 0);

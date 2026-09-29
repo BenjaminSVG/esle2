@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ESLE2 — Programá en español, en el navegador</title>
+<meta name="description" content="ESLE2 es un IDE completo para aprender a programar en español: se corrige solo, funciona sin internet y no necesita instalación. Clásico, POO, Visual y bases de datos.">
+<link rel="icon" href="img/favicon.png">
+<link rel="stylesheet" href="css/estilo.css">
+<link rel="stylesheet" href="css/landing.css">
+</head>
+<body class="landing">
+
+<a class="saltar" href="#contenido">Saltar al contenido</a>
+
+<header class="land-barra">
+  <a class="marca" href="landing.html">
+    <img class="logo" src="img/logo.svg" alt="">
+    <h1>ESLE2</h1>
+  </a>
+  <nav class="land-nav" aria-label="Secciones">
+    <a href="#formas">Las cuatro formas</a>
+    <a href="#por-que">Por qué ESLE2</a>
+    <a href="#docentes">Para docentes</a>
+    <a href="documentacion.html">Documentación</a>
+  </nav>
+  <a class="boton-cta" href="index.html">Abrir ESLE2 →</a>
+</header>
+
+<main id="contenido">
+
+  <!-- ------------------------------- hero ------------------------------- -->
+  <section class="hero">
+    <div class="hero-cont">
+      <div class="hero-texto">
+        <span class="hero-etiqueta">Gratis · en español · sin instalar nada</span>
+        <h1>Aprendé a programar<br>escribiendo <span class="resalte">código de verdad</span>.</h1>
+        <p class="bajada">
+          ESLE2 es un IDE completo para el lenguaje SLE2 que corre entero en tu navegador.
+          Escribís un programa, apretás <b>Ejecutar</b> y listo — sin instalar compiladores,
+          sin configurar nada, sin depender de internet una vez que abriste la página.
+        </p>
+        <div class="hero-acciones">
+          <a class="boton-cta" href="index.html">Empezar a programar →</a>
+          <a class="boton-fantasma" href="documentacion.html">Ver la documentación</a>
+        </div>
+        <p class="hero-nota">Instalable como app · funciona sin conexión · tu progreso se guarda solo</p>
+      </div>
+    </div>
+    <div class="hero-captura">
+      <div class="ventana">
+        <div class="ventana-barra">
+          <span class="punto"></span><span class="punto"></span><span class="punto"></span>
+          <span class="titulo">programa.sl — ESLE2</span>
+        </div>
+        <img src="img/landing/ide-clasico.png" alt="El IDE de ESLE2 con un programa que pregunta el nombre y saluda, corriendo y esperando la entrada del usuario." width="1440" height="899">
+      </div>
+    </div>
+  </section>
+
+  <!-- --------------------------- las cuatro formas --------------------------- -->
+  <section class="seccion" id="formas">
+    <div class="seccion-cabecera">
+      <span class="kicker">Un lenguaje, cuatro maneras de escribirlo</span>
+      <h2>El mismo SLE2, para cada tema del curso</h2>
+      <p>Aprendés una sola sintaxis y la vas llevando a clases y objetos, a ventanas con
+         botones, y a bases de datos con SQL en español.</p>
+    </div>
+    <div class="cursos-grid">
+      <a class="curso-tarjeta" href="index.html">
+        <div class="miniatura"><img src="img/landing/ide-clasico.png" alt="" loading="lazy"></div>
+        <div class="cuerpo">
+          <span class="franja-color" style="background:var(--editor-azul)"></span>
+          <h3>ESLE2 clásico</h3>
+          <p>Variables, condicionales, bucles y subrutinas. El punto de partida, con 50 ejercicios que se corrigen solos.</p>
+        </div>
+      </a>
+      <a class="curso-tarjeta" href="poo.html">
+        <div class="miniatura"><img src="img/landing/poo.png" alt="" loading="lazy"></div>
+        <div class="cuerpo">
+          <span class="franja-color" style="background:#267f99"></span>
+          <h3>ESLE2 POO</h3>
+          <p>Clases, objetos y atributos privados. La misma lógica del clásico, ahora organizada en moldes.</p>
+        </div>
+      </a>
+      <a class="curso-tarjeta" href="visual.html">
+        <div class="miniatura"><img src="img/landing/visual.png" alt="" loading="lazy"></div>
+        <div class="cuerpo">
+          <span class="franja-color" style="background:#8a5f1f"></span>
+          <h3>ESLE2 Visual</h3>
+          <p>Ventanas, botones y dibujo. Diseñás la pantalla arrastrando controles y programás lo que hacen.</p>
+        </div>
+      </a>
+      <a class="curso-tarjeta" href="bd.html">
+        <div class="miniatura"><img src="img/landing/bd.png" alt="" loading="lazy"></div>
+        <div class="cuerpo">
+          <span class="franja-color" style="background:#356d4c"></span>
+          <h3>ESLE2 BD</h3>
+          <p>Tablas y SQL en español o en inglés, mezclados en la misma consulta si hace falta.</p>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <!-- --------------------------- por qué --------------------------- -->
+  <section class="seccion" id="por-que">
+    <div class="seccion-cabecera">
+      <span class="kicker">Por qué ESLE2</span>
+      <h2>Pensado para que lo único difícil sea aprender a programar</h2>
+      <p>Todo lo demás —instalar, configurar, corregir a mano— ya está resuelto.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature">
+        <div class="icono">✓</div>
+        <h3>Se corrige solo</h3>
+        <p>Cada ejercicio del curso corre tu programa con varios juegos de datos y compara la salida. Sabés al instante si funciona.</p>
+      </div>
+      <div class="feature">
+        <div class="icono">⇄</div>
+        <h3>Traducí lo que escribiste</h3>
+        <p>Un botón pasa tu programa SLE2 a JavaScript, Python, Java, C, C++ o C#, para ver el mismo algoritmo en otro lenguaje.</p>
+      </div>
+      <div class="feature">
+        <div class="icono">☐</div>
+        <h3>Sin instalar nada</h3>
+        <p>Es una página web. También se puede instalar como aplicación y seguir usándola sin conexión a internet.</p>
+      </div>
+      <div class="feature">
+        <div class="icono">◧</div>
+        <h3>Depurador y prueba de escritorio</h3>
+        <p>Ejecutá paso a paso, mirá cómo cambian las variables y armá la prueba de escritorio del pizarrón, automática.</p>
+      </div>
+      <div class="feature">
+        <div class="icono">↻</div>
+        <h3>Versiones y trabajo en dos compus</h3>
+        <p>Guardá versiones de tu proyecto con una explicación y llevalo a otra computadora sin depender de ninguna cuenta.</p>
+      </div>
+      <div class="feature">
+        <div class="icono">ES</div>
+        <h3>Todo en español</h3>
+        <p>Palabras clave, mensajes de error y documentación en español, pensado para cómo se enseña acá.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- --------------------------- para docentes --------------------------- -->
+  <section class="franja-docente" id="docentes">
+    <div class="docente-cont">
+      <div>
+        <span class="kicker">Para el aula</span>
+        <h2 style="font-size:clamp(24px,3vw,32px); margin:0 0 6px;">También se usa desde el frente del salón</h2>
+        <p style="color:var(--texto-2); margin:0;">Con formas de practicar y de tomar examen que no dependen de que cada alumno tenga la herramienta correcta instalada.</p>
+        <ul class="docente-lista">
+          <li><span class="tilde">✓</span><span><b>Modo examen</b>Un límite de tiempo y una lista fija de ejercicios, sin salir del mismo IDE.</span></li>
+          <li><span class="tilde">✓</span><span><b>Modo aula</b>Seguí el progreso del grupo sobre una misma lista de ejercicios.</span></li>
+          <li><span class="tilde">✓</span><span><b>Batallas de código</b>Dos alumnos, el mismo ejercicio, a ver quién lo resuelve primero.</span></li>
+          <li><span class="tilde">✓</span><span><b>Progreso exportable</b>Cada alumno se lleva su avance en un archivo, sin depender de una cuenta en la nube.</span></li>
+        </ul>
+      </div>
+      <div class="ventana">
+        <div class="ventana-barra">
+          <span class="punto"></span><span class="punto"></span><span class="punto"></span>
+          <span class="titulo">curso.sl — ESLE2</span>
+        </div>
+        <img src="img/landing/curso.png" alt="La lista de ejercicios del curso de SLE2, agrupados por dificultad." width="1440" height="899">
+      </div>
+    </div>
+  </section>
+
+  <!-- --------------------------- cta final --------------------------- -->
+  <section class="cta-final">
+    <h2>Andá directo al editor.</h2>
+    <p>No hay cuenta que crear ni nada que descargar antes. Abrís la página y ya podés escribir tu primer programa.</p>
+    <a class="boton-cta" href="index.html">Abrir ESLE2 →</a>
+  </section>
+
+</main>
+
+<footer class="land-pie">
+  <p>
+    <a href="index.html">IDE</a> ·
+    <a href="documentacion.html">Documentación</a> ·
+    <a href="poo.html">POO</a> ·
+    <a href="visual.html">Visual</a> ·
+    <a href="bd.html">BD</a> ·
+    <a href="diseno.html">Diseño</a>
+  </p>
+  <p>ESLE2 — el lenguaje SLE2 en el navegador.</p>
+</footer>
+
+</body>
+</html>

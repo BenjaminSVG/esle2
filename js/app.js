@@ -82,7 +82,11 @@ fin
       'Ctrl-Enter': () => ejecutar(),
       'Cmd-Enter': () => ejecutar(),
       'Ctrl-S': () => { descargar(); return false; },
-      Tab: cm => cm.execCommand('insertSoftTab')
+      Tab: cm => cm.execCommand('insertSoftTab'),
+      /* Tab escribe sangría, así que alguien que solo usa el teclado se
+         queda atrapado adentro del editor sin este escape: Ctrl + M le saca
+         el foco, como en cualquier editor de código accesible. */
+      'Ctrl-M': cm => { cm.getInputField().blur(); return false; }
     }
   });
 
@@ -125,7 +129,7 @@ fin
   // El área con scroll del editor se anuncia y se alcanza con el teclado.
   editor.getScrollerElement().setAttribute('tabindex', '0');
   editor.getScrollerElement().setAttribute('role', 'region');
-  editor.getScrollerElement().setAttribute('aria-label', 'Editor de programas SLE2');
+  editor.getScrollerElement().setAttribute('aria-label', 'Editor de programas SLE2. Ctrl + M saca el foco del editor.');
   editor.on('change', () => Guardado.escribir('esle2_codigo', editor.getValue()));
 
   /* Si la URL trae un programa compartido, ese gana. */

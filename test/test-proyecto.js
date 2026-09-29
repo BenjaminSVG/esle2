@@ -154,5 +154,26 @@ const nombres = l => l.map(a => a.nombre).join(', ');
     Proyecto.cargar('nunca').archivos.length === 0 && Proyecto.cargar('nunca').activo === null);
 }
 
+/* ------------------ el almacén lleno no se pierde en silencio ----------- */
+/* Antes, un fallo acá volvía false y nadie lo miraba: guardarActual() en
+   proyecto-ui.js lo ignoraba. Ahora Proyecto.guardar() pasa por
+   Guardado.escribir(), así que el mismo aviso que ya usa el editor —una
+   sola vez, no en cada tecla— también cubre al proyecto. */
+{
+  require(path.join(__dirname, '..', 'js', 'guardado.js'));
+  const avisos = [];
+  const lleno = { setItem: () => { throw new Error('QuotaExceededError'); }, getItem: () => null, removeItem: () => {} };
+  const guardadoDelExamen = global.Guardado;
+  global.Guardado = global.Guardado.crear({ almacen: lleno, avisar: t => avisos.push(t) });
+
+  const lista = Proyecto.crear([], 'lleno.sl', { codigo: 'x' }).lista;
+  const r1 = Proyecto.guardar('p2', { archivos: lista, activo: 'lleno.sl' });
+  const r2 = Proyecto.guardar('p2', { archivos: lista, activo: 'lleno.sl' });
+  comprobar('con el almacén lleno, guardar avisa que no pudo', r1 === false && r2 === false);
+  comprobar('con un solo aviso, no uno por operación', avisos.length === 1, String(avisos.length));
+
+  global.Guardado = guardadoDelExamen;
+}
+
 console.log(`\n${ok} verificaciones correctas, ${fallos} fallos.`);
 assert.strictEqual(fallos, 0, 'el proyecto tiene fallos');

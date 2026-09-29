@@ -307,14 +307,15 @@
     } catch (e) { return { archivos: [], carpetas: [], activo: null }; }
   }
 
+  /* Por localStorage.setItem() directo: Guardado.escribir() nunca tira y
+     avisa —una sola vez, no en cada tecla— cuando el almacén está lleno o es
+     una ventana privada, con el mismo aviso que ya usa el editor. */
   function guardar(clave, estado) {
-    try {
-      const e = normalizar(estado);
-      global.localStorage.setItem(clave, JSON.stringify({
-        archivos: e.archivos, carpetas: e.carpetas, activo: e.activo
-      }));
-      return true;
-    } catch (e) { return false; }
+    const e = normalizar(estado);
+    const G = global.Guardado;
+    const texto = JSON.stringify({ archivos: e.archivos, carpetas: e.carpetas, activo: e.activo });
+    if (G) return G.escribir(clave, texto);
+    try { global.localStorage.setItem(clave, texto); return true; } catch (err) { return false; }
   }
 
   global.Proyecto = {

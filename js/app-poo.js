@@ -48,7 +48,11 @@
     indentUnit: 3, tabSize: 3, matchBrackets: true,
     extraKeys: {
       'Ctrl-Enter': () => ejecutar(), 'Cmd-Enter': () => ejecutar(),
-      Tab: cm => cm.execCommand('insertSoftTab')
+      Tab: cm => cm.execCommand('insertSoftTab'),
+      /* Tab escribe sangría, así que alguien que solo usa el teclado se
+         queda atrapado adentro del editor sin este escape: Ctrl + M le saca
+         el foco, como en cualquier editor de código accesible. */
+      'Ctrl-M': cm => { cm.getInputField().blur(); return false; }
     }
   });
   /* Ajustar texto: el Alt + Z de Visual Studio Code. */
@@ -91,7 +95,7 @@
   // El área con scroll del editor se anuncia y se alcanza con el teclado.
   editor.getScrollerElement().setAttribute('tabindex', '0');
   editor.getScrollerElement().setAttribute('role', 'region');
-  editor.getScrollerElement().setAttribute('aria-label', 'Editor de programas ESLE2 POO');
+  editor.getScrollerElement().setAttribute('aria-label', 'Editor de programas ESLE2 POO. Ctrl + M saca el foco del editor.');
   editor.on('change', () => Guardado.escribir('esle2poo_codigo', editor.getValue()));
 
   /* Si la URL trae un programa compartido, ese gana. */
@@ -616,10 +620,19 @@
   const NIVELES = { facil: 'Fácil', medio: 'Medio', avanzado: 'Avanzado' };
   let seleccionado = null, ejercicioActivo = null, filtro = 'todos';
 
+  /* En «Todos» hay que verse en orden de dificultad, no en el orden en que
+     se fueron agregando: p1–p8 ya quedaron bien, pero p9–p50 se sumaron
+     después y vuelven a empezar en fácil. Ordenar acá —sin tocar
+     EJERCICIOS ni los ids— resuelve la vista sin mover el progreso de
+     nadie. sort() es estable, así que dentro de cada nivel el orden
+     original se mantiene. */
+  const NIVEL_ORDEN = { facil: 0, medio: 1, avanzado: 2 };
   function pintarLista() {
     const ol = $('#listaEjercicios');
     ol.innerHTML = '';
-    EJERCICIOS.filter(e => filtro === 'todos' || e.nivel === filtro).forEach(e => {
+    const lista = EJERCICIOS.filter(e => filtro === 'todos' || e.nivel === filtro);
+    if (filtro === 'todos') lista.sort((a, b) => (NIVEL_ORDEN[a.nivel] ?? 1) - (NIVEL_ORDEN[b.nivel] ?? 1));
+    lista.forEach(e => {
       const li = document.createElement('li');
       const hecho = !!progreso[e.id];
       li.className = (hecho ? 'hecho ' : '') + (seleccionado === e.id ? 'sel' : '');

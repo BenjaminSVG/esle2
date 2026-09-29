@@ -1,9 +1,130 @@
-# ESLE2 — el lenguaje SLE2 en la web
+<div align="center">
+
+<img src="img/logo.svg" width="88" height="88" alt="">
+
+# ESLE2
+
+### El lenguaje SL/SLE2, entero en el navegador. Sin instalar nada.
+
+[![Probalo en vivo](https://img.shields.io/badge/probalo_en_vivo-esle2.vercel.app-3a6b8f?style=for-the-badge)](https://esle2.vercel.app)
+[![Presentación](https://img.shields.io/badge/presentaci%C3%B3n-esle2blog.vercel.app-ffe066?style=for-the-badge&logoColor=222)](https://esle2blog.vercel.app)
+[![Licencia MIT](https://img.shields.io/badge/licencia-MIT-356d4c?style=for-the-badge)](LICENSE)
+[![Cero dependencias](https://img.shields.io/badge/dependencias-cero-8a5f1f?style=for-the-badge)](package.json)
+[![56 archivos de prueba](https://img.shields.io/badge/pruebas-56_archivos-a8463c?style=for-the-badge)](test)
+[![PRs bienvenidos](https://img.shields.io/badge/PRs-bienvenidos-6f42c1?style=for-the-badge)](CONTRIBUIR.md)
+
+</div>
+
+<br>
+
+<div align="center">
+<img src="img/landing/ide-clasico.png" width="100%" alt="ESLE2, IDE clásico: un programa SLE2 corriendo y pidiendo el nombre por consola.">
+<sub>El IDE clásico ejecutando un programa que pide el nombre y saluda — sin compilar nada del lado del servidor: todo corre en esta pestaña.</sub>
+</div>
+
+<br>
+
+<table align="center"><tr>
+<td width="25%"><img src="img/landing/poo.png" width="100%" alt="ESLE2 POO"><div align="center"><sub><b>ESLE2 POO</b> — clases y objetos</sub></div></td>
+<td width="25%"><img src="img/landing/visual.png" width="100%" alt="ESLE2 Visual"><div align="center"><sub><b>ESLE2 Visual</b> — ventanas y controles</sub></div></td>
+<td width="25%"><img src="img/landing/bd.png" width="100%" alt="ESLE2 BD"><div align="center"><sub><b>ESLE2 BD</b> — SQL en español</sub></div></td>
+<td width="25%"><img src="img/landing/curso.png" width="100%" alt="Curso de SLE2"><div align="center"><sub><b>Curso</b> — 50+50+50 ejercicios</sub></div></td>
+</tr></table>
 
 Entorno de desarrollo (IDE) para el lenguaje **SL / SLE2** que funciona íntegramente en el
 navegador, sin instalar nada, más **tres cursos integrados** de 50 ejercicios cada uno con
 corrección automática —el clásico, el de objetos y el de ventanas— y una **documentación completa
 con buscador**.
+
+<br>
+
+| | |
+| --- | --- |
+| 🧠 **Se corrige solo** | Cada ejercicio corre con varios juegos de datos y compara la salida — sin entregar nada a nadie. |
+| 🔌 **Cero instalación, cero internet** | Es una página web; instalada como app sigue andando sin conexión. |
+| 🔁 **Se traduce a seis lenguajes** | JavaScript, Python, Java, C, C++ y C#, generados y verificados contra el intérprete real. |
+| 🐞 **Depurador, diagrama y memoria** | Paso a paso, diagrama de flujo automático y un simulador de memoria con direcciones y montículo. |
+| 🗂️ **Versiones, sin cuenta ni servidor** | Historial automático + un control de versiones al estilo GitHub Desktop, en un archivo. |
+| 🧑‍🏫 **Pensado también para el aula** | Modo examen, modo aula, batallas de código y programar en grupo en vivo. |
+| ♿ **Accesible de verdad** | Se maneja entero con teclado, sin trampas de foco, con nombres accesibles en cada diálogo. |
+| 🔒 **Seguro contra HTML ajeno** | Todo enunciado, guía o entrega de otra persona se sanea antes de llegar a la pantalla — CSP estricta de fondo. |
+| 🇵🇾 **Todo en español** | Palabras clave, errores y documentación, pensados para cómo se enseña acá. |
+
+<details>
+<summary><b>🗺️ Índice — expandir para ver las más de 60 secciones de este documento</b></summary>
+
+**Empezar**
+[Los primeros cinco minutos](#los-primeros-cinco-minutos) ·
+[Tutorial con capturas](#tutorial-toda-la-interfaz-con-capturas) ·
+[Uso](#uso) ·
+[El lenguaje implementado](#el-lenguaje-implementado)
+
+**Los cuatro entornos**
+[ESLE2 POO](#esle2-poo-el-mismo-lenguaje-con-objetos) ·
+[ESLE2 Visual](#esle2-visual-ventanas-controles-y-dibujo) ·
+[ESLE2 BD](#esle2-bd-bases-de-datos-y-sql) ·
+[Diseño (temas y colores)](#diseño-colores-elegidos-por-el-usuario) ·
+[SLE2 en VS Code](#sle2-en-visual-studio-code)
+
+**Herramientas para aprender**
+[Modo flexible](#modo-flexible-compilar-con-errores) ·
+[Prueba de escritorio](#prueba-de-escritorio-en-una-tabla) ·
+[Simulador de memoria](#simulador-de-memoria) ·
+[Diagrama de flujo](#diagrama-de-flujo) ·
+[Editor de diagramas](#editor-de-diagramas) ·
+[Autocompletado](#autocompletado) ·
+[Resaltado de sintaxis](#resaltado-de-sintaxis) ·
+[Traducción a JS y Python](#traducción-a-javascript-y-a-python) ·
+[POO a Python y Java](#esle2-poo-traducido-a-python-y-a-java) ·
+[Depurador paso a paso](#depurador-paso-a-paso) ·
+[Viajar en el tiempo](#viajar-en-el-tiempo) ·
+[Historial de versiones](#historial-de-versiones) ·
+[Versiones del proyecto](#versiones-del-proyecto) ·
+[Racha de días](#racha-de-días) ·
+[Micro-sonidos](#micro-sonidos) ·
+[Buscador global](#buscador-global-ctrl--k) ·
+[Progreso portable](#progreso-portable) ·
+[Otra forma de resolverlo](#otra-forma-de-resolverlo) ·
+[Repaso espaciado](#repaso-espaciado) ·
+[Estadísticas del curso](#cómo-venís-estadísticas-del-curso)
+
+**Aula y colaboración**
+[Modo examen](#modo-examen) ·
+[Modo presentación](#modo-presentación) ·
+[Modo enfoque](#modo-enfoque) ·
+[Batallas de código](#batallas-de-código) ·
+[Modo aula](#modo-aula-una-guía-repartida-por-enlace) ·
+[Mis ejercicios](#mis-ejercicios-dar-clase-con-esle2) ·
+[Programar en grupo](#programar-en-grupo) ·
+[Transmitir mi lógica](#transmitir-mi-lógica)
+
+**Plataforma**
+[Explorador de archivos](#explorador-de-archivos-apagado-por-defecto) ·
+[Paneles](#paneles-que-se-mueven-y-se-estiran) ·
+[Barra de herramientas e iconos](#la-barra-de-herramientas-y-los-iconos) ·
+[En el celular](#en-el-celular) ·
+[Instalar como aplicación](#instalar-como-aplicación) ·
+[Funciona sin internet](#funciona-sin-internet) ·
+[Quién está usando esta máquina](#quién-está-usando-esta-máquina)
+
+**Calidad**
+[Seguridad](#seguridad-qué-se-puede-y-qué-no) ·
+[Accesibilidad](#accesibilidad) ·
+[Sugerencias de estilo](#sugerencias-de-estilo) ·
+[Detección de errores](#detección-de-errores)
+
+**Para contribuir**
+[Cómo meterle mano](#cómo-meterle-mano) ·
+[Publicar una versión](#publicar-una-versión) ·
+[Archivos del repositorio](#archivos) ·
+[Nota sobre el logo](#nota-sobre-el-logo) ·
+[Nota sobre el manual](#nota-sobre-el-manual)
+
+</details>
+
+<br>
+
+---
 
 El intérprete es una reimplementación en JavaScript del lenguaje descrito en:
 

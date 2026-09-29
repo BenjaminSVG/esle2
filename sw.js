@@ -295,16 +295,43 @@ self.addEventListener('install', ev => {
   })());
 });
 
+/* Si esta versión no llegó a guardar TODO lo que pide ARCHIVOS —la conexión
+   se cortó a mitad de la instalación, por ejemplo— no está lista para
+   reemplazar a la anterior. */
+async function versionCompleta(cache) {
+  const guardados = new Set((await cache.keys()).map(r => r.url));
+  return ARCHIVOS.every(ruta => guardados.has(new URL(ruta, self.registration.scope).href));
+}
+
 self.addEventListener('activate', ev => {
   ev.waitUntil((async () => {
-    /* Solo las cachés de ESLE2: si el sitio convive con otra cosa en el mismo
-       origen —una prueba, otra herramienta de la escuela—, borrarle la suya
-       sería romperle el trabajo a otro. */
-    const viejas = (await caches.keys()).filter(k => k !== VERSION && k.startsWith('esle2-'));
-    await Promise.all(viejas.map(k => caches.delete(k)));
+    const cache = await caches.open(VERSION);
+
+    /* Solo se borran las cachés viejas —y solo las de ESLE2: si el sitio
+       convive con otra cosa en el mismo origen, borrarle la suya sería
+       romperle el trabajo a otro— cuando esta versión quedó completa. Si
+       quedó a medias, se las deja: son lo único que puede servir sin
+       internet lo que a esta versión todavía le falta, hasta que una
+       próxima instalación la termine. */
+    if (await versionCompleta(cache)) {
+      const viejas = (await caches.keys()).filter(k => k !== VERSION && k.startsWith('esle2-'));
+      await Promise.all(viejas.map(k => caches.delete(k)));
+    }
     await self.clients.claim();
   })());
 });
+
+/* Busca un archivo en cualquier caché de ESLE2 que no sea la de esta
+   versión: la red de contención para cuando esta versión no lo tiene
+   todavía —instalación a medias— pero una anterior sí lo tenía. */
+async function deOtraVersion(url) {
+  const nombres = (await caches.keys()).filter(k => k !== VERSION && k.startsWith('esle2-'));
+  for (const nombre of nombres) {
+    const r = await (await caches.open(nombre)).match(url, { ignoreSearch: true });
+    if (r) return r;
+  }
+  return null;
+}
 
 self.addEventListener('fetch', ev => {
   const req = ev.request;
@@ -329,13 +356,18 @@ self.addEventListener('fetch', ev => {
       ev.waitUntil(guardar(cache, req.url, resp));
       return resp;
     } catch (e) {
-      // Sin conexión y sin copia: si es una navegación, mostrar algo útil.
+      /* Sin conexión y esta versión no tiene copia: antes de darse por
+         vencido, mirar si una versión anterior sí la tenía. */
+      const vieja = await deOtraVersion(req.url);
+      if (vieja) return vieja;
+
+      // Y si tampoco hay eso: si es una navegación, mostrar algo útil.
       if (req.mode === 'navigate') {
         /* /live/juan es la página de una transmisión: sin conexión tiene que
            mostrar ESA página, que explica que no hay señal, y no el IDE. */
         const esVivo = /\/live\//.test(new URL(req.url).pathname);
         const destino = new URL(esVivo ? 'vivo.html' : 'index.html', self.registration.scope).href;
-        const pagina = await cache.match(destino);
+        const pagina = await cache.match(destino) || await deOtraVersion(destino);
         if (pagina) return pagina;
       }
       return Response.error();

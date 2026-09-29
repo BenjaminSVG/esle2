@@ -82,7 +82,11 @@
       'Ctrl-Enter': () => ejecutar(false),
       'Cmd-Enter': () => ejecutar(false),
       'Ctrl-S': () => { guardar(); return false; },
-      Tab: cm => cm.execCommand('insertSoftTab')
+      Tab: cm => cm.execCommand('insertSoftTab'),
+      /* Tab escribe sangría, así que alguien que solo usa el teclado se
+         queda atrapado adentro del editor sin este escape: Ctrl + M le saca
+         el foco, como en cualquier editor de código accesible. */
+      'Ctrl-M': cm => { cm.getInputField().blur(); return false; }
     }
   });
   /* Ajustar texto: el Alt + Z de Visual Studio Code. */
@@ -119,7 +123,7 @@
   editor.getInputField().setAttribute('aria-label', 'Editor de programas ESLE2 Visual');
   editor.getScrollerElement().setAttribute('tabindex', '0');
   editor.getScrollerElement().setAttribute('role', 'region');
-  editor.getScrollerElement().setAttribute('aria-label', 'Editor de programas ESLE2 Visual');
+  editor.getScrollerElement().setAttribute('aria-label', 'Editor de programas ESLE2 Visual. Ctrl + M saca el foco del editor.');
   editor.on('change', () => {
     Guardado.escribir('esle2vis_codigo', editor.getValue());
     if (ejercicioActivo) Guardado.escribir('esle2vis_ej_' + ejercicioActivo.id, editor.getValue());

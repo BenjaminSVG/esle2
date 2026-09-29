@@ -37,7 +37,10 @@
         return v.slice(0, tope).filter(valido).map(limpiar);
       } catch (e) { return []; }
     }
+    /* Guardado.escribir() avisa —una sola vez— si el almacén está lleno,
+       en vez de perder el ejercicio en silencio. */
     const guardar = lista => {
+      if (global.Guardado) { global.Guardado.escribir(clave, JSON.stringify(lista)); return; }
       try { localStorage.setItem(clave, JSON.stringify(lista)); } catch (e) { /* almacén lleno */ }
     };
 
